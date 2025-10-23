@@ -1,0 +1,65 @@
+set(TARGET_NAME proj_stairs_ws2815)
+
+# simpler solution mostly for single-source projects, not needed target_sources
+#add_executable(${TARGET_NAME}
+#        main.c<F10>
+#)
+add_executable(${TARGET_NAME})
+
+# set(PIO_OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)       # for education purposes
+set(PIO_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+pico_generate_pio_header(${TARGET_NAME}
+    ${CMAKE_CURRENT_LIST_DIR}/ws2815.pio
+    OUTPUT_DIR ${PIO_OUTPUT_DIR}
+)
+
+target_sources(${TARGET_NAME} PRIVATE
+        main.c
+        ws2815_control_dma_parallel.c
+        network.c
+        wizchip_custom.c
+        )
+
+# not needed # file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
+# Generate the PIO header file from the PIO program
+#pico_generate_pio_header(${TARGET_NAME} 
+#        ${CMAKE_CURRENT_LIST_DIR}/ws2815.pio OUTPUT_DIR 
+#        ${CMAKE_CURRENT_BINARY_DIR}/generated
+#        )
+
+target_include_directories(${TARGET_NAME} PRIVATE
+        ${PIO_OUTPUT_DIR}                       # for the generated pio header
+        # ${CMAKE_CURRENT_BINARY_DIR}/generated   # for the generated pio header
+        ${CMAKE_CURRENT_LIST_DIR}               # for local headers
+        )
+
+# and make sure the folder exists but ignored by Git
+file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
+
+# pull in common dependencies and additional spi hardware support
+target_link_libraries(${TARGET_NAME} PRIVATE
+        pico_stdlib
+        hardware_spi
+        hardware_dma            # added for DMA support
+        hardware_pio            # added for PIO support
+        ETHERNET_FILES
+        IOLIBRARY_FILES
+        LOOPBACK_FILES
+        )
+
+#add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+#        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
+#        COMMAND pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+#        VERBATIM)
+
+add_custom_target(show_pio_headers
+    COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
+)
+
+
+pico_enable_stdio_usb(${TARGET_NAME} 1)
+pico_enable_stdio_uart(${TARGET_NAME} 0)        # to use Debug Probe via UART
+
+# create map/bin/hex file etc.
+pico_add_extra_outputs(${TARGET_NAME})          # this function delares that you want a UF2 file to be generated
+

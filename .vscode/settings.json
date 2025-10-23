@@ -1,0 +1,65 @@
+{
+    "cmake.showSystemKits": false,
+    "cmake.options.statusBarVisibility": "hidden",
+    "cmake.options.advanced": {
+        "build": {
+            "statusBarVisibility": "hidden"
+        },
+        "launch": {
+            "statusBarVisibility": "hidden"
+        },
+        "debug": {
+            "statusBarVisibility": "hidden"
+        }
+    },
+    "cmake.configureOnEdit": true,
+    "cmake.automaticReconfigure": true,
+    "cmake.configureOnOpen": true,
+    "cmake.generator": "Ninja",
+    // 👇 Add this block to tell CMake where to find the Ninja binary
+    "cmake.configureSettings": {
+        "CMAKE_MAKE_PROGRAM": "${env:HOME}/.pico-sdk/ninja/v1.12.1/ninja"
+    },
+    "cmake.cmakePath": "${userHome}/.pico-sdk/cmake/v3.31.5/bin/cmake",
+    "C_Cpp.debugShortcut": false,
+    // 👇 Added those 3 lines to fix IntellSense
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    // "C_Cpp.errorSquiggles": "disabled",
+
+    "terminal.integrated.env.windows": {
+        "PICO_SDK_PATH": "${env:USERPROFILE}/.pico-sdk/sdk/2.2.0",
+        "PICO_TOOLCHAIN_PATH": "${env:USERPROFILE}/.pico-sdk/toolchain/14_2_Rel1",
+        "Path": "${env:USERPROFILE}/.pico-sdk/toolchain/14_2_Rel1/bin;${env:USERPROFILE}/.pico-sdk/picotool/2.2.0-a4/picotool;${env:USERPROFILE}/.pico-sdk/cmake/v3.31.5/bin;${env:USERPROFILE}/.pico-sdk/ninja/v1.12.1;${env:PATH}"
+    },
+    "terminal.integrated.env.osx": {
+        "PICO_SDK_PATH": "${env:HOME}/.pico-sdk/sdk/2.2.0",
+        "PICO_TOOLCHAIN_PATH": "${env:HOME}/.pico-sdk/toolchain/14_2_Rel1",
+        "PATH": "${env:HOME}/.pico-sdk/toolchain/14_2_Rel1/bin:${env:HOME}/.pico-sdk/picotool/2.2.0-a4/picotool:${env:HOME}/.pico-sdk/cmake/v3.31.5/bin:${env:HOME}/.pico-sdk/ninja/v1.12.1:${env:PATH}"
+    },
+    "terminal.integrated.env.linux": {
+        "PICO_SDK_PATH": "${env:HOME}/.pico-sdk/sdk/2.2.0",
+        "PICO_TOOLCHAIN_PATH": "${env:HOME}/.pico-sdk/toolchain/14_2_Rel1",
+        "PATH": "${env:HOME}/.pico-sdk/toolchain/14_2_Rel1/bin:${env:HOME}/.pico-sdk/picotool/2.2.0-a4/picotool:${env:HOME}/.pico-sdk/cmake/v3.31.5/bin:${env:HOME}/.pico-sdk/ninja/v1.12.1:${env:PATH}"
+    },
+    "raspberry-pi-pico.cmakeAutoConfigure": false,
+    "raspberry-pi-pico.useCmakeTools": true,
+    "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.31.5/bin/cmake",
+    "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
+    "files.associations": {
+        "critical_section.h": "c",
+        "irq.h": "c",
+        "stdio.h": "c",
+        "ws2815_control_dma_parallel.h": "c",
+        "dma.h": "c",
+        "pio.h": "c",
+        "loopback.h": "c",
+        "cstdint": "c",
+        "port_common.h": "c",
+        "stdint.h": "c",
+        "network.h": "c",
+        "cstring": "c",
+        "variant": "c",
+        "compare": "c"
+    }
+}
