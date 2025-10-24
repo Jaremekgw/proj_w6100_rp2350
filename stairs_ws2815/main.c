@@ -24,8 +24,8 @@ static uint8_t message_buf[2] = {
 };
 
 // variables for DDP processing
-static uint32_t pkt_counter = 0;
-static uint32_t last_push_ms = 0;
+//static uint32_t pkt_counter = 0;
+//static uint32_t last_push_ms = 0;
 int32_t ret;
 
 int main() {
@@ -38,17 +38,19 @@ int main() {
     sleep_ms(8000);
 
     // --- WIZnet init ---
+    // #define SPI_CLK  40      // remember to set in wizchip_spi.h speed 40 MHz to receive at 4 Mbps DDP
     wizchip_spi_initialize();   // sets up SPI hardware (not PIO)
     wizchip_cris_initialize();  // sets up interrupt control macros
     wizchip_reset();            // toggles GPIO for chip reset
     // wizchip_initialize();       // runs SPI-level init of W6100/W5500
     wizchip_init_nonblocking(); // non-blocking version of wizchip_initialize() for W6100
-
     wizchip_check();            // reads version register, verifies SPI comm
-
-    // network_initialize(g_net_info); // configures IP address etc.
-    // print_network_information(g_net_info); // Read back the configuration information and print it
+    // --- Network init ---
     init_net_info();
+
+    udp_socket_init();
+    wiznet_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
+    wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 
     // --- LED driver init ---
     ws2815_init(); // Initialize WS2815 LED control
@@ -69,8 +71,12 @@ int main() {
         time_start = time_us_32();
         loopback_loop(message_buf);
  
+        // Service RX immediately if IRQ flagged
+        // wiznet_service_if_needed();  inside ddp_loop()
+
+
         // Poll the UDP socket
-        ret = ddp_loop(&pkt_counter, &last_push_ms);
+        ret = ddp_loop();       //  (&pkt_counter, &last_push_ms);
             // status = getSn_SR(ddp_sock);
             // if (status == SOCK_UDP) {
             //     process_ddp_udp(ddp_sock, &pkt_counter, &last_push_ms);

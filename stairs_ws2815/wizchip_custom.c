@@ -71,8 +71,8 @@ void wizchip_init_nonblocking(void) {
     //                       my_spi_read_buf, my_spi_write_buf);
 
     uint8_t memsize[2][8] = {
-        {2,2,2,2,2,2,2,2},
-        {2,2,2,2,2,2,2,2}
+        {2,2,2,2,2,2,2,8},      // TX socket 7 = 8 KB
+        {2,2,2,2,2,2,2,16}      // RX socket 7 = 16 KB
     };
 
     printf(" Start init W6x00.\n");

@@ -51,7 +51,7 @@ def send_ddp_frame(rgb_bytes):
         frag += 1
         offset += length
         # small delay between fragments helps on slower networks
-        time.sleep(0.002)   # minimum 12ms delay between fragments
+        time.sleep(0.001)   # minimum 12ms delay between fragments
         
 
 # demo animation
