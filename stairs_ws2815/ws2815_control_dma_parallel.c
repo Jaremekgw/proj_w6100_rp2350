@@ -58,7 +58,12 @@ strip_t *strips[] = {
 typedef uint8_t strip_buffer_t[NUM_PIXELS][NUM_CHANNELS];
 strip_buffer_t framebuf[NUM_STRIPS];   // fb[strip][pixel][channel], channel = G,R,B
 // uint8_t framebuf[NUM_STRIPS][NUM_PIXELS][NUM_CHANNELS];   // fb[strip][pixel][channel], channel = G,R,B
-bool update_framebuf = false;
+bool ddp_update_framebuf = false;
+bool ddp_communication = false;         // cleared after DDP_COM_TIMEOUT_MS of no DDP packets
+#define DDP_COM_TIMEOUT_MS 1000         // ms
+uint32_t ddp_update_time_last = 0;
+
+bool patern_update_framebuf = false;
 
 // ---------------- DMA control code ----------------
 // bit plane content dma channel
@@ -216,12 +221,12 @@ const struct {
     pattern pat;
     const char *name;
 } pattern_table[] = {
-        {pattern_snakes,  "Snakes!"},
-        {pattern_random,  "Random data"},
-        {pattern_sparkle, "Sparkles"},
-        {pattern_greys,   "Greys"},
-        {pattern_solid,  "Solid!"},
-        {pattern_jaremek, "Jaremek"},
+        {pattern_snakes,  "Snakes!"},       // pattern 0
+        {pattern_random,  "Random data"},   // pattern 1
+        {pattern_sparkle, "Sparkles"},      // pattern 2
+        {pattern_greys,   "Greys"},     // pattern 3
+        {pattern_solid,  "Solid!"},     // pattern 4
+        {pattern_jaremek, "Jaremek"},   // pattern 5
 };
 
 /**
@@ -295,10 +300,66 @@ void ws2815_init(void) {
     printf("WS2815 initialized.\n");
 }
 
-void ws2815_loop(void) {
+uint8_t pattern_index = 0xF0, pattern_last_index;
+
+void set_pattern_index(uint8_t index) {
+    pattern_index = index;
+}
+
+/**
+ * Main loop for createing different patterns automatically
+ * Function called periodically every 20 ms from main loop
+ */
+void ws2815_pattern_loop(void) {
     static int t = 0;
     static int loop_count = 0;
     static int pat=0, dir=0;
+
+    if (ddp_communication) return;
+
+    if (pattern_index < count_of(pattern_table)) {
+        pat = pattern_index;
+        if (pattern_last_index != pattern_index) {
+            pattern_last_index = pattern_index;
+            loop_count = 0;
+            dir = 1;
+            printf("Pattern %d=%s dir:%s\n", pat + 1, pattern_table[pat].name, dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)");
+        }   
+    } else if (pattern_index == 0xF0) {
+        // select random pattern
+        if (++loop_count > 200) {   // 200 * 20ms = 4s
+            loop_count = 0;
+            // change pattern
+            pat = rand() % count_of(pattern_table);
+            pattern_last_index = pat;
+            dir = (rand() >> 30) & 1 ? 1 : -1;
+            if (rand() & 1) dir = 0;
+            printf("Pattern %d=%s dir:%s\n", pat + 1, pattern_table[pat].name, dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)");
+        }
+    }
+
+    // for (int i = 0; i < 1000; ++i) {
+    // current_strip_4color = false;
+    current_strip_out = strip0.data;
+    pattern_table[pat].pat(NUM_PIXELS, t);
+    current_strip_out = strip1.data;
+    pattern_table[pat].pat(NUM_PIXELS, t);
+
+    // current_strip_out = &framebuf[0][0][0];     // = strip0.data;
+    // pattern_table[pat].pat(NUM_PIXELS, t);
+    // current_strip_out = &framebuf[1][0][0];     // = strip1.data;
+    // pattern_table[pat].pat(NUM_PIXELS, t);
+
+
+    t += dir;
+    patern_update_framebuf = true;
+}
+
+
+void ws2815_loop(void) {
+    // static int t = 0;
+    // static int loop_count = 0;
+    // static int pat=0, dir=0;
     
 /*
     // Wait for reset delay to complete
@@ -319,20 +380,20 @@ void ws2815_loop(void) {
     output_strips_dma(colors, NUM_PIXELS * NUM_CHANNELS);
  */
     {
-        if (++loop_count > 1000) {
-            loop_count = 0;
-            // change pattern
-            pat = rand() % count_of(pattern_table);
-            dir = (rand() >> 30) & 1 ? 1 : -1;
-            if (rand() & 1) dir = 0;
-            printf("Pattern %d=%s dir:%s\n", pat + 1, pattern_table[pat].name, dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)");
-        }
-        // for (int i = 0; i < 1000; ++i) {
-        // current_strip_4color = false;
-        current_strip_out = strip0.data;
-        pattern_table[pat].pat(NUM_PIXELS, t);
-        current_strip_out = strip1.data;
-        pattern_table[pat].pat(NUM_PIXELS, t);
+                // if (++loop_count > 200) {
+                //     loop_count = 0;
+                //     // change pattern
+                //     pat = rand() % count_of(pattern_table);
+                //     dir = (rand() >> 30) & 1 ? 1 : -1;
+                //     if (rand() & 1) dir = 0;
+                //     printf("Pattern %d=%s dir:%s\n", pat + 1, pattern_table[pat].name, dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)");
+                // }
+                // // for (int i = 0; i < 1000; ++i) {
+                // // current_strip_4color = false;
+                // current_strip_out = strip0.data;
+                // pattern_table[pat].pat(NUM_PIXELS, t);
+                // current_strip_out = strip1.data;
+                // pattern_table[pat].pat(NUM_PIXELS, t);
 
         // current_strip_out = &framebuf[0][0][0];     // = strip0.data;
         // pattern_table[pat].pat(NUM_PIXELS, t);
@@ -356,6 +417,10 @@ void ws2815_loop(void) {
 
         //printf("strip0.len=%d strip0.0=%#04x strip0.1=%#04x strip0.2=%#04x strip0.3=%#04x strip0.4=%#04x\n", strip0.data_len, strip0.data[0], strip0.data[1], strip0.data[2], strip0.data[3], strip0.data[4]);
 
+        if (!ddp_update_framebuf && !patern_update_framebuf)
+            return;
+        ddp_update_framebuf = false;
+        patern_update_framebuf = false;
 
         transform_strips(strips, count_of(strips), colors, NUM_PIXELS * NUM_CHANNELS);  // , brightness
         // transform_framebuf(framebuf, count_of(framebuf), colors, NUM_PIXELS * NUM_CHANNELS);
@@ -368,15 +433,15 @@ void ws2815_loop(void) {
         //}
         //printf("colors[0].planes[0]=0x%x colors[0].planes[1]=0x%x colors[0].planes[2]=0x%x\n\n", colors[0].planes[0], colors[0].planes[1], colors[0].planes[2]);
 
-                // dither_values(colors, states[current], states[current ^ 1], NUM_PIXELS * NUM_CHANNELS);
         sem_acquire_blocking(&reset_delay_complete_sem);
                 // output_strips_dma(states[current], NUM_PIXELS * NUM_CHANNELS);
         output_strips_dma(colors, NUM_PIXELS * NUM_CHANNELS);
         // output_plains_sm(pio, sm, colors, NUM_PIXELS * NUM_CHANNELS);
 
-        sleep_ms(10);    // oryginally 10ms, 1ms is too fast for sparkle
+        // sleep not needed, handled by timer and dma
+        // sleep_ms(10);    // oryginally 10ms, 1ms is too fast for sparkle
         // current ^= 1;
-        t += dir;
+        // t += dir;
         // brightness++;
         // if (brightness == (0x20 << FRAC_BITS)) brightness = 0;
         // }
@@ -391,7 +456,9 @@ void ws2815_show(uint8_t *fb) {
     pixel = &framebuf[0];
 
     memcpy(framebuf, fb, sizeof(framebuf));
-    update_framebuf = true;
+    ddp_update_framebuf = true;
+    ddp_communication = true;
+    ddp_update_time_last = time_us_32();
     // printf("Framebuf recieved. Value pixel[0]=%#04x,%#04x,%#04x pixel[1]=%#04x,%#04x,%#04x\n", sb[0][0], sb[0][1], sb[0][2], sb[1][0], sb[1][1], sb[1][2]);
     printf("Framebuf recieved. Value pixel[0]=%#04x,%#04x,%#04x pixel[1]=%#04x,%#04x,%#04x\n", pixel[0][0], pixel[0][1], pixel[0][2], pixel[1][0], pixel[1][1], pixel[1][2]);
 }

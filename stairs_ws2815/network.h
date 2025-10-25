@@ -4,6 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * Important WIZnet board with W6100 configuration in library ioLibrary_Driver:
+ * #define _PHY_IO_MODE_                  _PHY_IO_MODE_PHYCR_
+ * #define SPI_CLK  40      // remember to set in wizchip_spi.h speed 40 MHz to receive at 4 Mbps DDP
+ * 
+ */
+
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
@@ -17,7 +24,7 @@
 
 
 void wiznet_gpio_irq_init(void);
-void wiznet_interrupts_enable(void);
+void udp_interrupts_enable(void);
 void udp_socket_init(void);
 void init_net_info(void);
 void wiznet_drain_udp(void);

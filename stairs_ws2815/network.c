@@ -27,10 +27,13 @@ static wiz_NetInfo g_net_info;
 #define _LOOPBACK_DEBUG_    // Enable LOOPBACK debug messages on USB
 #define _DDP_DEBUG_         // Enable DDP debug messages on USB
 #define _UDP_DEBUG_         // Enable UDP debug messages on USB
+#define _TIME_DEBUG_        // Enable timing debug messages on USB
+
 
 // Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
-#define TCP_LOOPBACK_SOCKET  0
-#define UDP_DDP_SOCKET   7
+#define TCP_LOOPBACK_SOCKET  0  // with port TCP_LOOPBACK_PORT 8000
+#define UDP_DDP_SOCKET   5      // with port UDP_DDP_PORT 4048
+// #define UDP_SOCKET_COUNT 3      // number of UDP sockets for DDP reception
 
 // --- DDP constants ---
 #define DDP_FLAGS1_PUSH   0x01    // bit0 = PUSH (render immediately)
@@ -42,8 +45,6 @@ static wiz_NetInfo g_net_info;
 // --- Variables for Network ---
 // TCP loopback buffer
 static uint8_t ethernet_buf[ETHERNET_BUF_MAX_SIZE] = { 0, };
-// DDP receive buffer
-static uint8_t ddp_ethernet_buf[DDP_DATA_BUF_SIZE] = { 0, };
 
 // UDP receive buffer for interrupt processing
 #define UDP_RING_COUNT      5
@@ -57,11 +58,6 @@ static volatile uint16_t udp_rx_buf_len[UDP_RING_COUNT] = {0,};
 // Optional: lightweight flag to defer heavy work out of ISR
 static volatile bool wiznet_rx_pending = false;
 // network.h
-// static inline void wiznet_service_if_needed(void) {
-//     if (!wiznet_rx_pending) return;
-//     wiznet_rx_pending = false;
-//     wiznet_drain_udp();     // or whatever the actual implementation is
-// }
 
 static uint8_t* msg_ip_v4 = (uint8_t*)"IPv4 mode";  // the same: static const uint8_t msg_v4[]   = "IPv4 mode";
 static uint8_t* msg_ip_v6 = (uint8_t*)"IPv6 mode";
@@ -219,92 +215,18 @@ int32_t loopback_loop(uint8_t *msg) {
 }
 
 
-/*
-    How TCP loopback works:
-0:TCP server loopback start
-0:Socket opened
-0:Listen, TCP server loopback, port [8000]
-0:Connected - 192.168.178.98 : 54201
-Pattern 6=Jaremek dir:(forward)
-0:CloseWait
-0:Socket Closed
-0:TCP server loopback start
-0:Socket opened
-0:Listen, TCP server loopback, port [8000]
 
-0:Connected - 192.168.178.98 : 60796
-Pattern 6=Jaremek dir:(backward)
-socket0 from:192.168.178.98 port: 60796  message:e
-socket0 from:192.168.178.98 port: 60796  message:w
-0:CloseWait
-0:Socket Closed
-0:TCP server loopback start
-0:Socket opened
-0:Listen, TCP server loopback, port [8000]
+void udp_interrupts_enable(void) {
+    SOCKET ddp_sock = UDP_DDP_SOCKET;
+    intr_kind imr = 0, ir;
 
-
-With UDP:
-
-WS2815 initialized.
-0:TCP server loopback start
-0:Socket opened
-7:UDP server DDP start
-7:Socket opened
-0:Listen, TCP server loopback, port [8000]
-7:UDP socket data processing
--- blocked
-
-*/
-
-/* 
-    // --- Open UDP socket for DDP ---
-    SOCKET ddp_sock = 0;
-    uint8_t status;
-    if (socket(ddp_sock, Sn_MR_UDP, UDP_DDP_PORT, 0) != ddp_sock) {
-        printf("UDP socket open failed\n");
-        while (1) tight_loop_contents();
-    }
-    printf("DDP UDP listening on port %d\n", UDP_DDP_PORT);
-
-
-
-
-        // Poll the UDP socket
-        status = getSn_SR(ddp_sock);
-        if (status == SOCK_UDP) {
-            process_ddp_udp(ddp_sock, &pkt_counter, &last_push_ms);
-        } else if (status == SOCK_CLOSED) {
-            // re-open if closed
-            socket(ddp_sock, Sn_MR_UDP, UDP_DDP_PORT, 0);
-        }
- */
-
-/* 
-void wiznet_irq_handler(void) {
-    // Handle WIZnet interrupts here if needed
-    // This function should be called from the main interrupt handler
-    uint8_t ir;
-
-    ir = getSn_IR(UDP_DDP_SOCKET);
-    if (ir & Sn_IR_RECV) {
-        // Data received on UDP DDP socket
-        poll_udp_ddp_socket();
-        setSn_IR(UDP_DDP_SOCKET, Sn_IR_RECV); // Clear interrupt
-    }
-}
- */
-
-void wiznet_interrupts_enable(void) {
-    //SOCKET ddp_sock = UDP_DDP_SOCKET;
-    intr_kind imr, ir;
-
-    // Enable socket 7 interrupt in the global mask (SIMR)
-    // You can enable just the sockets you use to avoid extra wakeups.
-    //imr = IK_SOCK_7;    // Interrupt mask for UDP DDP socket
-    //ctlwizchip(CW_SET_INTRMASK, &imr);  // wizchip_setinterruptmask(*((intr_kind*)arg));
+    // You can enable just the sockets you use to avoid extra wakeups. In the global mask (SIMR).
+    imr = (intr_kind)(IK_SOCK_0 << ddp_sock);  // Interrupt mask for UDP DDP sockets
+    // Or enable all socket interrupts:
+    // imr |= IK_SOCK_ALL;
     // (Optional) also enable network-level interrupts if you want them:
-    imr = IK_SOCK_7 | IK_NET_ALL;
-    ctlwizchip(CW_SET_INTRMASK, &imr);
+    // imr |= IK_NET_ALL;
+    ctlwizchip(CW_SET_INTRMASK, &imr);  // wizchip_setinterruptmask(*((intr_kind*)arg));
 
     // Clear ALL pending (global + per-socket + service-level) to start clean
     ir = IK_INT_ALL;
@@ -312,36 +234,8 @@ void wiznet_interrupts_enable(void) {
 }
 
 
-/* It works, but I removed it to save space
-static char event_str[128];
-static const char *gpio_irq_str[] = {
-        "LEVEL_LOW",  // 0x1
-        "LEVEL_HIGH", // 0x2
-        "EDGE_FALL",  // 0x4
-        "EDGE_RISE"   // 0x8
-};
-void gpio_event_string(char *buf, uint32_t events) {
-    for (uint i = 0; i < 4; i++) {
-        uint mask = (1 << i);
-        if (events & mask) {
-            // Copy this event string into the user string
-            const char *event_str = gpio_irq_str[i];
-            while (*event_str != '\0') {
-                *buf++ = *event_str++;
-            }
-            events &= ~mask;
 
-            // If more events add ", "
-            if (events) {
-                *buf++ = ',';
-                *buf++ = ' ';
-            }
-        }
-    }
-    *buf++ = '\0';
-}
- */
-
+#ifdef _TIME_DEBUG_
 static volatile uint32_t time_irq_start = 0, time_routine_start, time_irq_duration, time_routine_duration;
 static volatile uint32_t t_irq_routine_start, time_irq_routine_duration, time_irq_routine_max = 0;
 static volatile uint8_t irq_loop_count = 0, drain_loop_count = 0;
@@ -356,20 +250,12 @@ static volatile uint8_t time_duration_idx = 0;
 static volatile uint16_t received_size_table[TABLE_IRQ_SIZE];
 static volatile uint8_t received_size_table_idx = 0;
 
+static volatile uint32_t ik_pending_table[TABLE_IRQ_SIZE];
+static volatile uint8_t ik_pending_table_idx = 0;
+#endif
+
 // This will be called when INTn (GPIO 21) goes low
-void wiznet_gpio_irq_handler_previous(uint gpio, uint32_t events) {
-    // Put the GPIO event(s) that just happened into event_str
-    // so we can print it
-    //gpio_event_string(event_str, events);
-    //printf("GPIO %d %s\n", gpio, event_str);
-
-    // don't use it: gpio_set_irq_enabled(WIZNET_INT_PIN, GPIO_IRQ_EDGE_FALL, false);  // disable further interrupts until serviced
-    time_irq_start = time_us_32();
-    // Keep it tiny — just flag work for main loop
-    wiznet_rx_pending = true;
-}
-
-void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
+/* void wiznet_gpio_irq_handler_single_socket(uint gpio, uint32_t events)
 {
     SOCKET ddp_sock = UDP_DDP_SOCKET;
     uint16_t recv_len;
@@ -439,8 +325,80 @@ void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
 
     // mark that data exists for main loop
     wiznet_rx_pending = true;
-}
+}  */
 
+/**
+ * WIZnet GPIO IRQ handler for multiple sockets
+ * but used only for UDP DDP socket here
+ */
+void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
+{
+    int32_t ret;
+    // intr_kind pending;  // 
+    intr_kind sock_bit = (IK_SOCK_0 << UDP_DDP_SOCKET);
+    uint16_t recv_len;
+    uint16_t srcport;
+    uint8_t srcip[16];
+    uint8_t addr_len;
+    // uint8_t sn_ir;
+    SOCKET sock_num = UDP_DDP_SOCKET;
+
+#ifdef _TIME_DEBUG_
+    t_irq_routine_start = time_us_32();
+    time_table_irq[time_table_idx] = t_irq_routine_start - time_irq_start;
+    time_table_idx++;
+    if (time_table_idx >= TABLE_IRQ_SIZE)
+        time_table_idx = 0;
+    time_irq_start = t_irq_routine_start;
+
+    ik_pending_table[ik_pending_table_idx++] = wizchip_getinterrupt();
+    if (ik_pending_table_idx >= TABLE_IRQ_SIZE)
+        ik_pending_table_idx = 0;
+#endif
+    // for all sockets, check which have pending interrupts
+    // this part is simplified to just one socket here
+    //
+    // pending = wizchip_getinterrupt(); // ret = (((uint32_t)getSLIR())<<16) | ret;
+    // for (sock_num = 0; sock_num < _WIZCHIP_SOCK_NUM_; sock_num++) {
+    //     sock_bit = (IK_SOCK_0 << sock_num);
+    //     if (pending & sock_bit) {
+    //         sn_ir = getSn_IR(sock_num);
+    //         if (sn_ir & Sn_IR_RECV) {
+                getsockopt(sock_num, SO_RECVBUF, &recv_len);
+                if (recv_len) {
+                    //if (recv_len > UDP_RX_BUF_SZ)
+                    //    recv_len = UDP_RX_BUF_SZ;
+    
+                    ret = recvfrom(sock_num,
+                                   udp_rx_ring_buf[udp_ring_idx],
+                                   recv_len,
+                                   (uint8_t *)&srcip[0],
+                                   (uint16_t *)&srcport,
+                                   &addr_len);
+                    if (ret > 0) {
+                        udp_rx_buf_len[udp_ring_idx++] = (uint16_t)ret;
+                        udp_ring_idx %= UDP_RING_COUNT;
+                    } else {
+                        // recv error
+                        // irq_error_count++;
+                    }
+                }
+                setSn_IR(sock_num, Sn_IR_RECV);      // clear socket latch
+    //         } // if (sn_ir & Sn_IR_RECV)
+            ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);    //  wizchip_clrinterrupt(sock_bit);   // clear global bit
+    //     } // if (pending & sock_bit)
+    // } // for all sockets
+
+#ifdef _TIME_DEBUG_
+    time_irq_routine_duration = time_us_32() - t_irq_routine_start;
+    if (time_irq_routine_duration > time_irq_routine_max)
+        time_irq_routine_max = time_irq_routine_duration;
+    time_table_duration[time_duration_idx++] = time_irq_routine_duration;
+    if (time_duration_idx >= TABLE_IRQ_SIZE)
+        time_duration_idx = 0;
+#endif
+    wiznet_rx_pending = true;
+}
 
 
 
@@ -472,31 +430,31 @@ void wiznet_gpio_irq_init(void) {
 void udp_socket_init(void) {
     uint16_t port = UDP_DDP_PORT;
     SOCKET ddp_sock = UDP_DDP_SOCKET;
+    SOCKET sn;
+    uint8_t protocol;
     uint8_t* mode_msg;
 
     check_loopback_mode_W6x00();    // as default set to AS_IPV4
 
-    if(loopback_mode == AS_IPV4)
-        mode_msg = msg_ip_v4;
-    else if(loopback_mode == AS_IPV6)
-        mode_msg = msg_ip_v6;
-    else
-        mode_msg = msg_ip_dual;
-
-
-    SOCKET sn = ddp_sock;
-    switch(loopback_mode)
-    {
+    switch(loopback_mode) {
     case AS_IPV4:
-        sn = socket(ddp_sock, Sn_MR_UDP4, port, SOCK_IO_NONBLOCK);
+        protocol = Sn_MR_UDP4;
+        mode_msg = msg_ip_v4;
         break;
     case AS_IPV6:
-        sn = socket(ddp_sock, Sn_MR_UDP6, port, SOCK_IO_NONBLOCK);
+        protocol = Sn_MR_UDP6;
+        mode_msg = msg_ip_v6;
         break;
     case AS_IPDUAL:
-        sn = socket(ddp_sock, Sn_MR_UDPD, port, SOCK_IO_NONBLOCK);
+    default:
+        protocol = Sn_MR_UDPD;
+        mode_msg = msg_ip_dual;
         break;
     }
+
+    intr_kind sock_bit = (IK_SOCK_0 << ddp_sock);
+    sn = socket(ddp_sock, protocol, port, SOCK_IO_NONBLOCK);
+
     if(sn != ddp_sock){    /* reinitialize the socket */
         #ifdef _UDP_DEBUG_
             printf("%d : Fail to create socket.\r\n", ddp_sock);
@@ -505,14 +463,13 @@ void udp_socket_init(void) {
     }
     #ifdef _UDP_DEBUG_
         printf("%d:Socket UDP opened, port [%d] as %s\r\n",ddp_sock, port, mode_msg);   // getSn_SR(ddp_sock)
-        // printf("%d:Opened, UDP loopback, port [%d] as %s\r\n", ddp_sock, port, mode_msg);
     #endif
 
     // Per-socket: enable only RECV interrupt
     // Sn_IMR bits: Sn_IR_SENDOK(0x10), Sn_IR_TIMEOUT(0x08), Sn_IR_RECV(0x04), ...
     setSn_IMR(ddp_sock, Sn_IR_RECV);     // mask bit RECV=1
     // Clear any pending per-socket interrupts
-    setSn_IR(ddp_sock, 0xFF);
+    ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);  // wizchip_clrinterrupt(sock_bit);  // clear any pending per-socket interrupts  // setSn_IR(ddp_sock, 0xFF);
 }
 
 
@@ -533,88 +490,28 @@ void process_udp_ring(void) {
 }
 
 
-
-void wiznet_drain_udp_previous(void) {
-    SOCKET ddp_sock = UDP_DDP_SOCKET;
-    uint16_t received_size;
-    uint8_t addr_len;
-    uint8_t *rx_buf = ddp_ethernet_buf;
-
-    // Check which interrupts are pending globally
-    intr_kind pending = (intr_kind)0;
-    pending = wizchip_getinterrupt();
-
-    // If our socket signaled, service it
-    if (pending & IK_SOCK_7) {
-        // Per-socket IR tells us the reasons
-        uint8_t sn_ir = getSn_IR(ddp_sock);
-
-        if (sn_ir & Sn_IR_RECV) {
-            // Clear socket RECV latch before draining to re-arm INTn fast
-            // 1. clear per-socket RECV latch first
-            //setSn_IR(ddp_sock, Sn_IR_RECV);
-            // 2. then clear the global interrupt bit
-            //wizchip_clrinterrupt(IK_SOCK_7);    // setSn_IRCLR(i,0xFF); setSLIRCLR(slir);
-            // 3. finally re-enable GPIO interrupt if you disable it in the handler
-
-            // Drain all queued UDP datagrams
-            while (1) {
-                // uint16_t avail = 0;
-                // getsockopt(ddp_sock, SO_RECVBUF, &avail);
-                // drain_loop_count++;
-                getsockopt(ddp_sock, SO_RECVBUF, &received_size);   // = getSn_RX_RSR(ddp_sock);
-                if (!received_size) break;
-                // test_loop_counter++;
-                if(received_size > DATA_BUF_SIZE) received_size = DATA_BUF_SIZE;
-
-                uint8_t  srcip[4];
-                uint16_t srcport;
-                int32_t ret;
-                
-                // ret = recvfrom(ddp_sock, rx_buf, RXBUF_SZ, srcip, &srcport);
-                ret = recvfrom(ddp_sock, rx_buf, received_size, (uint8_t *)&srcip[0], (uint16_t *)&srcport, &addr_len);
+// static inline void wiznet_service_if_needed(void) {
+// }
 
 
-                if(ret <= 0) {
-                    printf("DDP recvfrom error: %ld\r\n", ret);
-                    break;
-                }
-                #ifdef _UDP_DEBUG_
-                printf("UDP packet received: %ld bytes from %d.%d.%d.%d:%d\r\n", ret,
-                    srcip[0], srcip[1], srcip[2], srcip[3], srcport);
-                #endif 
 
-                if (ret > 0) {
-                    // Your existing DDP parse:
-                    // process_ddp_packet(rx_buf, (uint16_t)n);
-                    process_ddp_packet(rx_buf, (uint16_t)ret);
-                }
-            }
-        //} else {
-        //    // Clear the global bit for this socket
-        //    wizchip_clrinterrupt(IK_SOCK_7);    // setSn_IRCLR(i,0xFF); setSLIRCLR(slir);
-        }
-        // Clear socket RECV latch before draining to re-arm INTn fast
-        // 1. clear per-socket RECV latch first
-        setSn_IR(ddp_sock, Sn_IR_RECV);
-        // 2. then clear the global interrupt bit
-        wizchip_clrinterrupt(IK_SOCK_7);    // setSn_IRCLR(i,0xFF); setSLIRCLR(slir);
-        // 3. finally re-enable GPIO interrupt if you disable it in the handler
+/**
+ * UDP DDP server loop
+ */
+// int32_t ddp_loop(uint32_t *pkt_counter, uint32_t *last_push_ms) {
+int32_t ddp_loop(void) {
+    // wiznet_service_if_needed();
 
-        // Clear the global bit for this socket
-        // wizchip_clrinterrupt(IK_SOCK_7);    // setSn_IRCLR(i,0xFF); setSLIRCLR(slir);
-    }
-}
-
-static inline void wiznet_service_if_needed(void) {
-    if (!wiznet_rx_pending) return;
+    if (!wiznet_rx_pending) return 0;
     wiznet_rx_pending = false;
 
     time_irq_duration = time_us_32() - time_irq_start;
     time_routine_start = time_us_32();
+
     // printf("WIZnet IRQ serviced in %u us\n", time_irq_duration);
     // wiznet_drain_udp();
     process_udp_ring();
+
     time_routine_duration = time_us_32() - time_routine_start;
     printf("WIZnet service, irq_count:%d, pck_cnt:%d, err_cnt:%d,  irq_last:%u, irq_max:%u, pending:%u, routine:%u us, drain_count:%d\n", \
            irq_loop_count, irq_packet_count, irq_error_count,
@@ -643,127 +540,12 @@ static inline void wiznet_service_if_needed(void) {
     }
     received_size_table_idx = 0;
     time_table_idx = 0;
-}
-
-
-
-/**
- * UDP DDP server loop
- */
-// int32_t ddp_loop(uint32_t *pkt_counter, uint32_t *last_push_ms) {
-int32_t ddp_loop(void) {
-
-    wiznet_service_if_needed();
-    return 0;
-/* 
-    // int32_t loopback_udps(uint8_t sn, uint8_t* buf, uint16_t port)
-    check_loopback_mode_W6x00();    // as default set to AS_IPV4
-    uint8_t *rx_buf = ddp_ethernet_buf;
-    uint16_t port = UDP_DDP_PORT;
-    SOCKET ddp_sock = UDP_DDP_SOCKET;
-
-    uint8_t status;
-    static uint8_t srcip[16] = {0,};    // originally destip[16]
-    static uint16_t srcport;           // originally destport
-    // uint8_t pack_info;
-    uint8_t addr_len;
-    int32_t ret;
-    uint16_t received_size;
-    // uint16_t size, sentsize;
-    uint8_t* mode_msg;
-
-
-
-    if(loopback_mode == AS_IPV4)
-        mode_msg = msg_ip_v4;
-    else if(loopback_mode == AS_IPV6)
-        mode_msg = msg_ip_v6;
-    else
-        mode_msg = msg_ip_dual;
-
-    // Query socket status the WIZnet way
-    getsockopt(ddp_sock, SO_STATUS, &status);
-    switch(status)
-    {
-    case SOCK_UDP:
-        uint16_t test_loop_counter = 0;
-        do {
-            getsockopt(ddp_sock, SO_RECVBUF, &received_size);   // = getSn_RX_RSR(ddp_sock);
-            if(received_size == 0) break;
-            test_loop_counter++;
-            if(received_size > DATA_BUF_SIZE) received_size = DATA_BUF_SIZE;
-        
-            // int32_t n = recvfrom(ddp_sock, rx_buf, received_size, srcip, &srcport, &addr_len);
-            // ret = recvfrom(ddp_sock, rx_buf, received_size, (uint8_t*)&destip, (uint16_t*)&destport, &addr_len);
-            ret = recvfrom(ddp_sock, rx_buf, received_size, (uint8_t *)&srcip[0], (uint16_t *)&srcport, &addr_len);
-            setSn_IR(ddp_sock, Sn_IR_RECV); // Clear RECV interrupt
-
-            if(ret <= 0) {
-                printf("DDP recvfrom error: %ld\r\n", ret);
-                return ret;
-            }
-            #ifdef _UDP_DEBUG_
-            printf("UDP packet received: %ld bytes from %d.%d.%d.%d:%d\r\n", ret,
-                srcip[0], srcip[1], srcip[2], srcip[3], srcport);
-            #endif 
-
-            if (ret > 0) {
-                // simplified calculation without checking for DDP header correctness
-                //(*pkt_counter)++;
-                // simplified time tag for last push instead of full timestamp when ws2815_show(rx_fb);
-                //*last_push_ms = to_ms_since_boot(get_absolute_time());
-
-                process_ddp_packet(rx_buf, (uint16_t)ret);
-                // old: process_ddp_udp(ddp_sock, pkt_counter, last_push_ms);
-
-                // Send back "OK" response, for testing purposes
-                // sendto(ddp_sock, (uint8_t*)"OK", 2, srcip, srcport, addr_len);
-            }
-        } while(0);
-
-        if (test_loop_counter > 0) {
-            #ifdef _DDP_DEBUG_
-            printf("DDP packets processed in loop: %d.\r\n", test_loop_counter);
-            #endif
-        }  
-        break;
-
-    case SOCK_CLOSED:
-        SOCKET sn;
-        switch(loopback_mode)
-        {
-        case AS_IPV4:
-           sn = socket(ddp_sock, Sn_MR_UDP4, port, SOCK_IO_NONBLOCK);
-           break;
-        case AS_IPV6:
-           sn = socket(ddp_sock, Sn_MR_UDP6, port, SOCK_IO_NONBLOCK);
-           break;
-        case AS_IPDUAL:
-           sn = socket(ddp_sock, Sn_MR_UDPD, port, SOCK_IO_NONBLOCK);
-            break;
-        }
-        if(sn != ddp_sock){    // reinitialize the socket
-            #ifdef _UDP_DEBUG_
-                printf("%d : Fail to create socket.\r\n",ddp_sock);
-            #endif
-            return SOCKERR_SOCKNUM;
-        }
-        #ifdef _UDP_DEBUG_
-            printf("%d:Socket UDP opened, port [%d] as %s\r\n",ddp_sock, port, mode_msg);   // getSn_SR(ddp_sock)
-            // printf("%d:Opened, UDP loopback, port [%d] as %s\r\n", ddp_sock, port, mode_msg);
-        #endif
-
-        // Per-socket: enable only RECV interrupt
-        // Sn_IMR bits: Sn_IR_SENDOK(0x10), Sn_IR_TIMEOUT(0x08), Sn_IR_RECV(0x04), ...
-        setSn_IMR(ddp_sock, Sn_IR_RECV);     // mask bit RECV=1
-        // Clear any pending per-socket interrupts
-        setSn_IR(ddp_sock, 0xFF);
-        break;
-
+    for (uint8_t i = 0; i < ik_pending_table_idx; i++) {
+        printf("    IRQ pending[%d]: 0x%08X\n", i, ik_pending_table[i]);
     }
+    ik_pending_table_idx = 0;
 
     return 0;
- */
 }
 
 

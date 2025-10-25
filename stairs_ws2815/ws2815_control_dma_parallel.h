@@ -10,7 +10,9 @@
 #include <stdint.h>
 
 void ws2815_init(void);
+void ws2815_pattern_loop(void);
 void ws2815_loop(void);
 void ws2815_show(uint8_t *fb);
+void set_pattern_index(uint8_t index);
 
 #endif /* WS2815_CONTROL_DMA_PARALLEL_H */

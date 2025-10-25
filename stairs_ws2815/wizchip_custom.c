@@ -21,6 +21,7 @@
 #include "pico/binary_info.h"
 #include "pico/critical_section.h"
 #include "hardware/dma.h"
+#include "socket.h"
 
 
 static inline void wizchip_select(void) {
@@ -55,6 +56,47 @@ static void wizchip_write_buf(uint8_t* tx_data, datasize_t len) {
     spi_write_blocking(SPI_PORT, tx_data, len);
 }
 
+#if (_PHY_IO_MODE_ == _PHY_IO_MODE_MII_)
+// For MDIO BMSR (Basic Mode Status Register)
+#define BMSR_LINK_STATUS   (1 << 2)   // bit 2: Link up
+#define BMSR_100FULL       (1 << 14)
+#define BMSR_100HALF       (1 << 13)
+#define BMSR_10FULL        (1 << 12)
+#define BMSR_10HALF        (1 << 11)
+#endif // _PHY_IO_MODE_MII_
+
+// Helper function
+void w6100_read_phy_status(void) {
+    uint16_t reg;
+    uint8_t link = 0, speed = 0, duplex = 0;
+
+#if (_PHY_IO_MODE_ == _PHY_IO_MODE_PHYCR_)
+    // --- Internal PHY Control mode (default on W6100-EVB-Pico2) ---
+    reg = getPHYSR();  // 8-bit register read from W6100
+    link   = (reg & PHYSR_LNK) ? 1 : 0;
+    speed  = (reg & PHYSR_SPD) ? 100 : 10;
+    duplex = (reg & PHYSR_DPX) ? 1 : 0;
+
+#elif (_PHY_IO_MODE_ == _PHY_IO_MODE_MII_)
+    // --- External PHY via MDIO interface ---
+    uint16_t bmsr = wiz_mdio_read(PHYRAR_BMSR);
+    link   = (bmsr & BMSR_LINK_STATUS) ? 1 : 0;
+
+    // Optionally, read PHY specific status (vendor-specific)
+    // For standard BMSR, speed/duplex bits might be missing, so:
+    uint16_t bmcr = wiz_mdio_read(PHYRAR_BMCR);
+    duplex = (bmcr & (1 << 8)) ? 1 : 0;     // BMCR_DUPLEX_MODE
+    speed  = (bmcr & (1 << 13)) ? 100 : 10; // BMCR_SPEED_SELECT
+#else
+#warning "Unknown PHY IO mode"
+#endif
+
+    printf("PHY: link=%s, speed=%dM, duplex=%s\n",
+           link ? "up" : "down",
+           speed,
+           duplex ? "full" : "half");
+}
+
 void wizchip_init_nonblocking(void) {
 
     /* Deselect the FLASH : chip select high */
@@ -71,8 +113,8 @@ void wizchip_init_nonblocking(void) {
     //                       my_spi_read_buf, my_spi_write_buf);
 
     uint8_t memsize[2][8] = {
-        {2,2,2,2,2,2,2,8},      // TX socket 7 = 8 KB
-        {2,2,2,2,2,2,2,16}      // RX socket 7 = 16 KB
+        {2,2,2,2,2,2,2,2},      // TX sockets
+        {2,2,2,2,2,2,2,2}       // RX sockets
     };
 
     printf(" Start init W6x00.\n");
@@ -83,9 +125,29 @@ void wizchip_init_nonblocking(void) {
     printf(" W6x00 initialized, check phy link.\n");
 
     // Non-blocking Check PHY link status, so just print status once
+    // uint8_t temp;
+    // if (ctlwizchip(CW_GET_PHYLINK, &temp) == 0) {
+    //     printf("PHY link %s\n", temp == PHY_LINK_ON ? "ON" : "OFF");
+    // }
+    w6100_read_phy_status();
+
+    for (SOCKET sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
+        close(sn);                  // Force close all sockets
+        setSn_IR(sn, 0xFF);         // Clear any pending interrupts
+    }
+}
+
+/* 
+void check_phy_link_W6x00(void) {
     uint8_t temp;
     if (ctlwizchip(CW_GET_PHYLINK, &temp) == 0) {
         printf("PHY link %s\n", temp == PHY_LINK_ON ? "ON" : "OFF");
     }
+    // CW_GET_PHYCONF can be used to get current PHY configuration if needed
+    // CW_GET_PHYSTATUS can be used to get current PHY status if needed
+    // ctlwizchip(CW_GET_PHYSTATUS, &temp);
 }
+ */
+
+
 
