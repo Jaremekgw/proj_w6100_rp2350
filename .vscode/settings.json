@@ -60,6 +60,7 @@
         "network.h": "c",
         "cstring": "c",
         "variant": "c",
-        "compare": "c"
+        "compare": "c",
+        "config.h": "c"
     }
 }

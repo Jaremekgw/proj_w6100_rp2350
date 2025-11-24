@@ -30,8 +30,8 @@ void init_net_info(void);
 void wiznet_drain_udp(void);
 
 
-
-int32_t loopback_loop(uint8_t *msg);
+// int32_t loopback_loop(uint8_t *msg);
+int32_t tcp_cli_service(void);
 int32_t ddp_loop(); // (uint32_t *pkt_counter, uint32_t *last_push_ms);
 
 // void ddp_copy_payload(const uint8_t *payload, uint32_t offset, uint32_t length);

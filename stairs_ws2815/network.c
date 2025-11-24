@@ -15,25 +15,21 @@
 #include "loopback.h"
 #include "socket.h"
 
-
+#include "pico/unique_id.h"
 #include "wizchip_conf.h"
 #include "config.h"
 #include "ws2815_control_dma_parallel.h"
 
+#include "telnet.h"
+// extern void handle_command(const char *cmd, int sn);
+
 // --- Network Configuration ---
 static wiz_NetInfo g_net_info;
 
-#define ETHERNET_BUF_MAX_SIZE (1024 * 2) // Send and receive cache size
-#define _LOOPBACK_DEBUG_    // Enable LOOPBACK debug messages on USB
-#define _DDP_DEBUG_         // Enable DDP debug messages on USB
-#define _UDP_DEBUG_         // Enable UDP debug messages on USB
-#define _TIME_DEBUG_        // Enable timing debug messages on USB
-
-
 // Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
-#define TCP_LOOPBACK_SOCKET  0  // with port TCP_LOOPBACK_PORT 8000
-#define UDP_DDP_SOCKET   5      // with port UDP_DDP_PORT 4048
-// #define UDP_SOCKET_COUNT 3      // number of UDP sockets for DDP reception
+//#define TCP_LOOPBACK_SOCKET  0      // with port TCP_LOOPBACK_PORT 8000
+//#define UDP_DDP_SOCKET       5      // with port UDP_DDP_PORT 4048
+// #define UDP_SOCKET_COUNT 3       // number of UDP sockets for DDP reception
 
 // --- DDP constants ---
 #define DDP_FLAGS1_PUSH   0x01    // bit0 = PUSH (render immediately)
@@ -44,7 +40,9 @@ static wiz_NetInfo g_net_info;
 
 // --- Variables for Network ---
 // TCP loopback buffer
-static uint8_t ethernet_buf[ETHERNET_BUF_MAX_SIZE] = { 0, };
+// #define ETHERNET_BUF_MAX_SIZE (1024 * 2) // Send and receive cache size
+// static uint8_t ethernet_buf[ETHERNET_BUF_MAX_SIZE] = { 0, };     // it was for loopback
+static uint8_t ethernet_cli_buf[ETHERNET_BUF_MAX_SIZE + 1];
 
 // UDP receive buffer for interrupt processing
 #define UDP_RING_COUNT      5
@@ -67,12 +65,25 @@ static uint8_t loopback_mode = AS_IPV4;
 // --- WIZnet W6100 interrupt pin ---
 #define WIZNET_INT_PIN   21
 
-// ------------------- Framebuffer for patterns ------------------
+// --- Framebuffer for patterns ---
 // uint8_t framebuf[NUM_STRIPS][NUM_PIXELS][NUM_CHANNELS];   // fb[strip][pixel][channel], channel = G,R,B
 uint8_t rx_fb[NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
 
+
+// --- Unique ID ---
+pico_unique_board_id_t id;
+
+
+// --- Functions ---
 void init_net_info(void) {
+    pico_get_unique_board_id(&id);
+
+    // WIZnet OUI 00:08:DC:...
     uint8_t mac[6] = NETINFO_MAC;
+    // Use 3 least significant bytes from unique ID
+    mac[3] = id.id[5];
+    mac[4] = id.id[6];
+    mac[5] = id.id[7];
     uint8_t ip[4]  = NETINFO_IP;
     uint8_t sn[4]  = NETINFO_SN;
     uint8_t gw[4]  = NETINFO_GW;
@@ -126,7 +137,7 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
  * TCP loopback server on multiple sockets
  */
 // int32_t loopback_tcps_multi_socket(uint8_t *msg) {
-int32_t loopback_loop(uint8_t *msg) {
+/* int32_t loopback_loop(uint8_t *msg) {
     uint8_t *buf = ethernet_buf;
     uint16_t port = TCP_LOOPBACK_PORT;
     int8_t sn = TCP_LOOPBACK_SOCKET;
@@ -211,6 +222,79 @@ int32_t loopback_loop(uint8_t *msg) {
     //     sn ++;
     // }
 
+    return 1;
+} */
+
+// ----------------------------------------------------------------
+// TCP CLI Service
+// ----------------------------------------------------------------
+int32_t tcp_cli_service(void) {
+    int8_t  sn = TCP_CLI_SOCKET;
+    uint16_t port = TCP_CLI_PORT;
+    int32_t ret;
+    uint16_t size;
+    uint8_t destip[4];
+    uint16_t destport;
+
+    switch (getSn_SR(sn)) {
+
+    case SOCK_ESTABLISHED:
+        if (getSn_IR(sn) & Sn_IR_CON) {
+            getSn_DIPR(sn, destip);
+            destport = getSn_DPORT(sn);
+            printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
+                   sn, destip[0], destip[1], destip[2], destip[3], destport);
+            setSn_IR(sn, Sn_IR_CON);
+
+            // Send formatted greeting with client IP
+            telnet_greeting(sn, destip);
+        }
+
+        size = getSn_RX_RSR(sn);
+        if (size > 0) {
+            if (size > ETHERNET_BUF_MAX_SIZE) size = ETHERNET_BUF_MAX_SIZE;
+            ret = recv(sn, ethernet_cli_buf, size);
+            if (ret <= 0) return ret;
+
+            ethernet_cli_buf[ret] = 0;
+            // Trim CRLF
+            char *cmd = (char*)ethernet_cli_buf;
+            char *newline = strpbrk(cmd, "\r\n");
+            if (newline) *newline = 0;
+
+            printf("[CLI] Command received: '%s'\r\n", cmd);
+            handle_command(cmd, sn);
+
+            // // Optional: send acknowledgment
+            // const char *ok = "OK\r\n";
+            // send(sn, (uint8_t*)ok, strlen(ok));
+        }
+        break;
+
+    case SOCK_CLOSE_WAIT:
+        printf("[CLI] Close wait, closing socket %d\r\n", sn);
+        if ((ret = disconnect(sn)) != SOCK_OK) return ret;
+        break;
+
+    case SOCK_INIT:
+        if ((ret = listen(sn)) != SOCK_OK) {
+            printf("[CLI] Listen error %d\r\n", ret);
+            return ret;
+        }
+        printf("[CLI] Listening on port %d\r\n", port);
+        break;
+
+    case SOCK_CLOSED:
+        if ((ret = socket(sn, Sn_MR_TCP, port, Sn_MR_ND)) != sn) {
+            printf("[CLI] Socket open error %d\r\n", ret);
+            return ret;
+        }
+        printf("[CLI] Socket %d opened on port %d\r\n", sn, port);
+        break;
+
+    default:
+        break;
+    }
     return 1;
 }
 

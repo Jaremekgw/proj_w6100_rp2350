@@ -16,20 +16,21 @@
 #include "network.h"
 #include "ws2815_control_dma_parallel.h"
 #include "wizchip_custom.h"
+#include "led_pattern.h"
+#include "eth_ota_update.h"
+#include "partition.h"
 
 
 // variables for TCP loopback
-static uint8_t message_buf[2] = {
-    0, 0
-};
+// static uint8_t message_buf[2] = {
+//     0, 0
+// };
 
-// variables for DDP processing
-//static uint32_t pkt_counter = 0;
-//static uint32_t last_push_ms = 0;
 int32_t ret;
 
 static repeating_timer_t timer;
 volatile uint32_t tmr_ms_tick = 0;
+
 
 bool timer_callback(repeating_timer_t *rt) {
     tmr_ms_tick++;     // Increment every 1 ms
@@ -45,23 +46,26 @@ void run_periodically_ws2815_tasks(void) {
     // Create pattern, in the loop every 20 ms
     if (tmr_ms_tick - last_tmr_patt >= period_patt) {
         last_tmr_patt += period_patt;
-        ws2815_pattern_loop();
+        ws2815_pattern_loop(period_patt);
     }
     // Check WS2815 update loop every 2 ms
     if (tmr_ms_tick - last_tmr_loop >= period_loop) {
         last_tmr_loop += period_loop;
-        ws2815_loop();
+        ws2815_loop(period_loop);
     }
 }
 
 
 int main() {
     // variables for performance measurement
-    uint32_t time_start, time_diff, time_min=0, time_max=0;
+    // uint32_t time_start, time_diff, time_min=0, time_max=0;
 
     // --- MCU Init ---
     stdio_init_all(); // Initialize the main control peripheral. Sets up UART/USB for logging
-    sleep_ms(3000);
+    gpio_init(OE_PIN);
+    gpio_set_dir(OE_PIN, GPIO_OUT);
+    gpio_put(OE_PIN, OE_OFF);
+    sleep_ms(2000);
     sleep_ms(8000);
 
     // wizchip_sw_reset();            // Full chip reset via MR register - it creates a problem with ctlwizchip(CW_INIT_WIZCHIP, memsize)
@@ -76,6 +80,8 @@ int main() {
     wizchip_check();            // reads version register, verifies SPI comm
     // --- Network init ---
     init_net_info();
+    show_current_partition();
+    ota_server_init();
 
     // --- Open UDP socket for DDP ---
     udp_socket_init();
@@ -93,14 +99,21 @@ int main() {
     }
 
     // absolute_time_t last_log = get_absolute_time();
+    // gpio_init(PIN_TEST_14);
+    // gpio_init(PIN_TEST_15);
+    // gpio_set_dir(PIN_TEST_14, GPIO_OUT);
+    // gpio_set_dir(PIN_TEST_15, GPIO_OUT);
  
+    gpio_put(OE_PIN, OE_ON);
+    init_start_strips();
     // --- Main loop ---
     while (true) {
-        time_start = time_us_32();  // compare with get_absolute_time()
-        loopback_loop(message_buf);
- 
-        // Service RX immediately if IRQ flagged
-        // wiznet_service_if_needed();  inside ddp_loop()
+        // time_start = time_us_32();  // compare with get_absolute_time()
+        // remove: loopback_loop(message_buf);
+        tcp_cli_service();      // Socket 0 : CLI                   [5000]
+        // http_server_service();  // TCP_HTTP_SOCKET : HTTP (future)         [80]
+        // tcp_ota_service();      // TCP_OTA_SOCKET  : Over-The-Air (future) [4242] $ vim ../pico-examples/pico_w/wifi/ota_update/README.md
+        ota_server_poll();
 
 
         // Poll the UDP socket
@@ -122,38 +135,38 @@ int main() {
         }
  */
  
-        time_diff = time_us_32() - time_start;
-        if (time_diff < time_min || time_min == 0) {
-            time_min = time_diff;
-        }
-        if (time_diff > time_max) {
-            time_max = time_diff;
-        }
+        // time_diff = time_us_32() - time_start;
+        // if (time_diff < time_min || time_min == 0) {
+        //     time_min = time_diff;
+        // }
+        // if (time_diff > time_max) {
+        //     time_max = time_diff;
+        // }
 
-        if (message_buf[0] != 0) {
-            switch (message_buf[0]) {
-                case 'i':
-                    // Loop time us: min 6us max 416us
-                    printf("Loop time us: min %dus max %dus\r\n", time_min, time_max);
-                    break;         
-                case 'r':
-                    set_pattern_index(0xF0); // random pattern
-                    printf("Set random pattern for demonstration\r\n");
-                    break;
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                    uint8_t patid = message_buf[0] - '1';
-                    set_pattern_index(patid); // set pattern by index
-                    printf("Set pattern:%d [1-6].\n", patid+1);
-                    break;                    
-                default:
-            }
-            message_buf[0] = 0;
-        }
+        // if (message_buf[0] != 0) {
+        //     switch (message_buf[0]) {
+        //         case 'i':
+        //             // Loop time us: min 6us max 416us
+        //             printf("Loop time us: min %dus max %dus\r\n", time_min, time_max);
+        //             break;         
+        //         case 'r':
+        //             set_pattern_index(0xF0); // random pattern
+        //             printf("Set random pattern for demonstration\r\n");
+        //             break;
+        //         case '1':
+        //         case '2':
+        //         case '3':
+        //         case '4':
+        //         case '5':
+        //         case '6':
+        //             uint8_t patid = message_buf[0] - '1';
+        //             set_pattern_index(patid); // set pattern by index
+        //             printf("Set pattern:%d [1-6].\n", patid+1);
+        //             break;                    
+        //         default:
+        //     }
+        //     message_buf[0] = 0;
+        // }
  
         // Manage ws2815 loop control
         run_periodically_ws2815_tasks();    // ws2815_loop();

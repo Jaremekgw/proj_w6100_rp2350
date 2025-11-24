@@ -106,6 +106,7 @@ add_subdirectory(
 # Add your projects
 add_subdirectory(stairs_ws2815)
 add_subdirectory(scd30_meter)
+add_subdirectory(layout_seeder)
 
 # Add a top-level “meta-target”
 # Create a meta target that builds both projects

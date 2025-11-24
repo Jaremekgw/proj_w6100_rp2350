@@ -15,8 +15,8 @@ import time
 TARGET_IP = "192.168.178.225"   # WIZnet board
 TARGET_PORT = 4048              # DDP UDP port
 
-# NUM_LEDS = 912
-NUM_LEDS = 880
+NUM_LEDS = 912
+# NUM_LEDS = 880
 # NUM_LEDS = 400
 BYTES_PER_LED = 3
 CHUNK_SIZE  = 1242              # ensures each UDP datagram < ~1450 bytes, max chank size is 1242
@@ -30,7 +30,7 @@ def send_ddp_frame(rgb_bytes):
     frag = 0
     while offset < total:
         chunk = rgb_bytes[offset:offset+CHUNK_SIZE]
-        flags1 = 0x40  # non-zero marker
+        flags1 = 0x00  # non-zero marker
         if (offset + CHUNK_SIZE) >= total:
             flags1 |= 0x01  # PUSH on last fragment
             
@@ -42,26 +42,26 @@ def send_ddp_frame(rgb_bytes):
         # header = struct.pack(">BBHIH", flags1, flags2, dtype, offset, length)
         header = struct.pack(">BBHIH", flags1, 0, 0, offset, length)
         packet = header + chunk
-        hdr_hex = " ".join(f"{b:02X}" for b in header)
-        print(f"  DDP header: {hdr_hex}")
+        # hdr_hex = " ".join(f"{b:02X}" for b in header)
+        # print(f"  DDP header: {hdr_hex}")
         
         # sent = sock.sendto(bytes(packet), (TARGET_IP, TARGET_PORT))
         sent = sock.sendto(packet, (TARGET_IP, TARGET_PORT))
-        print(f"  Sent DDP fragment #{frag} offset={offset}, length={length}, total packet={len(packet)} bytes (sent={sent})")
+        # print(f"  Sent DDP fragment #{frag} offset={offset}, length={length}, total packet={len(packet)} bytes (sent={sent})")
         frag += 1
         offset += length
         # small delay between fragments helps on slower networks
-        time.sleep(0.001)   # minimum 12ms delay between fragments
+        time.sleep(0.002)   # minimum 12ms delay between fragments
         
 
 # demo animation
 #for step in range(0, 256, 10):
-for step in range(0, 16, 10):
+for step in range(0, 256, 10):
     r, g, b = step, 0, 0
     payload = bytes([r, g, b] * NUM_LEDS)
-    print(f"\nSending frame red={r}, total={len(payload)} bytes, CHUNK_SIZE={CHUNK_SIZE}")
+    print(f"Sending frame red={r}, total={len(payload)} bytes, CHUNK_SIZE={CHUNK_SIZE}")
     send_ddp_frame(payload)
-    time.sleep(0.1)
+    time.sleep(0.04)
 
 ## Make a DDP header:
 ## flags1, flags2, type, offset(4B), data_len(2B)

@@ -54,9 +54,10 @@ static inline void ws2815_program_init(PIO pio, uint sm, uint offset, uint pin, 
 
 .program ws2815_parallel
 
-.define public T1 2
-.define public T2 2
-.define public T3 3
+; tested with 2, 2, 3
+.define public T1 4
+.define public T2 4
+.define public T3 5
 
 .wrap_target
     out x, 16
