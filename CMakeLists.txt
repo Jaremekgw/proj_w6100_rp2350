@@ -25,7 +25,8 @@ set(WIZNET_CHIP W6100)
 add_definitions(-D_WIZCHIP_=W6100)
 add_definitions(-DDEVICE_BOARD_NAME=W6100_EVB_PICO2)
 
-
+# current status: (from wiznet_pico_c_sdk_version.cmake)
+# -- WIZNET-PICO-C SDK version is 2.2.0
 
 # if(NOT DEFINED PICO_SDK_PATH)
     # set(PICO_SDK_PATH ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries/pico-sdk)
@@ -33,6 +34,8 @@ add_definitions(-DDEVICE_BOARD_NAME=W6100_EVB_PICO2)
 #    message(STATUS "PICO_SDK_PATH = ${PICO_SDK_PATH}")
 # endif()
 message(STATUS "PICO_SDK_PATH = ${PICO_SDK_PATH}")
+# current status:
+# -- PICO_SDK_PATH = /home/jaremekg/.pico-sdk/sdk/2.2.0
 
 include(pico_sdk_import.cmake)
 include(wiznet_pico_c_sdk_version.cmake)
@@ -56,17 +59,17 @@ pico_sdk_init()
 # the tests folder is included directly by a parent project, without including
 # the top level CMakeLists.txt.
 if(NOT DEFINED WIZNET_DIR)
-    set(WIZNET_DIR ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries/ioLibrary_Driver)
+    set(WIZNET_DIR ${CMAKE_SOURCE_DIR}/libraries/ioLibrary_Driver)
     message(STATUS "WIZNET_DIR = ${WIZNET_DIR}")
 endif()
 
 if(NOT DEFINED MBEDTLS_DIR)
-    set(MBEDTLS_DIR ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries/mbedtls)
+    set(MBEDTLS_DIR ${CMAKE_SOURCE_DIR}/libraries/mbedtls)
     message(STATUS "MBEDTLS_DIR = ${MBEDTLS_DIR}")
 endif()
 
 if(NOT DEFINED PORT_DIR)
-    set(PORT_DIR ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/port)
+    set(PORT_DIR ${CMAKE_SOURCE_DIR}/libraries/port)
     message(STATUS "PORT_DIR = ${PORT_DIR}")
 endif()
 
@@ -88,25 +91,45 @@ add_compile_options(
 # Turn off CMake deprecation warnings for subprojects
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "Disable deprecated warnings")
 
-# Add libraries in subdirectories
-add_subdirectory(
-    ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries
-    ${CMAKE_BINARY_DIR}/WIZnet-PICO-C/libraries
-)
-add_subdirectory(
-    ${MBEDTLS_DIR}
-    ${CMAKE_BINARY_DIR}/mbedtls
-)
-add_subdirectory(
-    ${PORT_DIR}
-    ${CMAKE_BINARY_DIR}/port
-)
+# # Add libraries in subdirectories - OPTION 1
+# add_subdirectory(
+#     ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries
+#     ${CMAKE_BINARY_DIR}/WIZnet-PICO-C/libraries
+# )
+# add_subdirectory(
+#     ${MBEDTLS_DIR}
+#     ${CMAKE_BINARY_DIR}/mbedtls
+# )
+# add_subdirectory(
+#     ${PORT_DIR}
+#     ${CMAKE_BINARY_DIR}/port
+# )
 
+# # Add libraries in subdirectories - OPTION 2
+# add_subdirectory(
+#     ${MBEDTLS_DIR}
+#     ${CMAKE_BINARY_DIR}/mbedtls
+# )
+# add_subdirectory(
+#     ${WIZNET_DIR}/..
+#     ${CMAKE_BINARY_DIR}/ioLibrary_Driver
+# )
+# add_subdirectory(
+#     ${PORT_DIR}
+#     ${CMAKE_BINARY_DIR}/port
+# )
+
+# # Add copied libraries from WIZnet-PICO-C - OPTION 3
+add_subdirectory(
+    ${CMAKE_SOURCE_DIR}/libraries
+    ${CMAKE_BINARY_DIR}/wiznet
+)
 
 # Add your projects
 add_subdirectory(stairs_ws2815)
 add_subdirectory(scd30_meter)
-add_subdirectory(layout_seeder)
+add_subdirectory(tree_ws2815)
+add_subdirectory(kitchen_pwm)
 
 # Add a top-level “meta-target”
 # Create a meta target that builds both projects
@@ -114,4 +137,5 @@ add_custom_target(all_projects
         DEPENDS
         proj_stairs_ws2815
         proj_scd30_meter
+        kitchen_pwm
 )

@@ -1,0 +1,5 @@
+/home/jaremekg/project/pico2/projects/build/pioasm-install/pioasm/pioasm
+/home/jaremekg/project/pico2/projects/build/pioasm-install/pioasm/pioasmTargets.cmake
+/home/jaremekg/project/pico2/projects/build/pioasm-install/pioasm/pioasmTargets-release.cmake
+/home/jaremekg/project/pico2/projects/build/pioasm-install/pioasm/pioasmConfig.cmake
+/home/jaremekg/project/pico2/projects/build/pioasm-install/pioasm/pioasmConfigVersion.cmake

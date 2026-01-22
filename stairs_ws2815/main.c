@@ -17,9 +17,9 @@
 #include "ws2815_control_dma_parallel.h"
 #include "wizchip_custom.h"
 #include "led_pattern.h"
-#include "eth_ota_update.h"
+#include "efu_update.h"
 #include "partition.h"
-
+#include "flash_cfg.h"
 
 // variables for TCP loopback
 // static uint8_t message_buf[2] = {
@@ -66,10 +66,10 @@ int main() {
     gpio_set_dir(OE_PIN, GPIO_OUT);
     gpio_put(OE_PIN, OE_OFF);
     sleep_ms(2000);
-    sleep_ms(8000);
+    // sleep_ms(8000);
 
     // wizchip_sw_reset();            // Full chip reset via MR register - it creates a problem with ctlwizchip(CW_INIT_WIZCHIP, memsize)
-
+    
     // --- WIZnet init ---
     // #define SPI_CLK  40      // remember to set in wizchip_spi.h speed 40 MHz to receive at 4 Mbps DDP
     wizchip_spi_initialize();   // sets up SPI hardware (not PIO)
@@ -78,10 +78,14 @@ int main() {
     // wizchip_initialize();       // runs SPI-level init of W6100/W5500
     wizchip_init_nonblocking(); // non-blocking version of wizchip_initialize() for W6100
     wizchip_check();            // reads version register, verifies SPI comm
+
+    // --- Set general configuration ---
+    config_init();
+
     // --- Network init ---
     init_net_info();
     show_current_partition();
-    ota_server_init();
+    efu_server_init();
 
     // --- Open UDP socket for DDP ---
     udp_socket_init();
@@ -110,64 +114,16 @@ int main() {
     while (true) {
         // time_start = time_us_32();  // compare with get_absolute_time()
         // remove: loopback_loop(message_buf);
-        tcp_cli_service();      // Socket 0 : CLI                   [5000]
-        // http_server_service();  // TCP_HTTP_SOCKET : HTTP (future)         [80]
-        // tcp_ota_service();      // TCP_OTA_SOCKET  : Over-The-Air (future) [4242] $ vim ../pico-examples/pico_w/wifi/ota_update/README.md
-        ota_server_poll();
+        tcp_cli_service();          // Socket 0 : CLI                       [5000]
+        // http_server_service();   // TCP_HTTP_SOCKET : HTTP (future)      [80]
+        // tcp_ota_service(); $ vim ../pico-examples/pico_w/wifi/ota_update/README.md
+        efu_server_poll();          // TCP_EFU_SOCKET  : Eth-Fw-Upd         [4243]
 
 
         // Poll the UDP socket
         ret = ddp_loop();       //  (&pkt_counter, &last_push_ms);
-            // status = getSn_SR(ddp_sock);
-            // if (status == SOCK_UDP) {
-            //     process_ddp_udp(ddp_sock, &pkt_counter, &last_push_ms);
-            // } else if (status == SOCK_CLOSED) {
-            //     // re-open if closed
-            //     socket(ddp_sock, Sn_MR_UDP, UDP_DDP_PORT, 0);
-            // }
-/*
-        // optional timeout fallback (no PUSH)
-        if (absolute_time_diff_us(last_log, get_absolute_time()) > 2e6) {
-            printf("Packets: %lu | Last render %lu ms ago\n",
-                   pkt_counter,
-                   to_ms_since_boot(get_absolute_time()) - last_push_ms);
-            last_log = get_absolute_time();
-        }
- */
- 
-        // time_diff = time_us_32() - time_start;
-        // if (time_diff < time_min || time_min == 0) {
-        //     time_min = time_diff;
-        // }
-        // if (time_diff > time_max) {
-        //     time_max = time_diff;
-        // }
+  
 
-        // if (message_buf[0] != 0) {
-        //     switch (message_buf[0]) {
-        //         case 'i':
-        //             // Loop time us: min 6us max 416us
-        //             printf("Loop time us: min %dus max %dus\r\n", time_min, time_max);
-        //             break;         
-        //         case 'r':
-        //             set_pattern_index(0xF0); // random pattern
-        //             printf("Set random pattern for demonstration\r\n");
-        //             break;
-        //         case '1':
-        //         case '2':
-        //         case '3':
-        //         case '4':
-        //         case '5':
-        //         case '6':
-        //             uint8_t patid = message_buf[0] - '1';
-        //             set_pattern_index(patid); // set pattern by index
-        //             printf("Set pattern:%d [1-6].\n", patid+1);
-        //             break;                    
-        //         default:
-        //     }
-        //     message_buf[0] = 0;
-        // }
- 
         // Manage ws2815 loop control
         run_periodically_ws2815_tasks();    // ws2815_loop();
 

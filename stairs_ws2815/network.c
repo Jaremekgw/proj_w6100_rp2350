@@ -19,12 +19,11 @@
 #include "wizchip_conf.h"
 #include "config.h"
 #include "ws2815_control_dma_parallel.h"
-
 #include "telnet.h"
-// extern void handle_command(const char *cmd, int sn);
+#include "flash_cfg.h"
+// #include "utility.h"
 
-// --- Network Configuration ---
-static wiz_NetInfo g_net_info;
+
 
 // Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
 //#define TCP_LOOPBACK_SOCKET  0      // with port TCP_LOOPBACK_PORT 8000
@@ -76,44 +75,46 @@ pico_unique_board_id_t id;
 
 // --- Functions ---
 void init_net_info(void) {
-    pico_get_unique_board_id(&id);
+    // wiz_NetInfo *config_get_net_info()
 
-    // WIZnet OUI 00:08:DC:...
-    uint8_t mac[6] = NETINFO_MAC;
-    // Use 3 least significant bytes from unique ID
-    mac[3] = id.id[5];
-    mac[4] = id.id[6];
-    mac[5] = id.id[7];
-    uint8_t ip[4]  = NETINFO_IP;
-    uint8_t sn[4]  = NETINFO_SN;
-    uint8_t gw[4]  = NETINFO_GW;
-    uint8_t dns[4] = NETINFO_DNS;
+//     pico_get_unique_board_id(&id);
 
-    memcpy(g_net_info.mac, mac, sizeof(mac));
-    memcpy(g_net_info.ip, ip, sizeof(ip));
-    memcpy(g_net_info.sn, sn, sizeof(sn));
-    memcpy(g_net_info.gw, gw, sizeof(gw));
-    memcpy(g_net_info.dns, dns, sizeof(dns));
+//     // WIZnet OUI 00:08:DC:...
+//     uint8_t mac[6] = NETINFO_MAC;
+//     // Use 3 least significant bytes from unique ID
+//     mac[3] = id.id[5];
+//     mac[4] = id.id[6];
+//     mac[5] = id.id[7];
+//     uint8_t ip[4]  = NETINFO_IP;
+//     uint8_t sn[4]  = NETINFO_SN;
+//     uint8_t gw[4]  = NETINFO_GW;
+//     uint8_t dns[4] = NETINFO_DNS;
 
-#if _WIZCHIP_ > W5500
-    uint8_t lla[16] = NETINFO_LLA;
-    uint8_t gua[16] = NETINFO_GUA;
-    uint8_t sn6[16] = NETINFO_SN6;
-    uint8_t gw6[16] = NETINFO_GW6;
-    uint8_t dns6[16] = NETINFO_DNS6;
+//     memcpy(g_net_info.mac, mac, sizeof(mac));
+//     memcpy(g_net_info.ip, ip, sizeof(ip));
+//     memcpy(g_net_info.sn, sn, sizeof(sn));
+//     memcpy(g_net_info.gw, gw, sizeof(gw));
+//     memcpy(g_net_info.dns, dns, sizeof(dns));
 
-    memcpy(g_net_info.lla, lla, sizeof(lla));
-    memcpy(g_net_info.gua, gua, sizeof(gua));
-    memcpy(g_net_info.sn6, sn6, sizeof(sn6));
-    memcpy(g_net_info.gw6, gw6, sizeof(gw6));
-    memcpy(g_net_info.dns6, dns6, sizeof(dns6));
-    g_net_info.ipmode = NETINFO_IPMODE;
-#else
-    g_net_info.dhcp = NETINFO_DHCP;
-#endif
+// #if _WIZCHIP_ > W5500
+//     uint8_t lla[16] = NETINFO_LLA;
+//     uint8_t gua[16] = NETINFO_GUA;
+//     uint8_t sn6[16] = NETINFO_SN6;
+//     uint8_t gw6[16] = NETINFO_GW6;
+//     uint8_t dns6[16] = NETINFO_DNS6;
 
-    network_initialize(g_net_info); // configures IP address etc.
-    print_network_information(g_net_info); // Read back the configuration information and print it
+//     memcpy(g_net_info.lla, lla, sizeof(lla));
+//     memcpy(g_net_info.gua, gua, sizeof(gua));
+//     memcpy(g_net_info.sn6, sn6, sizeof(sn6));
+//     memcpy(g_net_info.gw6, gw6, sizeof(gw6));
+//     memcpy(g_net_info.dns6, dns6, sizeof(dns6));
+//     g_net_info.ipmode = NETINFO_IPMODE;
+// #else
+//     g_net_info.dhcp = NETINFO_DHCP;
+// #endif
+
+    network_initialize(config_get_net_info()); // configures IP address etc.
+    print_network_information(); // Read back the configuration information and print it
 }
 
 static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
@@ -231,6 +232,7 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
 int32_t tcp_cli_service(void) {
     int8_t  sn = TCP_CLI_SOCKET;
     uint16_t port = TCP_CLI_PORT;
+    static absolute_time_t last_rx_time = {0};   // Timestamp of last received byte
     int32_t ret;
     uint16_t size;
     uint8_t destip[4];
@@ -239,37 +241,86 @@ int32_t tcp_cli_service(void) {
     switch (getSn_SR(sn)) {
 
     case SOCK_ESTABLISHED:
+        // On new connection
         if (getSn_IR(sn) & Sn_IR_CON) {
             getSn_DIPR(sn, destip);
             destport = getSn_DPORT(sn);
+
             printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
                    sn, destip[0], destip[1], destip[2], destip[3], destport);
+
             setSn_IR(sn, Sn_IR_CON);
 
-            // Send formatted greeting with client IP
+            // Reset timeout timer
+            last_rx_time = get_absolute_time();
+
             telnet_greeting(sn, destip);
         }
 
+        // Handle received data
         size = getSn_RX_RSR(sn);
         if (size > 0) {
-            if (size > ETHERNET_BUF_MAX_SIZE) size = ETHERNET_BUF_MAX_SIZE;
+            if (size > ETHERNET_BUF_MAX_SIZE) {
+                size = ETHERNET_BUF_MAX_SIZE;
+            }
+
             ret = recv(sn, ethernet_cli_buf, size);
             if (ret <= 0) return ret;
 
             ethernet_cli_buf[ret] = 0;
-            // Trim CRLF
+
+            // Update timeout timestamp
+            last_rx_time = get_absolute_time();
+
+            // Trim CR/LF
             char *cmd = (char*)ethernet_cli_buf;
             char *newline = strpbrk(cmd, "\r\n");
             if (newline) *newline = 0;
 
             printf("[CLI] Command received: '%s'\r\n", cmd);
             handle_command(cmd, sn);
-
-            // // Optional: send acknowledgment
-            // const char *ok = "OK\r\n";
-            // send(sn, (uint8_t*)ok, strlen(ok));
+        } else {
+            // No data – check timeout
+            if (absolute_time_diff_us(last_rx_time, get_absolute_time()) >= (CLI_TIMEOUT_MS * 1000LL)) {
+                const char *msg = "timeout\r\n";
+                send(sn, (uint8_t*)msg, strlen(msg));
+                printf("[CLI] Idle timeout, closing socket %d\r\n", sn);
+                disconnect(sn);
+                return 0;
+            }
         }
-        break;
+        break;    
+            // if (getSn_IR(sn) & Sn_IR_CON) {
+            //     getSn_DIPR(sn, destip);
+            //     destport = getSn_DPORT(sn);
+            //     printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
+            //            sn, destip[0], destip[1], destip[2], destip[3], destport);
+            //     setSn_IR(sn, Sn_IR_CON);
+
+            //     // Send formatted greeting with client IP
+            //     telnet_greeting(sn, destip);
+            // }
+
+            // size = getSn_RX_RSR(sn);
+            // if (size > 0) {
+            //     if (size > ETHERNET_BUF_MAX_SIZE) size = ETHERNET_BUF_MAX_SIZE;
+            //     ret = recv(sn, ethernet_cli_buf, size);
+            //     if (ret <= 0) return ret;
+
+            //     ethernet_cli_buf[ret] = 0;
+            //     // Trim CRLF
+            //     char *cmd = (char*)ethernet_cli_buf;
+            //     char *newline = strpbrk(cmd, "\r\n");
+            //     if (newline) *newline = 0;
+
+            //     printf("[CLI] Command received: '%s'\r\n", cmd);
+            //     handle_command(cmd, sn);
+
+            //     // // Optional: send acknowledgment
+            //     // const char *ok = "OK\r\n";
+            //     // send(sn, (uint8_t*)ok, strlen(ok));
+            // }
+            // break;
 
     case SOCK_CLOSE_WAIT:
         printf("[CLI] Close wait, closing socket %d\r\n", sn);

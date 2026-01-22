@@ -20,6 +20,9 @@
 #include "ws2815_control_dma_parallel.h"
 #include "config.h"
 #include "partition.h"
+#include "flash_cfg.h"
+#include "utility.h"
+#include "efu_update.h"
 
 // This help has 790 bytes
 const char *help_msg =
@@ -27,8 +30,6 @@ const char *help_msg =
 "========================================\r\n"
 "   WIZnet RP2350 Remote CLI Interface   \r\n"
 "========================================\r\n"
-"Board : RP2350\r\n"
-"FW Ver: 1.0.0\r\n"
 "\r\n"
 "Available commands:\r\n"
 "  help   \t\t- Show this help menu\r\n"
@@ -39,7 +40,18 @@ const char *help_msg =
 "  status \t\t- Show system analog and digital state\r\n"
 "  on     \t\t- Enable outputs\r\n"
 "  off    \t\t- Disable outputs\r\n"
+"  load   \t\t- Load config from flash - for debug\r\n"
+"  save   \t\t- Save config to flash\r\n"
+"  show   \t\t- Show config values\r\n"
 "  part   \t\t- Show partition information\r\n"
+"  config ip <a.b.c.d>  \t- Set IP address\r\n"
+"  config sn <a.b.c.d>  \t- Set Subnet Mask\r\n"
+"  config gw <a.b.c.d>  \t- Set Gateway\r\n"
+"  config dns <a.b.c.d> \t- Set DNS server\r\n"
+"  config save          \t- Save current config to flash\r\n"
+"  config show          \t- Show current config values\r\n"
+"  config clean         \t- Clean current config (use default)\r\n"
+"  config default       \t- Restore factory default configuration\r\n"
 "  exit   \t\t- Close the CLI connection\r\n"
 "\r\n"
 "Examples:\r\n"
@@ -79,30 +91,124 @@ void telnet_greeting(int sn, const uint8_t *client_ip) {
 
     snprintf(msg, sizeof(msg), cli_greeting, 
         client_ip[0], client_ip[1], client_ip[2], client_ip[3]);
-/* 
-    snprintf(msg, sizeof(msg),
-        "\r\n"
-        "========================================\r\n"
-        "   Welcome to WIZnet RP2350 CLI Shell   \r\n"
-        "========================================\r\n"
-        "Connected from: %d.%d.%d.%d\r\n"
-        "Type 'help' to see available commands.\r\n"
-        "----------------------------------------\r\n",
-        client_ip[0], client_ip[1], client_ip[2], client_ip[3]);
- */
+
     telnet_send(sn, msg);  // (uint8_t*)  , strlen(msg)
+}
+
+static bool parse_ipv4(const char *s, uint8_t out[4]) {
+    int a, b, c, d;
+    if (sscanf(s, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
+        return false;
+    if ((a|b|c|d) & ~0xFF)
+        return false;
+    out[0] = (uint8_t)a;
+    out[1] = (uint8_t)b;
+    out[2] = (uint8_t)c;
+    out[3] = (uint8_t)d;
+    return true;
+}
+
+void cmd_config_show(int sn) {
+        char msg[200];     // current use ??? bytes
+        config_t *config = NULL;
+        int len;
+        int id = 0;
+
+        config = config_get(id);
+        // snprintf(msg, sizeof(msg), "Config [0]\r\n");
+        // send(sn, (uint8_t *)msg, strlen(msg));
+        len = config_show( config, id, msg, sizeof(msg));   // sending > 102 bytes
+        printf("Telnet sent %d bytes to console for config[0]\r\n", len);
+        send(sn, (uint8_t *)msg, strlen(msg));
+
+        config = config_get(++id);
+        // snprintf(msg, sizeof(msg), "Config [1]\r\n");
+        // send(sn, (uint8_t *)msg, strlen(msg));
+        len = config_show( config, id, msg, sizeof(msg));   // sending > 102 bytes
+        printf("Telnet sent %d bytes to console for config[1]\r\n", len);
+        send(sn, (uint8_t *)msg, strlen(msg));
+
+        config = config_get(++id);
+        // snprintf(msg, sizeof(msg), "Config [2]\r\n");
+        // send(sn, (uint8_t *)msg, strlen(msg));
+        len = config_show( config, id, msg, sizeof(msg));   // sending > 102 bytes
+        printf("Telnet sent %d bytes to console for config[2]\r\n", len);
+
+        telnet_send(sn, msg);
+}
+void cmd_config_save(int sn) {
+        bool ret;
+        char msg[30];
+        config_t *config = config_get(1);
+
+        ret = config_save(config);
+        snprintf(msg, sizeof(msg),
+                "Config saved to flash: %d\r\n", ret);
+        telnet_send(sn, msg);
+}
+void cmd_config_set_ip(int sn, uint8_t *ip) {
+        config_t *config = config_get(1);
+        memcpy(config->net_info.ip, ip, 4);
+}
+void cmd_config_set_sn(int sn, uint8_t *snm) {
+        config_t *config = config_get(1);
+        memcpy(config->net_info.sn, snm, 4);
+}
+void cmd_config_set_gw(int sn, uint8_t *gw) {
+        config_t *config = config_get(1);
+        memcpy(config->net_info.gw, gw, 4);
+}
+void cmd_config_set_dns(int sn, uint8_t *dns) {
+        config_t *config = config_get(1);
+        memcpy(config->net_info.dns, dns, 4);
 }
 
  void handle_command(const char *cmd, int sn) {
     // int sn = TCP_CLI_SOCKET;
 
     if (strcmp(cmd, "help") == 0) {
-        telnet_send(sn, help_msg);    // (uint8_t*)  , strlen(help_msg)
+        telnet_send(sn, help_msg);
     }
     else if (strcmp(cmd, "info") == 0) {
-        const char *msg = "Board: RP2350\r\nFW: 1.0.6\r\n";
-        telnet_send(sn, msg);   // , strlen(msg)
-        read_boot_info();
+        // const char *msg = "Board: RP2350\r\nFW: 1.0.4\r\n";
+        char msg[80];
+        static const char * const efu_status_table[]= {
+            "UNKNOWN",          // 0
+            "SOCK_CLOSED",      // 1
+            "SOCK_INIT",        // 2
+            "SOCK_LISTEN",      // 3
+            "SOCK_ESTABLISHED", // 4
+            "SOCK_CLOSE_WAIT"   // 5
+    };
+        const char *efu_stat_msg = efu_status_table[0];
+
+        int8_t efu_status = get_efu_socket_status();
+        switch(efu_status) {
+            case SOCK_CLOSED:
+                efu_stat_msg = efu_status_table[1];
+                break;
+            case SOCK_INIT:
+                efu_stat_msg = efu_status_table[2];
+                break;
+            case SOCK_LISTEN:       // after listen(TCP_EFU_SOCKET)
+                efu_stat_msg = efu_status_table[3];
+                break;
+            case SOCK_ESTABLISHED:
+                efu_stat_msg = efu_status_table[4];
+                break;
+            case SOCK_CLOSE_WAIT:
+                efu_stat_msg = efu_status_table[5];
+                break;
+        }
+
+        snprintf(msg, sizeof(msg),
+            "Project : stairs_ws2815\r\n"
+            "FW      : %s\r\n"
+            "EFU stat: 0x%x (%s)\r\n",
+            FW_VERSION, efu_status, efu_stat_msg);
+
+        telnet_send(sn, msg);
+        // read_boot_info();
     }
     else if (strcmp(cmd, "part") == 0) {
         char msg[800];     // current use 407 bytes
@@ -111,21 +217,6 @@ void telnet_greeting(int sn, const uint8_t *client_ip) {
         telnet_send(sn, msg);
     }
 
-    else if (strncmp(cmd, "flash_erase", 11) == 0) {
-        uint32_t offs = 0, size = 4096;
-        if (sscanf(cmd + 11, "%x %u", &offs, &size) >= 1) {
-            printf("[TELNET] Erasing flash offset 0x%08x, size %u\n", offs, size);
-            // Make sure offset is within range
-            if ((offs + size) <= (PICO_FLASH_SIZE_BYTES/2)) {
-                util_flash_erase(offs, size);
-                printf("[TELNET] Done.\n");
-            } else {
-                printf("[TELNET] Range out of flash.\n");
-            }
-        } else {
-            printf("Usage: flash_erase <hex_offset> [size]\n");
-        }
-    }
 
     else if (strncmp(cmd, "set", 3) == 0) {
         int pattern = -1;
@@ -207,15 +298,95 @@ void telnet_greeting(int sn, const uint8_t *client_ip) {
                 "Pattern index: %d\r\n", ret_pattern);
         telnet_send(sn, msg);
     }
-    // else if (strcmp(cmd, "led 0") == 0) {
-    //     gpio_put(PICO_DEFAULT_LED_PIN, 0);
-    //     telnet_send(sn, "LED OFF\r\n"); // , 9
-    // }
-    // else if (strcmp(cmd, "reboot") == 0) {
-    //     telnet_send(sn, "Rebooting...\r\n");    // , 14
-    //     sleep_ms(100);
-    //     reset_usb_boot(0, 0);
-    // }
+
+    else if (strncmp(cmd, "config", 6) == 0) {
+        const char *p = cmd + 6;
+        while (*p == ' ') p++;
+
+        if (*p == '\0') {
+            telnet_send(sn, "Usage: config <ip|sn|gw|dns|save|show|clean|default> ...\r\n");
+            return;
+        }
+
+        /* --- config ip <a.b.c.d> --- */
+        if (strncmp(p, "ip", 2) == 0 && (p[2] == ' ')) {
+            uint8_t ip[4];
+            const char *arg = p + 3;
+            while (*arg == ' ') arg++;
+            if (parse_ipv4(arg, ip)) {
+                cmd_config_set_ip(sn, ip);
+                telnet_send(sn, "IP updated\r\n");
+            } else {
+                telnet_send(sn, "Invalid IP format\r\n");
+            }
+        }
+
+        /* --- config sn <mask> --- */
+        else if (strncmp(p, "sn", 2) == 0 && (p[2] == ' ')) {
+            uint8_t snm[4];
+            const char *arg = p + 3;
+            while (*arg == ' ') arg++;
+            if (parse_ipv4(arg, snm)) {
+                cmd_config_set_sn(sn, snm);
+                telnet_send(sn, "Subnet mask updated\r\n");
+            } else {
+                telnet_send(sn, "Invalid subnet mask\r\n");
+            }
+        }
+
+        /* --- config gw <a.b.c.d> --- */
+        else if (strncmp(p, "gw", 2) == 0 && (p[2] == ' ')) {
+            uint8_t gw[4];
+            const char *arg = p + 3;
+            while (*arg == ' ') arg++;
+            if (parse_ipv4(arg, gw)) {
+                cmd_config_set_gw(sn, gw);
+                telnet_send(sn, "Gateway updated\r\n");
+            } else {
+                telnet_send(sn, "Invalid gateway\r\n");
+            }
+        }
+
+        /* --- config dns <a.b.c.d> --- */
+        else if (strncmp(p, "dns", 3) == 0 && (p[3] == ' ')) {
+            uint8_t dns[4];
+            const char *arg = p + 4;
+            while (*arg == ' ') arg++;
+            if (parse_ipv4(arg, dns)) {
+                cmd_config_set_dns(sn, dns);
+                telnet_send(sn, "DNS updated\r\n");
+            } else {
+                telnet_send(sn, "Invalid DNS address\r\n");
+            }
+        }
+
+        /* --- config save --- */
+        else if (strcmp(p, "save") == 0) {
+            cmd_config_save(sn);
+        }
+
+        /* --- config show --- */
+        else if (strcmp(p, "show") == 0) {
+            cmd_config_show(sn);
+        }
+
+        /* --- config clean --- */
+        else if (strcmp(p, "clean") == 0) {
+            config_recovery();
+            telnet_send(sn, "Configuration cleaned\r\n");
+        }
+
+        /* --- config default --- */
+        else if (strcmp(p, "default") == 0) {
+            config_default();
+            telnet_send(sn, "Factory default configuration restored\r\n");
+        }
+
+        else {
+            telnet_send(sn, "Unknown config command\r\n");
+        }
+    }
+
     else if (strcmp(cmd, "exit") == 0) {
         const char *msg="Closing connection...\r\n";
         send(sn, (uint8_t *)msg, strlen(msg));
@@ -226,8 +397,47 @@ void telnet_greeting(int sn, const uint8_t *client_ip) {
         printf("[CLI] Socket %d disconnected by user\r\n", sn);
 
     }
+
+    // else if (strcmp(cmd, "led 0") == 0) {
+    //     gpio_put(PICO_DEFAULT_LED_PIN, 0);
+    //     telnet_send(sn, "LED OFF\r\n"); // , 9
+    // }
+    // else if (strcmp(cmd, "reboot") == 0) {
+    //     telnet_send(sn, "Rebooting...\r\n");    // , 14
+    //     sleep_ms(100);
+    //     reset_usb_boot(0, 0);
+    // }
+
+    // else if (strcmp(cmd, "init") == 0) {
+    //     int ret;
+    //     char msg[30];
+
+    //     printf("Call function: config_init\r\n");
+    //     ret = config_init();
+    //     snprintf(msg, sizeof(msg),
+    //             "Config initialized: %d\r\n", ret);
+    //     telnet_send(sn, msg);
+    // }
+
+
+    // else if (strncmp(cmd, "flash_erase", 11) == 0) {
+    //     uint32_t offs = 0, size = 4096;
+    //     if (sscanf(cmd + 11, "%x %u", &offs, &size) >= 1) {
+    //         printf("[TELNET] Erasing flash offset 0x%08x, size %u\n", offs, size);
+    //         // Make sure offset is within range
+    //         if ((offs + size) <= (PICO_FLASH_SIZE_BYTES/2)) {
+    //             util_flash_erase(offs, size);
+    //             printf("[TELNET] Done.\n");
+    //         } else {
+    //             printf("[TELNET] Range out of flash.\n");
+    //         }
+    //     } else {
+    //         printf("Usage: flash_erase <hex_offset> [size]\n");
+    //     }
+    // }
+
     else {
         const char *msg = "Unknown command\r\n";
-        telnet_send(sn, msg);   // , strlen(msg)
+        telnet_send(sn, msg);
     }
 }

@@ -1,0 +1,7 @@
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/pioasm.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/edit_cache.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/rebuild_cache.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/list_install_components.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/install.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/install/local.dir
+/home/jaremekg/project/pico2/projects/build/pioasm/CMakeFiles/install/strip.dir

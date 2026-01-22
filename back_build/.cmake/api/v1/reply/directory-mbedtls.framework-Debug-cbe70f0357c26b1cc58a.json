@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "mbedtls/framework",
+		"source" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/framework"
+	}
+}

@@ -1,0 +1,707 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:200 (message)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      The target system is: PICO -  - cortex-m33
+      The host system is: Linux - 6.6.44-microsoft-standard-WSL2 - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc 
+      Build flags: -mcpu=cortex-m33;-mthumb;-march=armv8-m.main+fp+dsp;-mfloat-abi=softfp;-mcmse
+      Id flags:  
+      
+      The output was:
+      1
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-exit.o): in function `exit':
+      exit.c:(.text.exit+0x14): undefined reference to `_exit'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-closer.o): in function `_close_r':
+      closer.c:(.text._close_r+0xc): undefined reference to `_close'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+      lseekr.c:(.text._lseek_r+0x14): undefined reference to `_lseek'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-readr.o): in function `_read_r':
+      readr.c:(.text._read_r+0x14): undefined reference to `_read'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-writer.o): in function `_write_r':
+      writer.c:(.text._write_r+0x14): undefined reference to `_write'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-sbrkr.o): in function `_sbrk_r':
+      sbrkr.c:(.text._sbrk_r+0xc): undefined reference to `_sbrk'
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc 
+      Build flags: -mcpu=cortex-m33;-mthumb;-march=armv8-m.main+fp+dsp;-mfloat-abi=softfp;-mcmse
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+      
+      The C compiler identification is GNU, found in:
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/3.31.5/CompilerIdC/CMakeCCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++ 
+      Build flags: -mcpu=cortex-m33;-mthumb;-march=armv8-m.main+fp+dsp;-mfloat-abi=softfp;-mcmse
+      Id flags:  
+      
+      The output was:
+      1
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-exit.o): in function `exit':
+      exit.c:(.text.exit+0x14): undefined reference to `_exit'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-closer.o): in function `_close_r':
+      closer.c:(.text._close_r+0xc): undefined reference to `_close'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-lseekr.o): in function `_lseek_r':
+      lseekr.c:(.text._lseek_r+0x14): undefined reference to `_lseek'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-readr.o): in function `_read_r':
+      readr.c:(.text._read_r+0x14): undefined reference to `_read'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-writer.o): in function `_write_r':
+      writer.c:(.text._write_r+0x14): undefined reference to `_write'
+      /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc.a(libc_a-sbrkr.o): in function `_sbrk_r':
+      sbrkr.c:(.text._sbrk_r+0xc): undefined reference to `_sbrk'
+      collect2: error: ld returned 1 exit status
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++ 
+      Build flags: -mcpu=cortex-m33;-mthumb;-march=armv8-m.main+fp+dsp;-mfloat-abi=softfp;-mcmse
+      Id flags: -c 
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+      
+      The CXX compiler identification is GNU, found in:
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/3.31.5/CompilerIdCXX/CMakeCXXCompilerId.o
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:1237 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineASMCompiler.cmake:135 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Checking whether the ASM compiler is GNU using "--version" matched "(GNU assembler)|(GCC)|(Free Software Foundation)":
+      arm-none-eabi-gcc (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119
+      Copyright (C) 2024 Free Software Foundation, Inc.
+      This is free software; see the source for copying conditions.  There is NO
+      warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-tY2mQ8"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-tY2mQ8"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_C_FLAGS_DEBUG: "-Og -g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-tY2mQ8'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_04aca
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse    -v -o CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o -c /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCCompilerABI.c
+        Using built-in specs.
+        COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc
+        Target: arm-none-eabi
+        Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)'
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/cc1 -quiet -v -imultilib thumb/v8-m.main+fp/softfp -iprefix /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/ -isysroot /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_04aca.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=cortex-m33 -mthumb -mfloat-abi=softfp -mcmse -mlibarch=armv8-m.main+dsp+fp -march=armv8-m.main+dsp+fp -version -o /tmp/cceriYvO.s
+        GNU C17 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) version 14.2.1 20241119 (arm-none-eabi)
+        	compiled by GNU C version 9.2.1 20191120 (Red Hat 9.2.1-2), GMP version 6.2.1, MPFR version 3.1.6, MPC version 1.0.3, isl version isl-0.15-1-g835ea3a-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include"
+        ignoring nonexistent directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/usr/local/include"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include-fixed"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include
+        End of search list.
+        Compiler executable checksum: e89038eedc6170daa7e4ecd67cd2deb0
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/as -v -march=armv8-m.main+dsp+fp -mfloat-abi=softfp -meabi=5 -o CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o /tmp/cceriYvO.s
+        GNU assembler version 2.43.1 (arm-none-eabi) using BFD version (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 2.43.1.20241119
+        COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.'
+        [2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wl,--build-id=none -nostdlib -v CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o -o cmTC_04aca.elf   && :
+        Using built-in specs.
+        COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc
+        COLLECT_LTO_WRAPPER=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper
+        Target: arm-none-eabi
+        Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)'
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 
+        COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_04aca.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_04aca.elf.'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2 -plugin /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so -plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper -plugin-opt=-fresolution=/tmp/ccGpp9F3.res --sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -X -o cmTC_04aca.elf -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1 -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib --build-id=none CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: warning: cannot find entry symbol _start; defaulting to 00008000
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_04aca.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_04aca.elf.'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include]
+        end of search list found
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include]
+        implicit include dirs: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include-fixed;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-tY2mQ8']
+        ignore line: []
+        ignore line: [Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_04aca]
+        ignore line: [[1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse    -v -o CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o -c /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCCompilerABI.c]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)']
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/']
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/cc1 -quiet -v -imultilib thumb/v8-m.main+fp/softfp -iprefix /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/ -isysroot /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_04aca.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mcpu=cortex-m33 -mthumb -mfloat-abi=softfp -mcmse -mlibarch=armv8-m.main+dsp+fp -march=armv8-m.main+dsp+fp -version -o /tmp/cceriYvO.s]
+        ignore line: [GNU C17 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) version 14.2.1 20241119 (arm-none-eabi)]
+        ignore line: [	compiled by GNU C version 9.2.1 20191120 (Red Hat 9.2.1-2)  GMP version 6.2.1  MPFR version 3.1.6  MPC version 1.0.3  isl version isl-0.15-1-g835ea3a-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include"]
+        ignore line: [ignoring nonexistent directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/usr/local/include"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include-fixed"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: e89038eedc6170daa7e4ecd67cd2deb0]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/']
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/as -v -march=armv8-m.main+dsp+fp -mfloat-abi=softfp -meabi=5 -o CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o /tmp/cceriYvO.s]
+        ignore line: [GNU assembler version 2.43.1 (arm-none-eabi) using BFD version (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 2.43.1.20241119]
+        ignore line: [COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.']
+        ignore line: [[2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wl --build-id=none -nostdlib -v CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o -o cmTC_04aca.elf   && :]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc]
+        ignore line: [COLLECT_LTO_WRAPPER=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)']
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) ]
+        ignore line: [COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_04aca.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_04aca.elf.']
+        link line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2 -plugin /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so -plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper -plugin-opt=-fresolution=/tmp/ccGpp9F3.res --sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -X -o cmTC_04aca.elf -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1 -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib --build-id=none CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o]
+          arg [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/ccGpp9F3.res] ==> ignore
+          arg [--sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi] ==> ignore
+          arg [-X] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_04aca.elf] ==> ignore
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib]
+          arg [--build-id=none] ==> ignore
+          arg [CMakeFiles/cmTC_04aca.dir/CMakeCCompilerABI.c.o] ==> ignore
+        ignore line: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: warning: cannot find entry symbol _start]
+        ignore line: [ defaulting to 00008000]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_04aca.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_04aca.elf.']
+        ignore line: []
+        ignore line: []
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-Ns0xqb"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-Ns0xqb"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_CXX_FLAGS_DEBUG: "-Og -g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-Ns0xqb'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_4b30e
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse    -v -o CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o -c /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp
+        Using built-in specs.
+        COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++
+        Target: arm-none-eabi
+        Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)'
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/cc1plus -quiet -v -imultilib thumb/v8-m.main+fp/softfp -iprefix /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/ -isysroot /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_4b30e.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mcpu=cortex-m33 -mthumb -mfloat-abi=softfp -mcmse -mlibarch=armv8-m.main+dsp+fp -march=armv8-m.main+dsp+fp -version -o /tmp/cceNjrqw.s
+        GNU C++17 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) version 14.2.1 20241119 (arm-none-eabi)
+        	compiled by GNU C version 9.2.1 20191120 (Red Hat 9.2.1-2), GMP version 6.2.1, MPFR version 3.1.6, MPC version 1.0.3, isl version isl-0.15-1-g835ea3a-GMP
+        
+        GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include"
+        ignoring nonexistent directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/usr/local/include"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include-fixed"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include"
+        ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include
+        End of search list.
+        Compiler executable checksum: 761a3593099dc796ffc611563edb6c2e
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/as -v -march=armv8-m.main+dsp+fp -mfloat-abi=softfp -meabi=5 -o CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o /tmp/cceNjrqw.s
+        GNU assembler version 2.43.1 (arm-none-eabi) using BFD version (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 2.43.1.20241119
+        COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.'
+        [2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++ -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wl,--build-id=none -nostdlib -v CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_4b30e.elf   && :
+        Using built-in specs.
+        COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++
+        COLLECT_LTO_WRAPPER=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper
+        Target: arm-none-eabi
+        Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)'
+        Thread model: single
+        Supported LTO compression algorithms: zlib zstd
+        gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 
+        COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/
+        LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_4b30e.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_4b30e.elf.'
+         /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2 -plugin /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so -plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper -plugin-opt=-fresolution=/tmp/cccHDfki.res --sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -X -o cmTC_4b30e.elf -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1 -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib --build-id=none CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: warning: cannot find entry symbol _start; defaulting to 00008000
+        COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_4b30e.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_4b30e.elf.'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:182 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+          add: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include]
+        end of search list found
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1/backward]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+        collapse include dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include]
+        implicit include dirs: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include/c++/14.2.1/backward;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/include-fixed;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:218 (message)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:44 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(\\.[a-z]+)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(\\.[a-z]+)?))("|,| |$)]
+        ignore line: [Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-Ns0xqb']
+        ignore line: []
+        ignore line: [Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_4b30e]
+        ignore line: [[1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse    -v -o CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o -c /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)']
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) ]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/']
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/cc1plus -quiet -v -imultilib thumb/v8-m.main+fp/softfp -iprefix /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/ -isysroot /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -D__USES_INITFINI__ /home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_4b30e.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mcpu=cortex-m33 -mthumb -mfloat-abi=softfp -mcmse -mlibarch=armv8-m.main+dsp+fp -march=armv8-m.main+dsp+fp -version -o /tmp/cceNjrqw.s]
+        ignore line: [GNU C++17 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) version 14.2.1 20241119 (arm-none-eabi)]
+        ignore line: [	compiled by GNU C version 9.2.1 20191120 (Red Hat 9.2.1-2)  GMP version 6.2.1  MPFR version 3.1.6  MPC version 1.0.3  isl version isl-0.15-1-g835ea3a-GMP]
+        ignore line: []
+        ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include"]
+        ignore line: [ignoring nonexistent directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/usr/local/include"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/include-fixed"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/../../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include"]
+        ignore line: [ignoring duplicate directory "/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/arm-none-eabi/thumb/v8-m.main+fp/softfp]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include/c++/14.2.1/backward]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/include-fixed]
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/include]
+        ignore line: [End of search list.]
+        ignore line: [Compiler executable checksum: 761a3593099dc796ffc611563edb6c2e]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/']
+        ignore line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/as -v -march=armv8-m.main+dsp+fp -mfloat-abi=softfp -meabi=5 -o CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o /tmp/cceNjrqw.s]
+        ignore line: [GNU assembler version 2.43.1 (arm-none-eabi) using BFD version (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 2.43.1.20241119]
+        ignore line: [COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-v' '-o' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.']
+        ignore line: [[2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++ -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wl --build-id=none -nostdlib -v CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_4b30e.elf   && :]
+        ignore line: [Using built-in specs.]
+        ignore line: [COLLECT_GCC=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-g++]
+        ignore line: [COLLECT_LTO_WRAPPER=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper]
+        ignore line: [Target: arm-none-eabi]
+        ignore line: [Configured with: /data/jenkins/workspace/GNU-toolchain/arm-14/src/gcc/configure --target=arm-none-eabi --prefix=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install --with-gmp=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpfr=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-mpc=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --with-isl=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/host-tools --disable-shared --disable-nls --disable-threads --disable-tls --enable-checking=release --enable-languages=c,c++,fortran --with-newlib --with-gnu-as --with-headers=yes --with-gnu-ld --with-native-system-header-dir=/include --with-sysroot=/data/jenkins/workspace/GNU-toolchain/arm-14/build-arm-none-eabi/install/arm-none-eabi --with-bugurl=https://bugs.linaro.org/ --with-multilib-list=aprofile,rmprofile --with-pkgversion='Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)']
+        ignore line: [Thread model: single]
+        ignore line: [Supported LTO compression algorithms: zlib zstd]
+        ignore line: [gcc version 14.2.1 20241119 (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) ]
+        ignore line: [COMPILER_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/]
+        ignore line: [LIBRARY_PATH=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/:/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_4b30e.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_4b30e.elf.']
+        link line: [ /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2 -plugin /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so -plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper -plugin-opt=-fresolution=/tmp/cccHDfki.res --sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi -X -o cmTC_4b30e.elf -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1 -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib -L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib --build-id=none CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o]
+          arg [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/collect2] ==> ignore
+          arg [-plugin] ==> ignore
+          arg [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/liblto_plugin.so] ==> ignore
+          arg [-plugin-opt=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../libexec/gcc/arm-none-eabi/14.2.1/lto-wrapper] ==> ignore
+          arg [-plugin-opt=-fresolution=/tmp/cccHDfki.res] ==> ignore
+          arg [--sysroot=/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi] ==> ignore
+          arg [-X] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_4b30e.elf] ==> ignore
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib]
+          arg [-L/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib] ==> dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib]
+          arg [--build-id=none] ==> ignore
+          arg [CMakeFiles/cmTC_4b30e.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+        ignore line: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: warning: cannot find entry symbol _start]
+        ignore line: [ defaulting to 00008000]
+        ignore line: [COLLECT_GCC_OPTIONS='-mcpu=cortex-m33' '-mthumb'  '-mfloat-abi=softfp' '-mcmse' '-nostdlib' '-v' '-o' 'cmTC_4b30e.elf' '-mlibarch=armv8-m.main+dsp+fp' '-march=armv8-m.main+dsp+fp' '-dumpdir' 'cmTC_4b30e.elf.']
+        ignore line: []
+        ignore line: []
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/lib] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        collapse library dir [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../arm-none-eabi/lib] ==> [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        implicit libs: []
+        implicit objs: []
+        implicit dirs: [/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1/thumb/v8-m.main+fp/softfp;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib/thumb/v8-m.main+fp/softfp;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc/arm-none-eabi/14.2.1;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/lib/gcc;/home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/arm-none-eabi/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CheckCSourceCompiles.cmake:58 (cmake_check_source_compiles)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/CMakeLists.txt:126 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      CMAKE_WARN_DEPRECATED: "OFF"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_6bd92
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -DCMAKE_HAVE_LIBC_PTHREAD  -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -o CMakeFiles/cmTC_6bd92.dir/src.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c
+        FAILED: CMakeFiles/cmTC_6bd92.dir/src.c.o 
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -DCMAKE_HAVE_LIBC_PTHREAD  -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -o CMakeFiles/cmTC_6bd92.dir/src.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c: In function 'main':
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c:11:3: error: implicit declaration of function 'pthread_create' [-Wimplicit-function-declaration]
+           11 |   pthread_create(&thread, NULL, test_func, NULL);
+              |   ^~~~~~~~~~~~~~
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c:12:3: error: implicit declaration of function 'pthread_detach' [-Wimplicit-function-declaration]
+           12 |   pthread_detach(thread);
+              |   ^~~~~~~~~~~~~~
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c:13:3: error: implicit declaration of function 'pthread_cancel' [-Wimplicit-function-declaration]
+           13 |   pthread_cancel(thread);
+              |   ^~~~~~~~~~~~~~
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c:14:3: error: implicit declaration of function 'pthread_join'; did you mean 'pthread_atfork'? [-Wimplicit-function-declaration]
+           14 |   pthread_join(thread, NULL);
+              |   ^~~~~~~~~~~~
+              |   pthread_atfork
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-jkTp6x/src.c:16:3: error: implicit declaration of function 'pthread_exit' [-Wimplicit-function-declaration]
+           16 |   pthread_exit(NULL);
+              |   ^~~~~~~~~~~~
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:136 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:169 (_threads_check_flag_pthread)"
+      - "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/CMakeLists.txt:126 (find_package)"
+    checks:
+      - "Check if compiler accepts -pthread"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      CMAKE_WARN_DEPRECATED: "OFF"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "THREADS_HAVE_PTHREAD_ARG"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_a028b
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -o CMakeFiles/cmTC_a028b.dir/CheckForPthreads.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB/CheckForPthreads.c
+        FAILED: CMakeFiles/cmTC_a028b.dir/CheckForPthreads.c.o 
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -o CMakeFiles/cmTC_a028b.dir/CheckForPthreads.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB/CheckForPthreads.c
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB/CheckForPthreads.c: In function 'main':
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB/CheckForPthreads.c:12:3: error: implicit declaration of function 'pthread_create' [-Wimplicit-function-declaration]
+           12 |   pthread_create(&thread, 0, start_routine, 0);
+              |   ^~~~~~~~~~~~~~
+        /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-LcvDEB/CheckForPthreads.c:13:3: error: implicit declaration of function 'pthread_join'; did you mean 'pthread_atfork'? [-Wimplicit-function-declaration]
+           13 |   pthread_join(thread, 0);
+              |   ^~~~~~~~~~~~
+              |   pthread_atfork
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CheckLibraryExists.cmake:78 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:175 (_threads_check_lib)"
+      - "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/CMakeLists.txt:126 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-ojKZT3"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-ojKZT3"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      CMAKE_WARN_DEPRECATED: "OFF"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-ojKZT3'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_9f854
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_9f854.dir/CheckFunctionExists.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-ojKZT3/CheckFunctionExists.c
+        [2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=none -nostdlib  CMakeFiles/cmTC_9f854.dir/CheckFunctionExists.c.o -o cmTC_9f854.elf  -lpthreads && :
+        FAILED: cmTC_9f854.elf 
+        : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=none -nostdlib  CMakeFiles/cmTC_9f854.dir/CheckFunctionExists.c.o -o cmTC_9f854.elf  -lpthreads && :
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: cannot find -lpthreads: No such file or directory
+        collect2: error: ld returned 1 exit status
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CheckLibraryExists.cmake:78 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/FindThreads.cmake:176 (_threads_check_lib)"
+      - "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/CMakeLists.txt:126 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-xabuNt"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-xabuNt"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      CMAKE_WARN_DEPRECATED: "OFF"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-xabuNt'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_ded91
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc   -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -o CMakeFiles/cmTC_ded91.dir/CheckFunctionExists.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-xabuNt/CheckFunctionExists.c
+        [2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=none -nostdlib  CMakeFiles/cmTC_ded91.dir/CheckFunctionExists.c.o -o cmTC_ded91.elf  -lpthread && :
+        FAILED: cmTC_ded91.elf 
+        : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -DCHECK_FUNCTION_EXISTS=pthread_create -Wl,--build-id=none -nostdlib  CMakeFiles/cmTC_ded91.dir/CheckFunctionExists.c.o -o cmTC_ded91.elf  -lpthread && :
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: cannot find -lpthread: No such file or directory
+        collect2: error: ld returned 1 exit status
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/home/jaremekg/.pico-sdk/cmake/v3.31.5/share/cmake-3.31/Modules/CheckCCompilerFlag.cmake:56 (cmake_check_compiler_flag)"
+      - "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/CMakeLists.txt:213 (CHECK_C_COMPILER_FLAG)"
+    checks:
+      - "Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS"
+    directories:
+      source: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-wh1Dn4"
+      binary: "/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-wh1Dn4"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wall -Wextra -Wwrite-strings -Wformat=2 -Wno-format-nonliteral -Wvla -Wlogical-op -Wshadow"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0/cmake"
+      CMAKE_WARN_DEPRECATED: "OFF"
+      PICO_SDK_PATH: "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+    buildResult:
+      variable: "C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS"
+      cached: true
+      stdout: |
+        Change Dir: '/home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-wh1Dn4'
+        
+        Run Build Command(s): /home/jaremekg/.pico-sdk/ninja/v1.12.1/ninja -v cmTC_1f5fe
+        [1/2] /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -DC_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS  -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wall -Wextra -Wwrite-strings -Wformat=2 -Wno-format-nonliteral -Wvla -Wlogical-op -Wshadow    -Wformat-signedness -o CMakeFiles/cmTC_1f5fe.dir/src.c.o -c /home/jaremekg/project/pico2/projects/build/CMakeFiles/CMakeScratch/TryCompile-wh1Dn4/src.c
+        [2/2] : && /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/arm-none-eabi-gcc -mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Wall -Wextra -Wwrite-strings -Wformat=2 -Wno-format-nonliteral -Wvla -Wlogical-op -Wshadow -Wl,--build-id=none -nostdlib  CMakeFiles/cmTC_1f5fe.dir/src.c.o -o cmTC_1f5fe.elf   && :
+        /home/jaremekg/.pico-sdk/toolchain/14_2_Rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld: warning: cannot find entry symbol _start; defaulting to 00008000
+        
+      exitCode: 0
+...

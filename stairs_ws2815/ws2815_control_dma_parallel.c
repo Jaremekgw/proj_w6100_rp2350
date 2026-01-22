@@ -285,6 +285,7 @@ void ws2815_pattern_loop(uint32_t period_ms) {
         return;
     }
 
+    // where is the sanity in case pattern_index == 0 ?
     if (pattern_index <= count_of(pattern_table)) {
         pat = pattern_index - 1;
         if (pattern_last_index != pattern_index) {

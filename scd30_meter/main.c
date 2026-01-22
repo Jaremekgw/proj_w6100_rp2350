@@ -12,15 +12,13 @@
 #include <stdio.h>
 
 #include "port_common.h"
-
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
-
 #include "loopback.h"
-
 #include "timer.h"
-
 #include "pico/binary_info.h"
+// #include "flash_cfg.h"
+
 
 /**
     ----------------------------------------------------------------------------------------------------
@@ -80,49 +78,49 @@
     Variables
     ----------------------------------------------------------------------------------------------------
 */
-/* Network */
-static wiz_NetInfo g_net_info = {
-    .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x57}, // MAC address
-    .ip = {192, 168, 178, 223},                     // IP address
-    .sn = {255, 255, 255, 0},                    // Subnet Mask
-    .gw = {192, 168, 178, 1},                     // Gateway
-    .dns = {192, 168, 178, 1},                         // DNS server
-#if _WIZCHIP_ > W5500
-    .lla = {
-        0xfe, 0x80, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x02, 0x08, 0xdc, 0xff,
-        0xfe, 0x57, 0x57, 0x25
-    },             // Link Local Address
-    .gua = {
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00
-    },             // Global Unicast Address
-    .sn6 = {
-        0xff, 0xff, 0xff, 0xff,
-        0xff, 0xff, 0xff, 0xff,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00
-    },             // IPv6 Prefix
-    .gw6 = {
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00
-    },             // Gateway IPv6 Address
-    .dns6 = {
-        0x20, 0x01, 0x48, 0x60,
-        0x48, 0x60, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x88, 0x88
-    },             // DNS6 server
-    .ipmode = NETINFO_STATIC_ALL
-#else
-    .dhcp = NETINFO_STATIC
-#endif
-};
+// /* Network */
+// static wiz_NetInfo g_net_info = {
+//     .mac = {0x00, 0x08, 0xDC, 0x12, 0x34, 0x57}, // MAC address
+//     .ip = {192, 168, 178, 223},                     // IP address
+//     .sn = {255, 255, 255, 0},                    // Subnet Mask
+//     .gw = {192, 168, 178, 1},                     // Gateway
+//     .dns = {192, 168, 178, 1},                         // DNS server
+// #if _WIZCHIP_ > W5500
+//     .lla = {
+//         0xfe, 0x80, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x02, 0x08, 0xdc, 0xff,
+//         0xfe, 0x57, 0x57, 0x25
+//     },             // Link Local Address
+//     .gua = {
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00
+//     },             // Global Unicast Address
+//     .sn6 = {
+//         0xff, 0xff, 0xff, 0xff,
+//         0xff, 0xff, 0xff, 0xff,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00
+//     },             // IPv6 Prefix
+//     .gw6 = {
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00
+//     },             // Gateway IPv6 Address
+//     .dns6 = {
+//         0x20, 0x01, 0x48, 0x60,
+//         0x48, 0x60, 0x00, 0x00,
+//         0x00, 0x00, 0x00, 0x00,
+//         0x00, 0x00, 0x88, 0x88
+//     },             // DNS6 server
+//     .ipmode = NETINFO_STATIC_ALL
+// #else
+//     .dhcp = NETINFO_STATIC
+// #endif
+// };
 
 uint8_t tcp_client_destip[] = {
     192, 168, 178, 222
@@ -211,12 +209,15 @@ int main() {
     wizchip_initialize();
     wizchip_check();
 
+    // Set general configuration
+    // config_init();
     // wizchip_1ms_timer_initialize(repeating_timer_callback);
 
-    network_initialize(g_net_info);
+    
+    // network_initialize(config_get_net_info());
 
     /* Get network information */
-    print_network_information(g_net_info);
+    // print_network_information(g_net_info);
 
     /*Choose IPv4 / IPv6*/
 #if _WIZCHIP_ > W5500

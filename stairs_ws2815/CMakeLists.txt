@@ -23,7 +23,9 @@ target_sources(${TARGET_NAME} PRIVATE
         led_pattern.c
         telnet.c
         partition.c
-        eth_ota_update.c
+        efu_update.c
+        utility.c
+        flash_cfg.c
         )
 
 # not needed # file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
@@ -37,6 +39,8 @@ target_include_directories(${TARGET_NAME} PRIVATE
         ${PIO_OUTPUT_DIR}                       # for the generated pio header
         # ${CMAKE_CURRENT_BINARY_DIR}/generated   # for the generated pio header
         ${CMAKE_CURRENT_LIST_DIR}               # for local headers
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
         )
 
 # and make sure the folder exists but ignored by Git
@@ -48,10 +52,9 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_spi
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
-        ETHERNET_FILES
-        IOLIBRARY_FILES
-        LOOPBACK_FILES
-
+        ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
+        IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
+        LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
         pico_bootrom
         hardware_flash
         boot_uf2_headers

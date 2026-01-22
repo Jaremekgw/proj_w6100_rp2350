@@ -1,0 +1,81 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/library/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 343,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 343,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 343,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"mbedtls/library/libmbedcrypto.a"
+			],
+			"targetId" : "mbedcrypto::@6ecf6eb6be8780e13bcb",
+			"targetIndex" : 26,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"mbedtls/library/libmbedx509.a"
+			],
+			"targetId" : "mbedx509::@6ecf6eb6be8780e13bcb",
+			"targetIndex" : 28,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"mbedtls/library/libmbedtls.a"
+			],
+			"targetId" : "mbedtls::@6ecf6eb6be8780e13bcb",
+			"targetIndex" : 27,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "mbedtls/library",
+		"source" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/mbedtls/library"
+	}
+}

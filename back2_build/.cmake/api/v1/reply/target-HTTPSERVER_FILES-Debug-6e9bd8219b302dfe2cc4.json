@@ -1,0 +1,207 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "WIZnet-PICO-C/libraries/libHTTPSERVER_FILES.a"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"add_compile_options",
+			"add_definitions",
+			"target_include_directories",
+			"target_sources"
+		],
+		"files" : 
+		[
+			"/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/CMakeLists.txt",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 172,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 81,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 26,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 76,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 78,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 77,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 25,
+				"parent" : 2
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 180,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 174,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-mcpu=cortex-m33 -mthumb -march=armv8-m.main+fp+dsp -mfloat-abi=softfp -mcmse -Og -g -std=gnu11"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-format"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-unused-function"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-maybe-uninitialized"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "DEVICE_BOARD_NAME=W6100_EVB_PICO2"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "MBEDTLS_CONFIG_FILE=\"/home/jaremekg/project/pico2/projects/../work/WIZnet-PICO-C/port/mbedtls/inc/ssl_config.h\""
+				},
+				{
+					"backtrace" : 6,
+					"define" : "PICO_USE_FASTEST_SUPPORTED_CLOCK=1"
+				},
+				{
+					"backtrace" : 7,
+					"define" : "SET_TRUSTED_CERT_IN_SAMPLES"
+				},
+				{
+					"backtrace" : 8,
+					"define" : "_WIZCHIP_=W6100"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 9,
+					"path" : "/home/jaremekg/project/pico2/projects/../work/WIZnet-PICO-C/libraries/ioLibrary_Driver/Ethernet"
+				},
+				{
+					"backtrace" : 9,
+					"path" : "/home/jaremekg/project/pico2/projects/../work/WIZnet-PICO-C/libraries/ioLibrary_Driver/Internet/httpServer"
+				}
+			],
+			"language" : "C",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "11"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		}
+	],
+	"id" : "HTTPSERVER_FILES::@196c27c17e1e13b805d5",
+	"name" : "HTTPSERVER_FILES",
+	"nameOnDisk" : "libHTTPSERVER_FILES.a",
+	"paths" : 
+	{
+		"build" : "WIZnet-PICO-C/libraries",
+		"source" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/ioLibrary_Driver/Internet/httpServer/httpParser.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/ioLibrary_Driver/Internet/httpServer/httpServer.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "/home/jaremekg/project/pico2/work/WIZnet-PICO-C/libraries/ioLibrary_Driver/Internet/httpServer/httpUtil.c",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}
