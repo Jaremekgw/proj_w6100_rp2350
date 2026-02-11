@@ -8,5 +8,5 @@
 #include <string.h>
 #include <stdint.h>
 
-void telnet_greeting(int sn, const uint8_t *client_ip);
-void handle_command(const char *cmd, int sn);
+void telnet_greeting(uint8_t sn, const uint8_t *client_ip);
+void handle_command(const char *cmd, uint8_t sn);

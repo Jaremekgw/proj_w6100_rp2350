@@ -87,7 +87,7 @@ typedef struct {
 
 
 static int get_single_partition_info(int partition_id, partition_info_t *info);
-static int get_corresponding_partition_id(int current_partition_id);
+static int get_corresponding_partition_id(uint current_partition_id);
 
 int read_partition_table(pico_partition_table_t *pt);
 bool read_next_partition(pico_partition_table_t *pt, pico_partition_t *p);
@@ -112,7 +112,7 @@ void show_current_partition(void) {
  */
 int get_alt_part_addr(boot_info_t *boot_info, partition_info_t *part_info) {
     // get alternate partition ID
-    int pt_id = get_corresponding_partition_id(boot_info->partition);
+    int pt_id = get_corresponding_partition_id((uint)boot_info->partition);
 
     if (get_single_partition_info(pt_id, part_info) != 0)
         return -1;
@@ -301,8 +301,10 @@ bool read_next_partition(pico_partition_table_t *pt, pico_partition_t *p) {
         // Read variable length fields
         uint32_t extra_family_ids_and_name[PARTITION_EXTRA_FAMILY_ID_MAX + (((PARTITION_NAME_MAX + 1) / sizeof(uint32_t)) + 1)];
         uint32_t flags = PT_INFO_SINGLE_PARTITION | PT_INFO_PARTITION_FAMILY_IDS | PT_INFO_PARTITION_NAME;
-        int rc = rom_get_partition_table_info(extra_family_ids_and_name, sizeof(extra_family_ids_and_name),
-                                              (pt->current_partition << 24 | flags));
+
+        uint32_t value = ((uint32_t)pt->current_partition << 24) | (uint32_t)flags;
+        int rc = rom_get_partition_table_info(extra_family_ids_and_name, sizeof(extra_family_ids_and_name), value);
+                                            //   (pt->current_partition << 24 | flags));
         if (rc < 0) {
             pt->status = rc;
             return false;
@@ -425,7 +427,7 @@ int partition_info(char *msg, size_t msg_max_sz) {
 }
 
 
-static int get_corresponding_partition_id(int current_partition_id) {
+static int get_corresponding_partition_id(uint current_partition_id) {
     int rc = rom_get_b_partition(current_partition_id); 
     if (rc < 0)     // BOOTROM_ERROR_NOT_FOUND
         return 0;   // This is (A) partition
@@ -450,13 +452,13 @@ static int get_single_partition_info(int partition_id, partition_info_t *info) {
     uint16_t last_sector_number;
     uint32_t out[4];            // for [2] was problem. In example I saw [8]. Use [4] to be safe.
     uint32_t flags;
-    uint32_t ret = -1;
+    int ret = -1;
     int rc;
 
     if (ensure_partition_table_loaded() < 0)
         return ret;
 
-    flags = PT_INFO_PARTITION_LOCATION_AND_FLAGS | PT_INFO_SINGLE_PARTITION | (partition_id << 24);
+    flags = PT_INFO_PARTITION_LOCATION_AND_FLAGS | PT_INFO_SINGLE_PARTITION | ((uint32_t)partition_id << 24);
     rc = rom_get_partition_table_info(out, (int)(sizeof out / sizeof out[0]), flags);
     if (rc != 3)
         return ret;
@@ -465,10 +467,10 @@ static int get_single_partition_info(int partition_id, partition_info_t *info) {
     last_sector_number = (out[1] & PICOBIN_PARTITION_LOCATION_LAST_SECTOR_BITS) >> PICOBIN_PARTITION_LOCATION_LAST_SECTOR_LSB;
     info->start_offset = first_sector_number * 0x1000;
     info->start_addr = info->start_offset + XIP_BASE;
-    info->end_offset = (last_sector_number + 1) * 0x1000;
+    // info->end_offset = (uint32_t)(last_sector_number + 1) * 0x1000;
+    info->end_offset = ((uint32_t)(last_sector_number + 1)) << 12;
     info->end_addr = info->end_offset + XIP_BASE;
     info->size = info->end_offset - info->start_offset;
-
 
     return 0;
 }

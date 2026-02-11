@@ -57,8 +57,8 @@ uint8_t err[2] = {'E', 'R'};    // error nack
 uint8_t crc[2] = {'C', 'C'};    // crc ack
 
 
-int8_t get_efu_socket_status(void) {
-    int8_t sn = TCP_EFU_SOCKET;
+uint8_t get_efu_socket_status(void) {
+    uint32_t sn = TCP_EFU_SOCKET;
     return getSn_SR(sn);
 }
 
@@ -95,21 +95,21 @@ void efu_server_init(void) {
 // --------------------------------------------------------------------
 void efu_server_poll(void) {
     // static partition_info_t alt_part[1];
-    int8_t sn = TCP_EFU_SOCKET;
+    uint8_t sn = TCP_EFU_SOCKET;
     uint8_t destip[4];
     uint16_t destport;
     int32_t ret;
     int consumed;
 
-    switch (getSn_SR(sn)) {
+    switch (getSn_SR((uint32_t)sn)) {
 
     case SOCK_ESTABLISHED:
-        if (getSn_IR(sn) & Sn_IR_CON) {
-            getSn_DIPR(sn, destip);
-            destport = getSn_DPORT(sn);
+        if (getSn_IR((uint32_t)sn) & Sn_IR_CON) {
+            getSn_DIPR((uint32_t)sn, destip);
+            destport = getSn_DPORT((uint32_t)sn);
             printf("[EFU] Client connected from %d.%d.%d.%d:%d\r\n",
                    destip[0], destip[1], destip[2], destip[3], destport);
-            setSn_IR(sn, Sn_IR_CON);
+            setSn_IR((uint32_t)sn, Sn_IR_CON);
 
             efu_srv.state = EFU_HEADER;
             efu_srv.header_received = 0;
@@ -220,7 +220,7 @@ void efu_server_poll(void) {
             printf("write %d bytes at 0x%08x\n", data_len, flash_offs);
 
 
-            if (flash_offs + data_len > end) {
+            if (flash_offs + (uint32_t)data_len > end) {
                 printf("[EFU] Error: incoming image too large (%lu + %d > %u)\r\n",
                     efu_srv.total_written, data_len, efu_srv.partition_size);
                 //ota_srv.complete = true;
@@ -231,16 +231,16 @@ void efu_server_poll(void) {
             }
             efu_srv.crc_calc = crc32_step(efu_srv.crc_calc,
                               efu_srv.buf + consumed,
-                              data_len);
+                              (uint16_t)data_len);
 
 
             // printf("[EFU] Programming %d bytes at flash offset 0x%08x\n", data_len, flash_offs);
             // Program flash
             uint32_t ints = save_and_disable_interrupts();
-            flash_range_program(flash_offs, efu_srv.buf + consumed, data_len);
+            flash_range_program(flash_offs, efu_srv.buf + consumed, (size_t)data_len);
             restore_interrupts(ints);
 
-            efu_srv.total_written += data_len;
+            efu_srv.total_written += (uint32_t)data_len;
 
 
             if (efu_srv.total_written == efu_srv.expected_size) {
@@ -272,10 +272,10 @@ void efu_server_poll(void) {
             }
 
             efu_srv.expected_crc =
-                (efu_srv.crc_buf[0] << 24) |
-                (efu_srv.crc_buf[1] << 16) |
-                (efu_srv.crc_buf[2] <<  8) |
-                (efu_srv.crc_buf[3] <<  0);
+                ((uint32_t)efu_srv.crc_buf[0] << 24) |
+                ((uint32_t)efu_srv.crc_buf[1] << 16) |
+                ((uint32_t)efu_srv.crc_buf[2] <<  8) |
+                ((uint32_t)efu_srv.crc_buf[3] <<  0);
 
             printf("[EFU] CRC expected: %08x, calculated: %08x\n",
                 efu_srv.expected_crc, efu_srv.crc_calc);

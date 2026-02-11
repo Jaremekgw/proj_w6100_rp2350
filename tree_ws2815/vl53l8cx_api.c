@@ -104,6 +104,7 @@ static uint8_t _vl53l8cx_send_offset_data(
 	uint8_t footer[] = {0x00, 0x00, 0x00, 0x0F, 0x03, 0x01, 0x01, 0xE4};
 	int8_t i, j;
 	uint16_t k;
+	int32_t range_tmp;
 
 	(void)memcpy(p_dev->temp_buffer,
                p_dev->offset_data, VL53L8CX_OFFSET_BUFFER_SIZE);
@@ -127,12 +128,19 @@ static uint8_t _vl53l8cx_send_offset_data(
 				+ signal_grid[(2*i)+(16*j)+(int8_t)8]
 				+ signal_grid[(2*i)+(16*j)+(int8_t)9])
                                   /(uint32_t)4;
-				range_grid[i+(4*j)] =
-				(range_grid[(2*i)+(16*j)]
+
+				range_tmp = (range_grid[(2*i)+(16*j)]
 				+ range_grid[(2*i)+(16*j)+1]
 				+ range_grid[(2*i)+(16*j)+8]
-				+ range_grid[(2*i)+(16*j)+9])
-                                  /(int16_t)4;
+				+ range_grid[(2*i)+(16*j)+9]);
+				range_tmp /= 4;
+
+				range_grid[i+(4*j)] = (int16_t)range_tmp;
+				// (range_grid[(2*i)+(16*j)]
+				// + range_grid[(2*i)+(16*j)+1]
+				// + range_grid[(2*i)+(16*j)+8]
+				// + range_grid[(2*i)+(16*j)+9])
+                //                   /(int16_t)4;
 			}
 		}
 	    (void)memset(&range_grid[0x10], 0, (uint16_t)96);
@@ -1071,8 +1079,11 @@ uint8_t vl53l8cx_get_sharpener_percent(
 	status |= vl53l8cx_dci_read_data(p_dev,p_dev->temp_buffer,
 			VL53L8CX_DCI_SHARPENER, 16);
 
-	*p_sharpener_percent = (p_dev->temp_buffer[0xD]
-                                *(uint8_t)100)/(uint8_t)255;
+	uint16_t tmp = p_dev->temp_buffer[0xD] * 100u;
+	tmp /= 255u;
+	*p_sharpener_percent = (uint8_t)tmp;
+	// *p_sharpener_percent = (p_dev->temp_buffer[0xD]
+    //                             *(uint8_t)100)/(uint8_t)255;
 
 	return status;
 }
@@ -1090,7 +1101,9 @@ uint8_t vl53l8cx_set_sharpener_percent(
 	}
 	else
 	{
-		sharpener = (sharpener_percent*(uint8_t)255)/(uint8_t)100;
+		uint16_t tmp = (sharpener_percent * 255u);
+		tmp /= 100u;
+		sharpener = (uint8_t)tmp;
 		status |= vl53l8cx_dci_replace_data(p_dev, p_dev->temp_buffer,
 				VL53L8CX_DCI_SHARPENER, 16,
                                 (uint8_t*)&sharpener, 1, 0xD);

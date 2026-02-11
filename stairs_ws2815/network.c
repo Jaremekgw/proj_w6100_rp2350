@@ -468,6 +468,9 @@ static volatile uint8_t ik_pending_table_idx = 0;
  */
 void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
 {
+    (void)gpio;
+    (void)events;
+
     int32_t ret;
     // intr_kind pending;  // 
     intr_kind sock_bit = (IK_SOCK_0 << UDP_DDP_SOCKET);

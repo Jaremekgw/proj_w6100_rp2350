@@ -1,15 +1,15 @@
 # ioLibrary_Driver
 add_library(IOLIBRARY_FILES STATIC)
-
-target_sources(IOLIBRARY_FILES PUBLIC
+# was PUBLIC
+target_sources(IOLIBRARY_FILES PRIVATE
         ${PORT_DIR}/ioLibrary_Driver/src/wizchip_spi.c
         ${PORT_DIR}/ioLibrary_Driver/src/wizchip_gpio_irq.c
         )
 
 if(${BOARD_NAME} STREQUAL W55RP20_EVB_PICO OR ${WIZNET_CHIP} STREQUAL W6300)
 pico_generate_pio_header(IOLIBRARY_FILES ${PORT_DIR}/ioLibrary_Driver/src/wizchip_qspi_pio.pio)
-
-target_sources(IOLIBRARY_FILES PUBLIC 
+# was PUBLIC
+target_sources(IOLIBRARY_FILES PRIVATE 
         ${PORT_DIR}/ioLibrary_Driver/src/wizchip_qspi_pio.c
 )
 
@@ -36,8 +36,8 @@ target_link_libraries(IOLIBRARY_FILES PUBLIC
 
 # timer
 add_library(TIMER_FILES STATIC)
-
-target_sources(TIMER_FILES PUBLIC
+# was PUBLIC
+target_sources(TIMER_FILES PRIVATE
         ${PORT_DIR}/timer/timer.c
         )
 
@@ -52,8 +52,8 @@ target_link_libraries(TIMER_FILES PRIVATE
 
 # board
 add_library(BOARD_FILES STATIC)
-
-target_sources(BOARD_FILES PUBLIC
+# was PUBLIC
+target_sources(BOARD_FILES PRIVATE
         ${PORT_DIR}/board/can/can.c
         )
 
@@ -84,3 +84,17 @@ hardware_spi
 hardware_dma
 hardware_pio
 )
+
+function(disable_vendor_warnings target)
+    target_compile_options(${target} PRIVATE
+        -Wno-conversion
+        -Wno-sign-conversion
+        -Wno-pedantic
+        -Wno-pointer-sign
+    )
+endfunction()
+
+disable_vendor_warnings(IOLIBRARY_FILES)
+disable_vendor_warnings(TIMER_FILES)
+disable_vendor_warnings(BOARD_FILES)
+disable_vendor_warnings(PORT_COMMON_FILES)

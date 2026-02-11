@@ -34,6 +34,7 @@ volatile uint32_t tmr_ms_tick = 0;
 
 
 bool timer_callback(repeating_timer_t *rt) {
+    (void)rt;
     tmr_ms_tick++;     // Increment every 1 ms
     return true;    // Return true to keep repeating
 }

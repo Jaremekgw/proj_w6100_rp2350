@@ -4,6 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * Disable sign-conversion warnings locally from WIZnet code
+ * 
+ * Or you can wrap function getSn_SR:
+ * static inline uint32_t wiz_get_sn_sr(uint8_t sn)
+ *   {
+ *       return (uint32_t)getSn_SR(sn);
+ *   }
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 #include <stdio.h>
 #include <string.h>
 #include "network.h"
@@ -69,7 +81,7 @@ uint8_t rx_fb[NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
 
 
 // --- Unique ID ---
-pico_unique_board_id_t id;
+// pico_unique_board_id_t id;
 
 
 // --- Functions ---
@@ -282,7 +294,7 @@ int32_t tcp_cli_service(void) {
             // No data – check timeout
             if (absolute_time_diff_us(last_rx_time, get_absolute_time()) >= (CLI_TIMEOUT_MS * 1000LL)) {
                 const char *msg = "timeout\r\n";
-                send(sn, (uint8_t*)msg, strlen(msg));
+                send(sn, (uint8_t*)msg, (uint16_t)strlen(msg));
                 printf("[CLI] Idle timeout, closing socket %d\r\n", sn);
                 disconnect(sn);
                 return 0;
@@ -467,6 +479,9 @@ static volatile uint8_t ik_pending_table_idx = 0;
  */
 void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
 {
+    (void)gpio;
+    (void)events;
+    
     int32_t ret;
     // intr_kind pending;  // 
     intr_kind sock_bit = (IK_SOCK_0 << UDP_DDP_SOCKET);
@@ -610,7 +625,8 @@ void udp_socket_init(void) {
 
 void process_udp_ring(void) {
 
-    uint8_t rd_idx = (udp_ring_idx + 1) % UDP_RING_COUNT;
+    int tmp = (udp_ring_idx + 1) % UDP_RING_COUNT;
+    uint8_t rd_idx = (uint8_t)tmp;  // (udp_ring_idx + 1) % UDP_RING_COUNT;
 
     for (uint8_t id = 0; id < UDP_RING_COUNT; id++) {
         // printf("UDP ring slot %d: len=%d\n", id, udp_rx_buf_len[id]);
@@ -619,7 +635,9 @@ void process_udp_ring(void) {
             process_ddp_packet(udp_rx_ring_buf[rd_idx], udp_rx_buf_len[rd_idx]);
             udp_rx_buf_len[rd_idx] = 0;  // mark slot free
         }
-        rd_idx = (rd_idx + 1) % UDP_RING_COUNT;
+        tmp = (rd_idx + 1) % UDP_RING_COUNT;
+        // rd_idx = (rd_idx + 1) % UDP_RING_COUNT;
+        rd_idx = (uint8_t)tmp;
     }
 }
 
@@ -690,7 +708,7 @@ int32_t ddp_loop(void) {
 
 static void ddp_copy_payload(const uint8_t *payload, uint32_t offset, uint32_t length)
 {
-    int32_t in, out;
+    uint32_t in, out;
 
     for(in = 0, out = offset; in < length; in++, out++) {
         rx_fb[out] = payload[in];
@@ -790,3 +808,8 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len)
         // ws2815_show(rx_fb);   // push frame to LEDs (pass flat uint8_t pointer)
     }
 }
+
+/**
+ * Re-enable sign-conversion warnings
+ */
+#pragma GCC diagnostic pop

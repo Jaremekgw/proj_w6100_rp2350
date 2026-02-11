@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "pico",
+      "displayName": "Pico SDK (WSL)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "PICO_SDK_PATH": "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+      }
+    }
+  ]
+}

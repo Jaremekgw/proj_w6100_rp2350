@@ -17,7 +17,7 @@
 
 
 // dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)" dir = [-1, 0, 1]
-static int t = 0;
+static uint32_t t = 0;
 
 // // horrible temporary hack to avoid changing pattern code
 // static uint8_t *current_strip_out;
@@ -77,7 +77,7 @@ static inline uint8_t gamma2_u8(uint8_t x) {
 }
 // If you start from 0..100%:
 static inline uint8_t gamma2_percent(uint8_t p) {
-    uint16_t x = (uint16_t)p * 255 / 100;       // scale to 0..255
+    uint16_t x = (uint16_t)(p * 255 / 100);       // scale to 0..255
     return gamma2_u8((uint8_t)x);
 }
 
@@ -102,15 +102,15 @@ static uint8_t start_column_sel_color[NUM_PIXELS];  // random color selection fo
 static void init_ornaments(void);
 
 void init_start_strips(void) {
-    uint32_t y, x;
+    uint16_t y, x;
     uint8_t color, r, g, b, val;
 
     for (y = 0; y < NUM_STRIPS; ++y) {
-        start_strip_pos[y] = (rand() % NUM_PIXELS);
+        start_strip_pos[y] = (uint32_t)(rand() % NUM_PIXELS);
     }
     for (y = 0; y < NUM_STRIPS; ++y) {
-        color = rand() % 7;
-        val = rand() % 256;
+        color = (typeof(color))(rand() % 7);
+        val = (typeof(val))(rand() % 256);
         r = (color & 0x4) ? val : 0;
         g = (color & 0x2) ? val : 0;
         b = (color & 0x1) ? val : 0;
@@ -118,17 +118,17 @@ void init_start_strips(void) {
         start_strip_color[y] = urgb_u32(r, g, b);
     }
     for (x = 0; x < NUM_PIXELS; ++x) {
-        start_column_pos[x] = rand() % NUM_STRIPS;
+        start_column_pos[x] = (uint32_t)(rand() % NUM_STRIPS);
     }
     for (x = 0; x < NUM_PIXELS; ++x) {
-        start_column_sel_color[x] = rand() % 8;
+        start_column_sel_color[x] = (uint8_t)(rand() % 8);
     }
 
     for (y = 0; y < sizeof(linear_brightness_percent); y++) {
-        linear_brightness_percent[y] = percent_to_u8(y);
+        linear_brightness_percent[y] = percent_to_u8((uint8_t)y);
     }
     for (y = 0; y < sizeof(linear_brightness_percept); y++) {
-        linear_brightness_percept[y] = percept_to_u8(y);
+        linear_brightness_percept[y] = percept_to_u8((uint8_t)y);
     }
 
     init_ornaments();
@@ -157,7 +157,7 @@ void pattern_snakes1(uint32_t *buffer, uint32_t pixels, int dir) {
     uint a, x, y;
     uint i, snake_len, snake_tail;
     uint8_t r, g, b, max_r, max_g, max_b;
-    static uint32_t t;
+    // static uint32_t t;   // moved to global
     static int8_t color_first = 1;
     int8_t color;
 
@@ -234,7 +234,8 @@ void pattern_snakes1(uint32_t *buffer, uint32_t pixels, int dir) {
         }
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -244,7 +245,7 @@ void pattern_snakes2(uint32_t *buffer, uint32_t pixels, int dir) {
     uint a, x, pos = 0;
     uint i, snake_len, snake_tail[5];
     uint8_t r, g, b, max_r, max_g, max_b;
-    static uint32_t t;
+    // static uint32_t t; // global variable
 
     max_r = 255;
     max_g = 255;
@@ -279,14 +280,16 @@ void pattern_snakes2(uint32_t *buffer, uint32_t pixels, int dir) {
         *buffer++ = urgb_u32(r, g, b);
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 void pattern_snakes3(uint32_t *buffer, uint32_t pixels, int dir) {
-    uint a, x;
-    uint i, snake_len, snake_tail;
+    uint8_t a, x;
+    uint i;
+    uint8_t snake_len, snake_tail;
     uint8_t r, g, b, max_r, max_g, max_b;
-    static uint32_t t;
+    // static uint32_t t;
 
     static int8_t color_first = 1;
     int8_t color;
@@ -299,7 +302,7 @@ void pattern_snakes3(uint32_t *buffer, uint32_t pixels, int dir) {
     snake_tail = 20;
 
 
-    x = t % snake_len;
+    x = (uint8_t)(t % snake_len);
     if ((dir > 0) && (x == 0)) {
         if (++color_first > COLOR_LAST)
             color_first = COLOR_BEGIN;
@@ -316,7 +319,7 @@ void pattern_snakes3(uint32_t *buffer, uint32_t pixels, int dir) {
             continue;
         }
 
-        a = (i + t);
+        a = (typeof(a))(i + t);
 
         // y = a / snake_len;
         x = a % snake_len;     // % 64;
@@ -355,7 +358,8 @@ void pattern_snakes3(uint32_t *buffer, uint32_t pixels, int dir) {
         }
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 uint8_t get_val_perc(uint8_t level) {
@@ -370,7 +374,7 @@ void pattern_snakes4(uint32_t *buffer, uint32_t pixels, int dir) {
     uint i, snake_len, snake_tail;
     uint8_t r, g, b;
     uint8_t red, green, blue;
-    static uint32_t t;
+    // static uint32_t t;   - moved to global
  
     static int8_t color_first = 1;
     int8_t color;
@@ -409,9 +413,12 @@ void pattern_snakes4(uint32_t *buffer, uint32_t pixels, int dir) {
             green = get_val_perc(g);
             blue = get_val_perc(b);
         } else if (x < snake_tail) {
-            r += (color & 2)? 1 : 3;
-            g += (color & 4)? 1 : 3;
-            b += (color & 1)? 1 : 3;
+            int tmp = (color & 2)? 1 : 3;
+            r += (uint8_t)tmp;
+            tmp = (color & 4)? 1 : 3;
+            g += (uint8_t)tmp;
+            tmp = (color & 1)? 1 : 3;
+            b += (uint8_t)tmp;
             red = get_val_perc(r);
             green = get_val_perc(g);
             blue = get_val_perc(b);
@@ -435,7 +442,8 @@ void pattern_snakes4(uint32_t *buffer, uint32_t pixels, int dir) {
         }
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -444,7 +452,7 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
     uint i, snake_len; // , snake_tail;
     uint8_t r, g, b, max;
     uint8_t red, green, blue;
-    static uint32_t t;
+    // static uint32_t t;
     static int8_t color_first = 1;
     int8_t color;
 
@@ -475,35 +483,37 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
         //y = a / snake_len;
         x = a % snake_len;     // % 64;
 
+        uint8_t on_half = (uint8_t)(snake_len / 2);
+        uint8_t on_full = (uint8_t)(snake_len);
         if (x == 0) {
             switch (color) {
                 case 1:
                     r = 0;
-                    g = snake_len / 2;
-                    b = snake_len / 2;
+                    g = on_half;
+                    b = on_half;
                     break;
                 case 2:
                     r = 2;
-                    g = snake_len;
+                    g = on_full;
                     b = 2;
                     break;
                 case 3:
-                    r = snake_len / 2;
-                    g = snake_len / 2;
+                    r = on_half;
+                    g = on_half;
                     b = 0;
                     break;
                 case 4:
                     r = 2;
                     g = 2;
-                    b = snake_len;
+                    b = on_full;
                     break;
                 case 5:
-                    r = snake_len / 2;
+                    r = on_half;
                     g = 0;
-                    b = snake_len / 2;
+                    b = on_half;
                     break;
                 case 6:
-                    r = snake_len;
+                    r = on_full;
                     g = 2;
                     b = 2;
                     break;
@@ -524,7 +534,7 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
 
         *buffer++ = urgb_u32(red, green, blue);
 
-        if ((dir > 0) && (x == (snake_len - 1))) {
+        if ((dir > 0) && ((uint8_t)x == (snake_len - 1))) {
             if (++color > COLOR_LAST)
                 color = COLOR_BEGIN;
             if (i <= (2*snake_len))
@@ -538,7 +548,8 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
         }
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -549,23 +560,25 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
  */
 void pattern_breath(uint32_t *buffer, uint32_t pixels, int dir) {
     uint32_t i;
-    uint g, b;
+    uint16_t g, b;
     uint8_t level = (t & 0xFF);
     if (level > 127) level = 255 - level;   // triangle wave
     if (level < 3) {
         level = 3;
-        t += dir;
+        int64_t tmp = (int64_t)t + (int64_t)dir;
+        t = (typeof(t))tmp;
     }
 
-    g = level * 2 / 3;
-    b = level * 3 / 4;
+    g = (uint16_t)(level * 2 / 3);
+    b = (uint16_t)(level * 3 / 4);
 
     for (i = 0; i < pixels; ++i) {
         // *buffer++ = urgb_u32(level, 0, 0);  // red breathing
-        *buffer++ = urgb_u32(level, g, b);  // warm white
+        *buffer++ = urgb_u32(level, (uint8_t)g, (uint8_t)b);  // warm white
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -575,14 +588,20 @@ void pattern_breath(uint32_t *buffer, uint32_t pixels, int dir) {
  */
 static inline uint32_t hsv_wheel(uint8_t pos) {
     pos = 255 - pos;
-    if (pos < 85)
-        return urgb_u32(255 - pos * 3, 0, pos * 3);
+    uint8_t neg;
+
+    if (pos < 85) {
+        neg = 255 - pos;
+        return urgb_u32(neg * 3, 0, pos * 3);
+    }
     if (pos < 170) {
         pos -= 85;
-        return urgb_u32(0, pos * 3, 255 - pos * 3);
+        neg = 255 - pos;
+        return urgb_u32(0, pos * 3, neg * 3);
     }
     pos -= 170;
-    return urgb_u32(pos * 3, 255 - pos * 3, 0);
+    neg = 255 - pos;
+    return urgb_u32(pos * 3, neg * 3, 0);
 }
 
 void pattern_rainbow(uint32_t *buffer, uint32_t pixels, int dir) {
@@ -590,7 +609,8 @@ void pattern_rainbow(uint32_t *buffer, uint32_t pixels, int dir) {
         uint8_t hue = (i * 256 / pixels + t) & 0xFF;
         *buffer++ = hsv_wheel(hue);
     }
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -611,7 +631,8 @@ void pattern_color_wipe(uint32_t *buffer, uint32_t pixels, int dir) {
             *buffer++ = 0;
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -629,7 +650,8 @@ void pattern_twinkle(uint32_t *buffer, uint32_t pixels, int dir) {
         else
             *buffer++ = 0;
     }
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -640,17 +662,25 @@ void pattern_twinkle(uint32_t *buffer, uint32_t pixels, int dir) {
  * mirrored chase
  */
 void pattern_chase(uint32_t *buffer, uint32_t pixels, int dir) {
-    int pos = t % pixels;
+    uint32_t pos = t % pixels;
+    uint32_t i;
+    uint32_t delta;
 
-    for (uint32_t i = 0; i < pixels; ++i) {
-        int d = i - pos;
-        if (d < 0) d = -d;
+    for (i = 0; i < pixels; ++i) {
 
-        uint8_t v = (d < 10) ? (255 - d * 25) : 0;
-        *buffer++ = urgb_u32(v, 0, 0);
+        if (i < pos)
+            delta = pos - i;
+        else
+            delta = i - pos;
+        //int d = i - pos;
+        //if (d < 0) d = -d;
+
+        int v = (typeof(v))((delta < 10) ? ((255 - delta) * 25) : 0);
+        *buffer++ = urgb_u32((uint8_t)v, 0, 0);
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -679,7 +709,8 @@ void pattern_fire(uint32_t *buffer, uint32_t pixels, int dir) {
         uint8_t b = g - 20;
         *buffer++ = urgb_u32(r, g, b);
     }
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -693,7 +724,9 @@ void pattern_snow(uint32_t *buffer, uint32_t pixels, int dir) {
         else
             *buffer++ = 0;
     }
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -706,7 +739,9 @@ void pattern_christmas(uint32_t *buffer, uint32_t pixels, int dir) {
         else
             *buffer++ = urgb_u32(0, 255, 0);
     }
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -720,7 +755,7 @@ void pattern_christmas(uint32_t *buffer, uint32_t pixels, int dir) {
  */
 void pattern_christmas_fade(uint32_t *buffer, uint32_t pixels, int dir) {
     // triangle wave 0..255..0
-    uint8_t phase = t & 0xFF;
+    uint8_t phase = (uint8_t)(t & 0xFF);
     if (phase > 127) phase = 255 - phase;
     phase <<= 1;  // scale to 0..254
 
@@ -731,7 +766,9 @@ void pattern_christmas_fade(uint32_t *buffer, uint32_t pixels, int dir) {
         *buffer++ = urgb_u32(red, green, 0);
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -755,7 +792,9 @@ void pattern_christmas_fade_wave(uint32_t *buffer, uint32_t pixels, int dir) {
         *buffer++ = urgb_u32(red, green, 0);
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 typedef struct {
@@ -786,14 +825,16 @@ static const rgb_t christmas_palette[] = {
 /**
  * Linear interpolation between two colors
  */
-static inline uint8_t lerp_u8(uint8_t a, uint8_t b, uint8_t t) {
-    return a + (((int)(b - a) * t) >> 8);
+static inline uint8_t lerp_u8(uint8_t a, uint8_t b, uint8_t part) {
+    return a + (uint8_t)(((int)(b - a) * part) >> 8);
 }
 
 static inline rgb_t palette_sample(const rgb_t *pal, uint8_t pal_size, uint16_t pos) {
-    uint8_t idx = (pos >> 8) % pal_size;
-    uint8_t next = (idx + 1) % pal_size;
-    uint8_t frac = pos & 0xFF;
+    int tmp = (pos >> 8) % pal_size;
+    uint8_t idx = (uint8_t)tmp;
+    tmp = (idx + 1) % pal_size;
+    uint8_t next = (uint8_t)tmp;
+    uint8_t frac = (uint8_t)(pos & 0xFF);
 
     rgb_t c0 = pal[idx];
     rgb_t c1 = pal[next];
@@ -820,7 +861,9 @@ void pattern_christmas_palette(uint32_t *buffer, uint32_t pixels, int dir) {
         *buffer++ = urgb_u32(c.r, c.g, c.b);
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -885,9 +928,9 @@ void pattern_warm_white_with_sparks(uint32_t *buffer,
             uint8_t g = base_g + s;
             uint8_t b = base_b + s;
 
-            if (r > 255) r = 255;
-            if (g > 255) g = 255;
-            if (b > 255) b = 255;
+            // if (r > 255) r = 255;
+            // if (g > 255) g = 255;
+            // if (b > 255) b = 255;
 
             *buffer++ = urgb_u32(r, g, b);
 
@@ -908,7 +951,9 @@ void pattern_warm_white_with_sparks(uint32_t *buffer,
     //     }
     // }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -961,11 +1006,14 @@ void pattern_falling_sparks(uint32_t *buffer,
             uint8_t l = falling[i].life;
 
             // icy spark color
-            uint8_t r = 80  + (l << 1);
-            uint8_t g = 120 + (l << 1);
-            uint8_t b = 200 + (l << 1);
+            int tmp =  80  + (l << 1);
+            uint8_t r = (uint8_t)tmp;
+            tmp = 120 + (l << 1);
+            uint8_t g = (uint8_t)tmp;
+            tmp = 200 + (l << 1);
+            uint8_t b = (uint8_t)tmp;
 
-            if (b > 255) b = 255;
+            // if (b > 255) b = 255;
 
             buffer[idx] = urgb_u32(r, g, b);
         }
@@ -978,7 +1026,9 @@ void pattern_falling_sparks(uint32_t *buffer,
             falling[i].active = 0;
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 /**
@@ -1008,13 +1058,13 @@ void pattern_ornaments(uint32_t *buffer,
     for (uint32_t center = 0; center < pixels; center += ORNAMENT_SPACING) {
 
         // slow breathing phase per bulb
-        uint8_t phase = (t + center) & 0xFF;
+        uint8_t phase = (uint8_t)((t + center) & 0xFF);
         if (phase > 127) phase = 255 - phase;
         phase <<= 1;  // 0..254
 
         // warm ornament color (gold/red mix)
-        uint8_t br = 120 + (phase >> 1);
-        uint8_t bg = 40  + (phase >> 2);
+        uint8_t br = (uint8_t)(120 + (phase >> 1));
+        uint8_t bg = (uint8_t)(40  + (phase >> 2));
         uint8_t bb = 10;
 
         for (int d = -ORNAMENT_RADIUS; d <= ORNAMENT_RADIUS; ++d) {
@@ -1022,17 +1072,21 @@ void pattern_ornaments(uint32_t *buffer,
             if (idx < 0 || idx >= (int)pixels)
                 continue;
 
-            uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            // uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            uint32_t scaled = (uint32_t)abs(d) * 255u / (uint32_t)ORNAMENT_RADIUS;
+            uint16_t falloff = (uint16_t)(255u - scaled);
 
-            uint8_t r = (br * falloff) >> 8;
-            uint8_t g = (bg * falloff) >> 8;
-            uint8_t b = (bb * falloff) >> 8;
+            uint8_t r = (uint8_t)((br * falloff) >> 8);
+            uint8_t g = (uint8_t)((bg * falloff) >> 8);
+            uint8_t b = (uint8_t)((bb * falloff) >> 8);
 
             buffer[idx] = urgb_u32(r, g, b);
         }
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -1068,9 +1122,9 @@ static void init_ornaments(void) {
         ornaments[i].phase = xorshift32() & 0xFF;
 
         switch (xorshift32() % 3) {
-            case 0: ornaments[i] = (ornament_t){220, 40,  20, xorshift32()}; break; // red
-            case 1: ornaments[i] = (ornament_t){255, 180, 60, xorshift32()}; break; // gold
-            case 2: ornaments[i] = (ornament_t){40,  180, 60, xorshift32()}; break; // green
+            case 0: ornaments[i] = (ornament_t){220, 40,  20, (uint8_t)xorshift32(), 0}; break; // red
+            case 1: ornaments[i] = (ornament_t){255, 180, 60, (uint8_t)xorshift32(), 0}; break; // gold
+            case 2: ornaments[i] = (ornament_t){40,  180, 60, (uint8_t)xorshift32(), 0}; break; // green
         }
     }
     ornaments_init = 1;
@@ -1108,19 +1162,22 @@ void pattern_ornaments_multicolor(uint32_t *buffer,
             if (p < 0 || p >= (int)pixels)
                 continue;
 
-            uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            // uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            uint32_t scaled = (uint32_t)abs(d) * 255u / (uint32_t)ORNAMENT_RADIUS;
+            uint16_t falloff = (uint16_t)(255u - scaled);
 
-            uint8_t r = (o->r * phase >> 8) * falloff >> 8;
-            uint8_t g = (o->g * phase >> 8) * falloff >> 8;
-            uint8_t b = (o->b * phase >> 8) * falloff >> 8;
+            uint8_t r = (uint8_t)((o->r * phase >> 8) * falloff >> 8);
+            uint8_t g = (uint8_t)((o->g * phase >> 8) * falloff >> 8);
+            uint8_t b = (uint8_t)((o->b * phase >> 8) * falloff >> 8);
 
             buffer[p] = urgb_u32(r, g, b);
         }
-
-        o->phase += dir;   // slow evolution
+        o->phase += (typeof(o->phase))dir;   // slow evolution
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 static inline void christmas_wheel(uint8_t h,
@@ -1129,18 +1186,18 @@ static inline void christmas_wheel(uint8_t h,
                                    uint8_t *b)
 {
     if (h < 85) {              // red → gold
-        *r = 255;
-        *g = 60 + (h * 2);
+        *r = (uint8_t)255;
+        *g = (uint8_t)(60 + (h * 2));
         *b = 0;
     } else if (h < 170) {      // gold → green
         h -= 85;
-        *r = 255 - (h * 3);
+        *r = (uint8_t)(255 - (h * 3));
         *g = 255;
         *b = 0;
     } else {                   // green → red
-        h -= 170;
-        *r = h * 3;
-        *g = 255 - (h * 3);
+        h -= (uint8_t)170;
+        *r = (uint8_t)(h * 3);
+        *g = (uint8_t)(255 - (h * 3));
         *b = 0;
     }
 }
@@ -1181,11 +1238,16 @@ void pattern_ornaments_cycling(uint32_t *buffer,
             if (p < 0 || p >= (int)pixels)
                 continue;
 
-            uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            // uint8_t falloff = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+            uint32_t scaled = (uint32_t)abs(d) * 255u / (uint32_t)ORNAMENT_RADIUS;
+            uint16_t falloff = (uint16_t)(255u - scaled);
 
-            uint8_t r = (r0 * br >> 8) * falloff >> 8;
-            uint8_t g = (g0 * br >> 8) * falloff >> 8;
-            uint8_t b = (b0 * br >> 8) * falloff >> 8;
+            int tmp = (r0 * br >> 8) * falloff >> 8;
+            uint8_t r = (uint8_t)tmp;
+            tmp = (g0 * br >> 8) * falloff >> 8;
+            uint8_t g = (uint8_t)tmp;
+            tmp = (b0 * br >> 8) * falloff >> 8;
+            uint8_t b = (uint8_t)tmp;
 
             buffer[p] = urgb_u32(r, g, b);
         }
@@ -1194,7 +1256,9 @@ void pattern_ornaments_cycling(uint32_t *buffer,
         o->hue   += 1;          // color cycle speed
     }
 
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
@@ -1219,7 +1283,7 @@ static void init_ornament_clusters(uint32_t pixels) {
     uint32_t pos = CLUSTER_SPACING / 2;
 
     for (int i = 0; i < MAX_CLUSTERS && pos < pixels; ++i) {
-        clusters[i].center = pos;
+        clusters[i].center = (uint16_t)pos;
         clusters[i].size   = CLUSTER_MIN_SIZE +
                               (xorshift32() % (CLUSTER_MAX_SIZE - CLUSTER_MIN_SIZE + 1));
         clusters[i].hue    = xorshift32() & 0xFF;
@@ -1268,7 +1332,7 @@ void pattern_ornament_clusters(uint32_t *buffer,
         christmas_wheel(cl->hue, &r0, &g0, &b0);
 
         // bulbs inside cluster
-        for (int b = 0; b < cl->size; ++b) {
+        for (uint16_t b = 0; b < cl->size; ++b) {
             int bulb_center =
                 (int)cl->center +
                 (b - (cl->size - 1) / 2) * BULB_SPACING;
@@ -1277,21 +1341,29 @@ void pattern_ornament_clusters(uint32_t *buffer,
                 continue;
 
             // slight per-bulb phase offset
-            uint8_t bulb_br = br - (b * 12);
+            uint8_t bulb_br = br - (uint8_t)(b * 12);
 
             for (int d = -ORNAMENT_RADIUS; d <= ORNAMENT_RADIUS; ++d) {
                 int p = bulb_center + d;
                 if (p < 0 || p >= (int)pixels)
                     continue;
 
-                uint8_t falloff =
-                    255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+                // uint16_t falloff = (uint16_t)(255 - (abs(d) * 255 / ORNAMENT_RADIUS));
+                uint32_t scaled = (uint32_t)abs(d) * 255u / (uint32_t)ORNAMENT_RADIUS;
+                uint16_t falloff = (uint16_t)(255u - scaled);
 
-                uint8_t r = (r0 * bulb_br >> 8) * falloff >> 8;
-                uint8_t g = (g0 * bulb_br >> 8) * falloff >> 8;
-                uint8_t bcol = (b0 * bulb_br >> 8) * falloff >> 8;
+                int temp;
 
-                buffer[p] = urgb_u32(r, g, bcol);
+                temp = (r0 * bulb_br >> 8) * falloff;
+                uint16_t r = (uint16_t)(temp >> 8);
+
+                temp = (g0 * bulb_br >> 8) * falloff;
+                uint16_t g = (uint16_t)(temp >> 8);
+
+                temp = (b0 * bulb_br >> 8) * falloff;
+                uint16_t bcol = (uint16_t)(temp >> 8);
+
+                buffer[p] = urgb_u32((uint8_t)r, (uint8_t)g, (uint8_t)bcol);
             }
         }
 
@@ -1299,34 +1371,20 @@ void pattern_ornament_clusters(uint32_t *buffer,
         cl->hue   += 1;   // color cycling speed
     }
 
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
-/**
- * Global slow fade: one random color → another (whole strip)
- * Characteristics
- *  - Entire tree smoothly fades between colors
- *  - Extremely calm
- *  - Perfect as “idle / night mode”
- */
-// typedef struct {
-//     uint8_t r, g, b;
-// } rgb_t;
-
-// static rgb_t color_from;
-// static rgb_t color_to;
-// static uint16_t fade_pos;   // 0..4096
-// static uint8_t fade_init;
 
 /**
  * Random color generator (pleasant range)
  */
 static rgb_t random_soft_color(void) {
     rgb_t c;
-    c.r = 80  + (xorshift32() & 0x7F);
-    c.g = 80  + (xorshift32() & 0x7F);
-    c.b = 80  + (xorshift32() & 0x7F);
+    c.r = (uint8_t)(80  + (xorshift32() & 0x7F));
+    c.g = (uint8_t)(80  + (xorshift32() & 0x7F));
+    c.b = (uint8_t)(80  + (xorshift32() & 0x7F));
     return c;
 }
 
@@ -1335,25 +1393,25 @@ static rgb_t random_visible_color(void) {
     uint8_t h = xorshift32() & 0xFF;
 
     if (h < 85) {                 // red → yellow
-        c.r = 255;
-        c.g = h * 3;
+        c.r = (uint8_t)255;
+        c.g = (uint8_t)(h * 3);
         c.b = 0;
     } else if (h < 170) {          // yellow → green
-        h -= 85;
-        c.r = 255 - h * 3;
-        c.g = 255;
+        h -= (uint8_t)85;
+        c.r = (uint8_t)(255 - h * 3);
+        c.g = (uint8_t)255;
         c.b = 0;
     } else {                       // green → red
-        h -= 170;
-        c.r = 0;
-        c.g = 255 - h * 3;
-        c.b = h * 3;
+        h -= (uint8_t)170;
+        c.r = (uint8_t)0;
+        c.g = (uint8_t)(255 - h * 3);
+        c.b = (uint8_t)(h * 3);
     }
 
     // soften (avoid harsh saturation)
-    c.r = (c.r >> 1) + 40;
-    c.g = (c.g >> 1) + 40;
-    c.b = (c.b >> 1) + 40;
+    c.r = (uint8_t)((c.r >> 1) + 40);
+    c.g = (uint8_t)((c.g >> 1) + 40);
+    c.b = (uint8_t)((c.b >> 1) + 40);
     return c;
 }
 
@@ -1372,6 +1430,8 @@ void pattern_global_color_fade(uint32_t *buffer,
     static uint16_t pos;
     static uint8_t init;
 
+    (void)dir;
+
     if (!init) {
         from = random_visible_color();
         to   = random_visible_color();
@@ -1380,14 +1440,21 @@ void pattern_global_color_fade(uint32_t *buffer,
     }
 
     // pos: 0..255
-    uint8_t t8 = pos;
+    uint16_t t8 = pos;
 
-    uint8_t r = from.r + ((to.r - from.r) * t8 >> 8);
-    uint8_t g = from.g + ((to.g - from.g) * t8 >> 8);
-    uint8_t b = from.b + ((to.b - from.b) * t8 >> 8);
+    uint16_t r = (uint16_t)((to.r - from.r) * t8);
+    r >>= 8;
+    r += from.r;
+
+    uint16_t g = (uint16_t)((to.g - from.g) * t8);
+    g >>= 8;
+    g += from.g;
+    uint16_t b = (uint16_t)((to.b - from.b) * t8);
+    b >>= 8;
+    b += from.b;
 
     for (uint32_t i = 0; i < pixels; ++i)
-        buffer[i] = urgb_u32(r, g, b);
+        buffer[i] = urgb_u32((uint8_t)r, (uint8_t)g, (uint8_t)b);
 
     pos += 1;   // 255 frames ≈ 5.1 s @ 50 FPS
 
@@ -1444,10 +1511,10 @@ static void init_fade_clusters(uint32_t pixels) {
     uint32_t pos = CLUSTER_SPACING / 2;
 
     for (int i = 0; i < MAX_CLUSTERS && pos < pixels; ++i) {
-        fade_clusters[i].center = pos;
-        fade_clusters[i].size   = CLUSTER_MIN_SIZE +
+        fade_clusters[i].center = (uint16_t)pos;
+        fade_clusters[i].size   = (uint8_t)(CLUSTER_MIN_SIZE +
                                   (xorshift32() %
-                                   (CLUSTER_MAX_SIZE - CLUSTER_MIN_SIZE + 1));
+                                   (CLUSTER_MAX_SIZE - CLUSTER_MIN_SIZE + 1)));
         fade_clusters[i].from   = random_soft_color();
         fade_clusters[i].to     = random_soft_color();
         fade_clusters[i].pos    = xorshift32() & 0x0FFF;
@@ -1473,11 +1540,12 @@ void pattern_cluster_color_fade(uint32_t *buffer,
         uint8_t  breath;
     } cl[MAX_CLUSTERS];
 
+    (void)dir;
     if (!init) {
-        uint32_t p = CLUSTER_SPACING / 2;
+        uint16_t p = CLUSTER_SPACING / 2;
         for (int i = 0; i < MAX_CLUSTERS && p < pixels; ++i) {
             cl[i].center = p;
-            cl[i].size   = 2 + (xorshift32() % 3);
+            cl[i].size   = 2 + (uint8_t)(xorshift32() % 3);
             cl[i].from   = random_visible_color();
             cl[i].to     = random_visible_color();
             cl[i].pos    = xorshift32() & 0xFF;
@@ -1494,12 +1562,20 @@ void pattern_cluster_color_fade(uint32_t *buffer,
     for (int i = 0; i < MAX_CLUSTERS; ++i) {
         uint8_t t8 = cl[i].pos;
 
-        uint8_t r0 = cl[i].from.r + ((cl[i].to.r - cl[i].from.r) * t8 >> 8);
-        uint8_t g0 = cl[i].from.g + ((cl[i].to.g - cl[i].from.g) * t8 >> 8);
-        uint8_t b0 = cl[i].from.b + ((cl[i].to.b - cl[i].from.b) * t8 >> 8);
+        uint16_t r0 = (uint16_t)((cl[i].to.r - cl[i].from.r) * t8);
+        r0 >>= 8;
+        r0 += cl[i].from.r;
+
+        uint16_t g0 = (uint16_t)((cl[i].to.g - cl[i].from.g) * t8);
+        g0 >>= 8;
+        g0 += cl[i].from.g;
+
+        uint16_t b0 = (uint16_t)((cl[i].to.b - cl[i].from.b) * t8);
+        b0 >>= 8;
+        b0 += cl[i].from.b;
 
         // breathing envelope
-        uint8_t br = cl[i].breath;
+        uint16_t br = cl[i].breath;
         if (br > 127) br = 255 - br;
         br <<= 1;  // 0..254
 
@@ -1512,11 +1588,12 @@ void pattern_cluster_color_fade(uint32_t *buffer,
                 if (p < 0 || p >= (int)pixels)
                     continue;
 
-                uint8_t fall = 255 - (abs(d) * 255 / ORNAMENT_RADIUS);
+                uint8_t fall = 255;
+                fall -= (uint8_t)(abs(d) * 255 / ORNAMENT_RADIUS);
 
-                uint8_t r = (r0 * br >> 8) * fall >> 8;
-                uint8_t g = (g0 * br >> 8) * fall >> 8;
-                uint8_t bcol = (b0 * br >> 8) * fall >> 8;
+                uint8_t r = (uint8_t)((r0 * br >> 8) * fall >> 8);
+                uint8_t g = (uint8_t)((g0 * br >> 8) * fall >> 8);
+                uint8_t bcol = (uint8_t)((b0 * br >> 8) * fall >> 8);
 
                 buffer[p] = urgb_u32(r, g, bcol);
             }
@@ -1596,7 +1673,7 @@ void pattern_connection_show(uint32_t *buffer,
     const uint8_t base_g = 80;
     const uint8_t base_b = 30;
     
-
+    (void)dir;
 #ifdef OUTDOOR_TREE_WS2815
     const uint32_t id[4] = {199, 200, 399, 400};
 #else // OUTDOOR_TREE_WS2815
@@ -1624,18 +1701,28 @@ void pattern_fade_show(uint32_t *buffer,
     static uint16_t pos;
     // static uint8_t init;
 
+    (void)dir;  // mitigate warning unused parameter
+
     // con1 = 200;
     // con2 = 400;
 
     // pos: 0..255
-    uint8_t t8 = pos;
+    uint16_t t8 = pos;
 
-    uint8_t r = from.r + ((to.r - from.r) * t8 >> 8);
-    uint8_t g = from.g + ((to.g - from.g) * t8 >> 8);
-    uint8_t b = from.b + ((to.b - from.b) * t8 >> 8);
+    uint16_t r = (uint16_t)((to.r - from.r) * t8);
+    r >>= 8;
+    r += from.r;
+
+    uint16_t g = (uint16_t)((to.g - from.g) * t8);
+    g >>= 8;
+    g += from.g;
+
+    uint16_t b = (uint16_t)((to.b - from.b) * t8);
+    b >>= 8;
+    b += from.b;
 
     for (uint32_t i = 0; i < pixels; ++i)
-        buffer[i] = urgb_u32(r, g, b);
+        buffer[i] = urgb_u32((uint8_t)r, (uint8_t)g, (uint8_t)b);
 
     pos += 1;   // 255 frames ≈ 5.1 s @ 50 FPS
 
@@ -1651,6 +1738,7 @@ void pattern_zero(uint32_t *buffer,
                                uint32_t pixels,
                                int dir)
 {
+    (void)dir;  // mitigate warning unused parameter
 
     for (uint32_t i = 0; i < pixels; ++i) {
         buffer[i] = 0; // urgb_u32(base_r, base_g, base_b);

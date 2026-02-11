@@ -199,7 +199,8 @@ bool pwm_drv_init(uint32_t pwm_freq_hz, uint16_t pwm_wrap)
 
 
     uint32_t sys_clk = clock_get_hz(clk_sys);
-    float clk_div = (float)sys_clk / (pwm_freq_hz * (pwm_wrap + 1));
+    // float clk_div = (float)sys_clk / (pwm_freq_hz * (pwm_wrap + 1));
+    double clk_div = (double)sys_clk / ((double)pwm_freq_hz * ((double)pwm_wrap + 1));
 
     if (clk_div < 1.0f || clk_div > 256.0f) {
         return false;
@@ -218,12 +219,12 @@ bool pwm_drv_init(uint32_t pwm_freq_hz, uint16_t pwm_wrap)
     }
 
     // prepare only the used slices, only 2 in this case
-    for (int slice = 0; slice < NUM_PWM_SLICES; slice++) {
+    for (uint slice = 0; slice < NUM_PWM_SLICES; slice++) {
         if (!slices_used[slice]) continue;
 
         pwm_config cfg = pwm_get_default_config();
         pwm_config_set_wrap(&cfg, pwm_wrap);
-        pwm_config_set_clkdiv(&cfg, clk_div);
+        pwm_config_set_clkdiv(&cfg, (float)clk_div);
         pwm_init(slice, &cfg, false);
     }
 

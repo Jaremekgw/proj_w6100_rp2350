@@ -1,0 +1,40 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "pico",
+            "displayName": "Pico (Debug)",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "PICO_SDK_PATH": "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+            }
+        },
+        {
+            "name": "pico_wrong_out",
+            "displayName": "Custom configure preset",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "pico"
+        },
+        {
+            "name": "kitchen_pwm",
+            "configurePreset": "pico",
+            "targets": [
+                "kitchen_pwm"
+            ]
+        }
+    ]
+}

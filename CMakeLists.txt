@@ -37,8 +37,14 @@ message(STATUS "PICO_SDK_PATH = ${PICO_SDK_PATH}")
 # current status:
 # -- PICO_SDK_PATH = /home/jaremekg/.pico-sdk/sdk/2.2.0
 
-include(pico_sdk_import.cmake)
+# include(pico_sdk_import.cmake)
+include(${PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 include(wiznet_pico_c_sdk_version.cmake)
+
+# Tell CMake this is a bare-metal toolchain
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Set project name
 set(PROJECT_NAME projects_2350)
@@ -82,42 +88,19 @@ add_definitions(-DPICO_USE_FASTEST_SUPPORTED_CLOCK=1)
 
 # Set compile options
 add_compile_options(
-        -Wall
-        -Wno-format          # int != int32_t as far as the compiler is concerned because gcc has int32_t as long int
-        -Wno-unused-function # we have some for the docs that aren't called
-        -Wno-maybe-uninitialized
+        # -Wall
+        # -Wno-format          # int != int32_t as far as the compiler is concerned because gcc has int32_t as long int
+        # -Wno-unused-function # we have some for the docs that aren't called
+        # -Wno-maybe-uninitialized
+
+        # -fdiagnostics-absolute-paths    // That flag exists only in newer desktop GCC / Clang builds.
+        -fdiagnostics-show-location=once
+        $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
+
         )
 
 # Turn off CMake deprecation warnings for subprojects
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "Disable deprecated warnings")
-
-# # Add libraries in subdirectories - OPTION 1
-# add_subdirectory(
-#     ${CMAKE_SOURCE_DIR}/../work/WIZnet-PICO-C/libraries
-#     ${CMAKE_BINARY_DIR}/WIZnet-PICO-C/libraries
-# )
-# add_subdirectory(
-#     ${MBEDTLS_DIR}
-#     ${CMAKE_BINARY_DIR}/mbedtls
-# )
-# add_subdirectory(
-#     ${PORT_DIR}
-#     ${CMAKE_BINARY_DIR}/port
-# )
-
-# # Add libraries in subdirectories - OPTION 2
-# add_subdirectory(
-#     ${MBEDTLS_DIR}
-#     ${CMAKE_BINARY_DIR}/mbedtls
-# )
-# add_subdirectory(
-#     ${WIZNET_DIR}/..
-#     ${CMAKE_BINARY_DIR}/ioLibrary_Driver
-# )
-# add_subdirectory(
-#     ${PORT_DIR}
-#     ${CMAKE_BINARY_DIR}/port
-# )
 
 # # Add copied libraries from WIZnet-PICO-C - OPTION 3
 add_subdirectory(
@@ -127,7 +110,7 @@ add_subdirectory(
 
 # Add your projects
 add_subdirectory(stairs_ws2815)
-add_subdirectory(scd30_meter)
+# add_subdirectory(scd30_meter)
 add_subdirectory(tree_ws2815)
 add_subdirectory(kitchen_pwm)
 
@@ -135,7 +118,7 @@ add_subdirectory(kitchen_pwm)
 # Create a meta target that builds both projects
 add_custom_target(all_projects
         DEPENDS
-        proj_stairs_ws2815
-        proj_scd30_meter
+        # proj_stairs_ws2815
+        # proj_scd30_meter
         kitchen_pwm
 )

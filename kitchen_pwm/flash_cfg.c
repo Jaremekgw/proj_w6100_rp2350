@@ -14,6 +14,7 @@
 #include "utility.h"
 #include "wizchip_conf.h"
 #include "pico/unique_id.h"
+#include <stdio.h>
 
 
 // #define NETINFO_IP      {192, 168, 178, 225} 

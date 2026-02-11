@@ -131,10 +131,22 @@ void wizchip_init_nonblocking(void) {
     // }
     w6100_read_phy_status();
 
+    /**
+     * Disable sign-conversion warnings locally from WIZnet code
+     */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
     for (SOCKET sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
         close(sn);                  // Force close all sockets
         setSn_IR(sn, 0xFF);         // Clear any pending interrupts
     }
+
+/**
+ * Re-enable sign-conversion warnings
+ */
+#pragma GCC diagnostic pop
+
 }
 
 /* 

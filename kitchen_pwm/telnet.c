@@ -79,17 +79,17 @@ const char *cli_greeting =
 //void telnet_send(int sn, const char *msg, size_t len) {
 //    // Send the main message first
 //    send(sn, (uint8_t*)msg, len);   // strlen(msg)
-void telnet_send(int sn, const char *msg) {
+void telnet_send(uint8_t sn, const char *msg) {
     // Send the main message first
-    send(sn, (uint8_t *)msg, strlen(msg));
+    send(sn, (uint8_t *)msg, (uint16_t)strlen(msg));
 
     // Then send the prompt
     const char *prompt = TELNET_PROMPT;
-    send(sn, (uint8_t*)prompt, strlen(prompt));
+    send(sn, (uint8_t*)prompt, (uint16_t)strlen(prompt));
 }
 
 
-void telnet_greeting(int sn, const uint8_t *client_ip) {
+void telnet_greeting(uint8_t sn, const uint8_t *client_ip) {
     char msg[256];
 
     snprintf(msg, sizeof(msg), cli_greeting, 
@@ -111,25 +111,25 @@ static bool parse_ipv4(const char *s, uint8_t out[4]) {
     return true;
 }
 
-void cmd_config_show(int sn) {
+void cmd_config_show(uint8_t sn) {
         char msg[200];     // current use ??? bytes
         config_t *config = NULL;
         int len;
-        int id = 0;
+        uint8_t id = 0;
 
         config = config_get(id);
         // snprintf(msg, sizeof(msg), "Config [0]\r\n");
         // send(sn, (uint8_t *)msg, strlen(msg));
         len = config_show( config, id, msg, sizeof(msg));   // sending > 102 bytes
         printf("Telnet sent %d bytes to console for config[0]\r\n", len);
-        send(sn, (uint8_t *)msg, strlen(msg));
+        send(sn, (uint8_t *)msg, (uint16_t)strlen(msg));
 
         config = config_get(++id);
         // snprintf(msg, sizeof(msg), "Config [1]\r\n");
         // send(sn, (uint8_t *)msg, strlen(msg));
         len = config_show( config, id, msg, sizeof(msg));   // sending > 102 bytes
         printf("Telnet sent %d bytes to console for config[1]\r\n", len);
-        send(sn, (uint8_t *)msg, strlen(msg));
+        send(sn, (uint8_t *)msg, (uint16_t)strlen(msg));
 
         config = config_get(++id);
         // snprintf(msg, sizeof(msg), "Config [2]\r\n");
@@ -139,7 +139,7 @@ void cmd_config_show(int sn) {
 
         telnet_send(sn, msg);
 }
-void cmd_config_save(int sn) {
+void cmd_config_save(uint8_t sn) {
         bool ret;
         char msg[30];
         config_t *config = config_get(1);
@@ -149,24 +149,24 @@ void cmd_config_save(int sn) {
                 "Config saved to flash: %d\r\n", ret);
         telnet_send(sn, msg);
 }
-void cmd_config_set_ip(int sn, uint8_t *ip) {
+void cmd_config_set_ip(uint8_t *ip) {
         config_t *config = config_get(1);
         memcpy(config->net_info.ip, ip, 4);
 }
-void cmd_config_set_sn(int sn, uint8_t *snm) {
+void cmd_config_set_sn(uint8_t *snm) {
         config_t *config = config_get(1);
         memcpy(config->net_info.sn, snm, 4);
 }
-void cmd_config_set_gw(int sn, uint8_t *gw) {
+void cmd_config_set_gw(uint8_t *gw) {
         config_t *config = config_get(1);
         memcpy(config->net_info.gw, gw, 4);
 }
-void cmd_config_set_dns(int sn, uint8_t *dns) {
+void cmd_config_set_dns(uint8_t *dns) {
         config_t *config = config_get(1);
         memcpy(config->net_info.dns, dns, 4);
 }
 
- void handle_command(const char *cmd, int sn) {
+ void handle_command(const char *cmd, uint8_t sn) {
     // int sn = TCP_CLI_SOCKET;
 
     if (strcmp(cmd, "help") == 0) {
@@ -222,7 +222,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
 
 
     else if (strncmp(cmd, "rgbw", 4) == 0) {
-        uint32_t r, g, b, w;
+        uint16_t r, g, b, w;
 
         // Skip "rgbw" and parse four integers
         if (sscanf(cmd + 4, "%u %u %u %u", &r, &g, &b, &w) == 4 &&
@@ -250,7 +250,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
 
     
     else if (strncmp(cmd, "led", 3) == 0) {
-        uint32_t w;
+        uint16_t w;
 
         // Skip "rgbw" and parse four integers
         if (sscanf(cmd + 3, "%u", &w) == 1 &&
@@ -276,11 +276,11 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
 
 
     else if (strncmp(cmd, "fade", 4) == 0) {
-        uint32_t r, g, b, w, ms;
+        uint16_t r, g, b, w, ms;
 
         // Skip "fade" and parse four integers
         if (sscanf(cmd + 4, "%u %u %u %u %u", &r, &g, &b, &w, &ms) == 5 &&
-            r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023 && ms <= 65535) 
+            r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023 && ms <= 32000) 
         {
             char msg[64];
 
@@ -505,7 +505,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
             const char *arg = p + 3;
             while (*arg == ' ') arg++;
             if (parse_ipv4(arg, ip)) {
-                cmd_config_set_ip(sn, ip);
+                cmd_config_set_ip(ip);
                 telnet_send(sn, "IP updated\r\n");
             } else {
                 telnet_send(sn, "Invalid IP format\r\n");
@@ -518,7 +518,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
             const char *arg = p + 3;
             while (*arg == ' ') arg++;
             if (parse_ipv4(arg, snm)) {
-                cmd_config_set_sn(sn, snm);
+                cmd_config_set_sn(snm);
                 telnet_send(sn, "Subnet mask updated\r\n");
             } else {
                 telnet_send(sn, "Invalid subnet mask\r\n");
@@ -531,7 +531,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
             const char *arg = p + 3;
             while (*arg == ' ') arg++;
             if (parse_ipv4(arg, gw)) {
-                cmd_config_set_gw(sn, gw);
+                cmd_config_set_gw(gw);
                 telnet_send(sn, "Gateway updated\r\n");
             } else {
                 telnet_send(sn, "Invalid gateway\r\n");
@@ -544,7 +544,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
             const char *arg = p + 4;
             while (*arg == ' ') arg++;
             if (parse_ipv4(arg, dns)) {
-                cmd_config_set_dns(sn, dns);
+                cmd_config_set_dns(dns);
                 telnet_send(sn, "DNS updated\r\n");
             } else {
                 telnet_send(sn, "Invalid DNS address\r\n");
@@ -580,7 +580,7 @@ void cmd_config_set_dns(int sn, uint8_t *dns) {
 
     else if (strcmp(cmd, "exit") == 0) {
         const char *msg="Closing connection...\r\n";
-        send(sn, (uint8_t *)msg, strlen(msg));
+        send(sn, (uint8_t *)msg, (uint16_t)strlen(msg));
         sleep_ms(2);
         // Graceful disconnect, better to use telnet
         disconnect(sn);

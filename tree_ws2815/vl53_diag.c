@@ -29,7 +29,7 @@ extern void telnet_send(int sn, const char *msg);
 // // #define VL53_PIN_LPN        7   // 11 - not connected
 
 // Optional: if you tie to 3V3 on board, this pin might not exist in GPIO.
-#define VL53_PIN_SPI_I2C_N   (-1)
+// #define VL53_PIN_SPI_I2C_N   (-1)
 
 // Optional ST driver instance if you want probe
 // If you have p_dev global in your driver, expose a getter instead (recommended).
@@ -69,9 +69,9 @@ static void sendf(int sn, const char *fmt, ...) {
     telnet_send(sn, buf);
 }
 
-static void dump_one_gpio(int sn, int pin, const char *name)
+static void dump_one_gpio(int sn, uint pin, const char *name)
 {
-    if (pin < 0) {
+    if (pin > 29) {
         sendf(sn, "  %-8s: (not connected)\r\n", name);
         return;
     }
@@ -104,7 +104,8 @@ void vl53_diag_print_gpio(int sn)
     dump_one_gpio(sn, VL53_PIN_SCL,  "SCL");
     dump_one_gpio(sn, VL53_PIN_SDA, "SDA");
     #endif // VL53_SPI
-    dump_one_gpio(sn, VL53_PIN_SPI_I2C_N, "SPI_I2C_N");
+    // VL53_PIN_SPI_I2C_N is not used, directly tied to 3V3
+    // dump_one_gpio(sn, VL53_PIN_SPI_I2C_N, "SPI_I2C_N");
     telnet_send(sn, "\r\n");
 }
 

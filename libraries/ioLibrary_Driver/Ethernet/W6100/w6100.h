@@ -35,8 +35,7 @@
 #define      _W6100_H_
 
 #include <stdint.h>
-#include "wizchip_conf.h"
-
+// #include "../wizchip_conf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -3916,7 +3915,7 @@ void WIZCHIP_WRITE_BUF(uint32_t AddrSel, uint8_t* pBuf, uint16_t len);
             WIZCHIP_WRITE(WIZCHIP_OFFSET_INC(_Sn_DPORTR_(sn),1),(uint8_t)(dportr)); \
         }while(0);
 #define getSn_DPORTR(sn) \
-        ((((uint16_t)WIZCHIP_READ(_Sn_DPORTR_(sn))) << 8) + WIZCHIP_READ(WIZCHIP_OFFSET_INC(_Sn_DPORTR_(sn),1)))
+        ((uint16_t)((((uint16_t)WIZCHIP_READ(_Sn_DPORTR_(sn))) << 8) + WIZCHIP_READ(WIZCHIP_OFFSET_INC(_Sn_DPORTR_(sn),1))))
 #define getSn_DPORT(sn) getSn_DPORTR(sn)  
 #define setSn_DPORT(sn,dportr) setSn_DPORTR(sn,dportr) 
 

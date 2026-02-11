@@ -42,6 +42,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
         # ${CMAKE_CURRENT_LIST_DIR}               # for local headers
         # ${CMAKE_CURRENT_SOURCE_DIR}
         # ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/libraries
         )
 
 # and make sure the folder exists but ignored by Git
@@ -70,6 +71,21 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 
 add_custom_target(show_pio_headers_${TARGET_NAME}
     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
+)
+
+target_compile_options(${TARGET_NAME} PRIVATE
+    -Wall
+    -Wextra
+
+    -Wconversion
+    -Wsign-conversion
+    -Wshadow
+
+    #-Wpedantic
+    -Wno-format
+    -Wno-unused-function
+    -Wno-maybe-uninitialized
+    $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
 )
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)

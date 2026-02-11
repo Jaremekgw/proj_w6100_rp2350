@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
-#include <stdio.h>
+#include <pico/stdio.h>
 
 // CRC utility (standard reflected CRC32-IEEE)
 uint32_t config_crc32(const void *data, size_t len);

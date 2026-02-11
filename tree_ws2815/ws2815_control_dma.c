@@ -272,14 +272,14 @@ void ws2815_dma_init(void)
 {
     ws2815_dma_ch = dma_claim_unused_channel(true);
 
-    dma_channel_config c = dma_channel_get_default_config(ws2815_dma_ch);
+    dma_channel_config c = dma_channel_get_default_config((uint)ws2815_dma_ch);
     channel_config_set_dreq(&c, pio_get_dreq(ws2815_pio, ws2815_sm, true));
     channel_config_set_transfer_data_size(&c, DMA_SIZE_32);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
 
     dma_channel_configure(
-        ws2815_dma_ch,
+        (uint)ws2815_dma_ch,
         &c,
         &ws2815_pio->txf[ws2815_sm],   // write address (PIO FIFO)
         NULL,                          // read address (set per frame)
@@ -302,8 +302,8 @@ void ws2815_start_dma_write(uint led_count)
 
     ws2815_dma_done = false;
 
-    dma_channel_set_read_addr(ws2815_dma_ch, ws2815_buf, false);
-    dma_channel_set_trans_count(ws2815_dma_ch, led_count, true);
+    dma_channel_set_read_addr((uint)ws2815_dma_ch, ws2815_buf, false);
+    dma_channel_set_trans_count((uint)ws2815_dma_ch, led_count, true);
 }
 #endif // WS2815_PARALLEL
 
@@ -436,6 +436,7 @@ void ws2815_pattern_loop(uint32_t period_ms) {
  */
 void ws2815_loop(uint32_t period_ms)
 {
+    (void)period_ms;
 #ifdef WS2815_PARALLEL
     for (int i = 0; i < NUM_STRIPS; i++) {
         ws_strip_t *s = &strips[i];

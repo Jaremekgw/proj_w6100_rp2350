@@ -1,0 +1,19 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            // "name": "Custom configure preset",
+            "name": "pico",
+            "displayName": "Pico (Debug)",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            // "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                // "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "PICO_SDK_PATH": "/home/jaremekg/.pico-sdk/sdk/2.2.0"
+            }
+        }
+    ]
+}

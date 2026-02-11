@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+#include "pico/stdio.h"
+#include "stdlib.h"
 #include "port_common.h"
 
 #include "wizchip_conf.h"
@@ -21,6 +22,7 @@
 #include "vl53l8cx_drv.h"
 #include "pwm_api.h"
 #include "rd03d_api.h"
+#include <stdio.h>
 
 
 // variables for TCP loopback
@@ -34,8 +36,9 @@ static repeating_timer_t timer;
 volatile uint32_t tmr_ms_tick = 0;
 
 
-bool timer_callback(repeating_timer_t *rt) {
-    tmr_ms_tick++;     // Increment every 1 ms
+// bool timer_callback(repeating_timer_t *rt) {
+bool timer_callback() {
+    tmr_ms_tick++;  // Increment every 1 ms
     return true;    // Return true to keep repeating
 }
 
@@ -96,6 +99,7 @@ int main() {
     rd03d_api_init(cfg);
 
     // Create repeating timer with 1 ms interval
+    // if (!add_repeating_timer_ms(1, timer_callback, NULL, &timer)) {
     if (!add_repeating_timer_ms(1, timer_callback, NULL, &timer)) {
         printf("Failed to add timer\n");
         while (1);

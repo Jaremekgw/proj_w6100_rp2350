@@ -12,9 +12,26 @@
             "statusBarVisibility": "hidden"
         }
     },
+    "clangd.arguments": [
+        "--query-driver=**/arm-none-eabi-gcc"
+    ],
+    // 👇 Tell CMake Tools to use presets only
+    "cmake.useCMakePresets": "always",
+    "cmake.defaultConfigurePreset": "pico",
+    "cmake.configureOnOpen": false,
+
+    // 👇 Hard-pin CMake in vscode for pico project
+    "cmake.cmakePath": "/home/jaremekg/.pico-sdk/cmake/v3.31.5/bin/cmake",
+    // 👇 Add this block to navigate in editor, click causes jump to function
+    "editor.gotoLocation.enabled": true,
+    
+    "cmake.buildOutput": "terminal",
+    "cmake.terminal": "integrated",
+    // 👇 Add this block to get clickable file links
+    "cmake.buildDirectory": "${workspaceFolder}/build",
     "cmake.configureOnEdit": true,
     "cmake.automaticReconfigure": true,
-    "cmake.configureOnOpen": true,
+    // "cmake.configureOnOpen": true,     because is false above
     "cmake.generator": "Ninja",
     // 👇 Add this block to tell CMake where to find the Ninja binary
     "cmake.configureSettings": {
@@ -23,9 +40,13 @@
     "cmake.cmakePath": "${userHome}/.pico-sdk/cmake/v3.31.5/bin/cmake",
     "C_Cpp.debugShortcut": false,
     // 👇 Added those 3 lines to fix IntellSense
-    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.default.configurationProvider": "",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     // "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-arm",
+
 
     "terminal.integrated.env.windows": {
         "PICO_SDK_PATH": "${env:USERPROFILE}/.pico-sdk/sdk/2.2.0",
@@ -43,7 +64,7 @@
         "PATH": "${env:HOME}/.pico-sdk/toolchain/14_2_Rel1/bin:${env:HOME}/.pico-sdk/picotool/2.2.0-a4/picotool:${env:HOME}/.pico-sdk/cmake/v3.31.5/bin:${env:HOME}/.pico-sdk/ninja/v1.12.1:${env:PATH}"
     },
     "raspberry-pi-pico.cmakeAutoConfigure": false,
-    "raspberry-pi-pico.useCmakeTools": true,
+    "raspberry-pi-pico.useCmakeTools": false,
     "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.31.5/bin/cmake",
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "files.associations": {
@@ -62,5 +83,6 @@
         "variant": "c",
         "compare": "c",
         "config.h": "c"
-    }
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc"
 }

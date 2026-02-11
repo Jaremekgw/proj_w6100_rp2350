@@ -201,12 +201,12 @@ static const char *gpio_func_name(gpio_function_t f) {
         default:             return "NULL";
     }
 }
-static void print_one_gpio(int pin, const char *name)
+static void print_one_gpio(uint pin, const char *name)
 {
-    if (pin < 0) {
-        printf("  %-8s: (not connected)\r\n", name);
-        return;
-    }
+    // if (pin < 0) {
+    //     printf("  %-8s: (not connected)\r\n", name);
+    //     return;
+    // }
 
     bool level = gpio_get(pin);
     bool is_out = gpio_is_dir_out(pin);
@@ -364,17 +364,21 @@ uint8_t RdByte(
     uint8_t *p_value
 )
 {
-    uint8_t status;
     // (void)p_platform;
     #ifdef VL53_SPI
     vl53_spi_read(p_platform, RegisterAdress, p_value, 1);
-    status = 0;
+    return 0;
     #else
+    int8_t status;
     vl53_cs_set_active(p_platform);
     status = i2c_read_register(p_platform, RegisterAdress, p_value, 1);
     vl53_cs_set_inactive(p_platform);
+
+    if (status < 0) {
+        return 255; // Custom error code for failure
+    }
+    return 0; // Success
     #endif // VL53_SPI
-    return status;
 }
 
 uint8_t WrByte(
@@ -383,19 +387,21 @@ uint8_t WrByte(
     uint8_t value
 )
 {
-    uint8_t status;
     // (void)p_platform;
     #ifdef VL53_SPI
     vl53_spi_write(p_platform, RegisterAdress, &value, 1);
     return 0;
     #else
+    int8_t status;
     vl53_cs_set_active(p_platform);
     status = i2c_write_register(p_platform, RegisterAdress, &value, 1);
     vl53_cs_set_inactive(p_platform);
+    if (status < 0) {
+        return 255; // Custom error code for failure
+    }
+    return 0; // Success
     #endif // VL53_SPI
-    return status;
 }
-
 
 uint8_t RdMulti(
     VL53L8CX_Platform *p_platform,
@@ -404,17 +410,20 @@ uint8_t RdMulti(
     uint32_t size
 )
 {
-    uint8_t status;
     (void)p_platform;
     #ifdef VL53_SPI
     vl53_spi_read(p_platform, RegisterAdress, p_values, size);
     return 0;
     #else
+    int8_t status;
     vl53_cs_set_active(p_platform);
     status = i2c_read_register(p_platform, RegisterAdress, p_values, size);
     vl53_cs_set_inactive(p_platform);
+    if (status < 0) {
+        return 255; // Custom error code for failure
+    }
+    return 0; // Success
     #endif // VL53_SPI
-    return status;
 }
 
 uint8_t WrMulti(
@@ -424,19 +433,21 @@ uint8_t WrMulti(
     uint32_t size
 )
 {
-    uint8_t status;
     (void)p_platform;
     #ifdef VL53_SPI
     vl53_spi_write(p_platform, RegisterAdress, p_values, size);
     return 0;
     #else
+    int8_t status;
     vl53_cs_set_active(p_platform);
     status = i2c_write_register(p_platform, RegisterAdress, p_values, size);
     vl53_cs_set_inactive(p_platform);
+    if (status < 0) {
+        return 255; // Custom error code for failure
+    }
+    return 0; // Success
     #endif // VL53_SPI
-    return status;
 }
-
 
 uint8_t WaitMs(
     VL53L8CX_Platform *p_platform,

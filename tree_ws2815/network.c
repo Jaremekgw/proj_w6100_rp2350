@@ -230,7 +230,7 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
 // TCP CLI Service
 // ----------------------------------------------------------------
 int32_t tcp_cli_service(void) {
-    int8_t  sn = TCP_CLI_SOCKET;
+    uint8_t  sn = TCP_CLI_SOCKET;
     uint16_t port = TCP_CLI_PORT;
     static absolute_time_t last_rx_time = {0};   // Timestamp of last received byte
     int32_t ret;
@@ -238,18 +238,18 @@ int32_t tcp_cli_service(void) {
     uint8_t destip[4];
     uint16_t destport;
 
-    switch (getSn_SR(sn)) {
+    switch (getSn_SR((uint32_t)sn)) {
 
     case SOCK_ESTABLISHED:
         // On new connection
-        if (getSn_IR(sn) & Sn_IR_CON) {
-            getSn_DIPR(sn, destip);
-            destport = getSn_DPORT(sn);
+        if (getSn_IR((uint32_t)sn) & Sn_IR_CON) {
+            getSn_DIPR((uint32_t)sn, destip);
+            destport = getSn_DPORT((uint32_t)sn);
 
             printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
                    sn, destip[0], destip[1], destip[2], destip[3], destport);
 
-            setSn_IR(sn, Sn_IR_CON);
+            setSn_IR((uint32_t)sn, Sn_IR_CON);
 
             // Reset timeout timer
             last_rx_time = get_absolute_time();
@@ -283,7 +283,7 @@ int32_t tcp_cli_service(void) {
             // No data – check timeout
             if (absolute_time_diff_us(last_rx_time, get_absolute_time()) >= (CLI_TIMEOUT_MS * 1000LL)) {
                 const char *msg = "timeout\r\n";
-                send(sn, (uint8_t*)msg, strlen(msg));
+                send(sn, (uint8_t*)msg, (uint16_t)strlen(msg));
                 printf("[CLI] Idle timeout, closing socket %d\r\n", sn);
                 disconnect(sn);
                 return 0;
@@ -468,6 +468,9 @@ static volatile uint8_t ik_pending_table_idx = 0;
  */
 void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
 {
+    (void)gpio;
+    (void)events;
+
     int32_t ret;
     // intr_kind pending;  // 
     intr_kind sock_bit = (IK_SOCK_0 << UDP_DDP_SOCKET);
@@ -518,7 +521,7 @@ void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
                         // irq_error_count++;
                     }
                 }
-                setSn_IR(sock_num, Sn_IR_RECV);      // clear socket latch
+                setSn_IR((uint32_t)sock_num, Sn_IR_RECV);      // clear socket latch
     //         } // if (sn_ir & Sn_IR_RECV)
             ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);    //  wizchip_clrinterrupt(sock_bit);   // clear global bit
     //     } // if (pending & sock_bit)
@@ -588,7 +591,9 @@ void udp_socket_init(void) {
     }
 
     intr_kind sock_bit = (IK_SOCK_0 << ddp_sock);
-    sn = socket(ddp_sock, protocol, port, SOCK_IO_NONBLOCK);
+    int8_t rc = socket((uint32_t)ddp_sock, protocol, port, SOCK_IO_NONBLOCK);
+    if (rc < 0) return;
+    sn = (typeof(sn))rc;
 
     if(sn != ddp_sock){    /* reinitialize the socket */
         #ifdef _UDP_DEBUG_
@@ -602,7 +607,7 @@ void udp_socket_init(void) {
 
     // Per-socket: enable only RECV interrupt
     // Sn_IMR bits: Sn_IR_SENDOK(0x10), Sn_IR_TIMEOUT(0x08), Sn_IR_RECV(0x04), ...
-    setSn_IMR(ddp_sock, Sn_IR_RECV);     // mask bit RECV=1
+    setSn_IMR((uint32_t)ddp_sock, Sn_IR_RECV);     // mask bit RECV=1
     // Clear any pending per-socket interrupts
     ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);  // wizchip_clrinterrupt(sock_bit);  // clear any pending per-socket interrupts  // setSn_IR(ddp_sock, 0xFF);
 }
@@ -611,16 +616,16 @@ void udp_socket_init(void) {
 
 void process_udp_ring(void) {
 
-    uint8_t rd_idx = (udp_ring_idx + 1) % UDP_RING_COUNT;
+    uint8_t rd_idx = (typeof(rd_idx))((udp_ring_idx + 1) % UDP_RING_COUNT);
 
-    for (uint8_t id = 0; id < UDP_RING_COUNT; id++) {
+    for (uint8_t x = 0; x < UDP_RING_COUNT; x++) {
         // printf("UDP ring slot %d: len=%d\n", id, udp_rx_buf_len[id]);
         if (udp_rx_buf_len[rd_idx] != 0) {
             drain_loop_count++;
             process_ddp_packet(udp_rx_ring_buf[rd_idx], udp_rx_buf_len[rd_idx]);
             udp_rx_buf_len[rd_idx] = 0;  // mark slot free
         }
-        rd_idx = (rd_idx + 1) % UDP_RING_COUNT;
+        rd_idx = (typeof(rd_idx))((rd_idx + 1) % UDP_RING_COUNT);
     }
 }
 
@@ -691,7 +696,7 @@ int32_t ddp_loop(void) {
 
 static void ddp_copy_payload(const uint8_t *payload, uint32_t offset, uint32_t length)
 {
-    int32_t in, out;
+    uint32_t in, out;
 
     for(in = 0, out = offset; in < length; in++, out++) {
         rx_fb[out] = payload[in];

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 #include "hardware/dma.h"
 #include "hardware/regs/dma.h"
@@ -149,7 +150,10 @@ int msg_printf(char **cursor, size_t *remaining, const char *fmt, ...) {
     }
 
     *cursor += written;
-    *remaining -= written;
+    // *remaining -= written;
+    size_t w = (size_t)written;
+    *remaining -= w;
+
     return written;
 }
 

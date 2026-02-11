@@ -28,15 +28,18 @@ target_sources(${TARGET_NAME} PRIVATE
         rd03d_cli.c
         )
 
-target_include_directories(${TARGET_NAME} PRIVATE
-        ${PIO_OUTPUT_DIR}                       # see: # ${CMAKE_CURRENT_BINARY_DIR}/generated
-        # ${CMAKE_CURRENT_LIST_DIR}               # for local headers
-        # ${CMAKE_CURRENT_SOURCE_DIR}
-        # ${CMAKE_CURRENT_BINARY_DIR}
-        )
+# Remove this entirely, 
+# - You are manually exposing library headers to the executable
+# - This bypasses CMake’s dependency model
+#target_include_directories(${TARGET_NAME} PRIVATE
+#        ${CMAKE_SOURCE_DIR}/libraries/
+#        )
 
-# and make sure the folder exists but ignored by Git
-file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
+# This creats problem in clangd with assert.h
+# # if you want warning suppression for external libraries
+# target_compile_options(${TARGET_NAME} PRIVATE
+#         -isystem ${CMAKE_SOURCE_DIR}/libraries/
+# )
 
 # pull in common dependencies and additional spi hardware support
 target_link_libraries(${TARGET_NAME} PRIVATE
@@ -46,17 +49,33 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_pwm
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
-        ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
         LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
+        ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         pico_bootrom
         hardware_flash
         boot_uf2_headers
         hardware_clocks         # ??? for setting clock speeds
         )
 
-add_custom_target(show_pio_headers_${TARGET_NAME}
-    COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
+# add_custom_target(show_pio_headers_${TARGET_NAME}
+#     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
+# )
+
+target_compile_options(${TARGET_NAME} PRIVATE
+    -Wall
+    -Wextra
+
+    -Wconversion
+    -Wsign-conversion
+    -Wshadow
+#     -Wundef
+
+#     -Wpedantic
+    -Wno-format
+    -Wno-unused-function
+    -Wno-maybe-uninitialized
+    $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
 )
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)
