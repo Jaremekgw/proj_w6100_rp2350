@@ -85,18 +85,13 @@ add_custom_target(show_pio_headers_${TARGET_NAME}
     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
 )
 
-# target_compile_options(${TARGET_NAME} PRIVATE
-#     -Wall
-#     -Wextra
-#     -Wconversion
-#     -Wsign-conversion
-#     -Wshadow
-#     -Wno-format
-#     -Wno-unused-function
-#     -Wno-maybe-uninitialized
-#     $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
-# )
-target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
+enable_strict_warnings(${TARGET_NAME})
+
+# Then suppress SDK warnings properly:
+target_compile_options(pico_stdlib INTERFACE -Wno-sign-conversion)
+# And vendor:
+target_compile_options(IOLIBRARY_FILES PRIVATE -Wno-unused-function)
+
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)
 # create absolute uf2, and package in flash, use it for only first load on board

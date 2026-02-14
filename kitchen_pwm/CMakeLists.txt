@@ -1,29 +1,6 @@
 set(TARGET_NAME kitchen_pwm)
-set(APP_OBJ kitchen_pwm_app)
-
-# Correct structure:
-# add_library(kitchen_pwm_app OBJECT main.c pwm_api.c ... )
-#
-# target_link_libraries(kitchen_pwm_app PRIVATE project_warnings)
-#
-# add_executable(kitchen_pwm)
-#
-# target_link_libraries(kitchen_pwm PRIVATE kitchen_pwm_app ... )
-#
-
-# add_library($APP_OBJ OBJECT 
-
-
-# )
-
 
 add_executable(${TARGET_NAME})
-
-# set(PIO_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)  # for the generated pio header
-# pico_generate_pio_header(${TARGET_NAME}
-#     ${CMAKE_CURRENT_LIST_DIR}/ws2815.pio
-#     OUTPUT_DIR ${PIO_OUTPUT_DIR}
-# )
 
 target_sources(${TARGET_NAME} PRIVATE
         main.c
@@ -43,7 +20,7 @@ target_sources(${TARGET_NAME} PRIVATE
         rd03d_drv.c
         rd03d_api.c
         rd03d_cli.c
-        )
+)
 
 # Remove this entirely, 
 # - You are manually exposing library headers to the executable
@@ -53,10 +30,7 @@ target_sources(${TARGET_NAME} PRIVATE
 #        )
 
 # This tells GCC: Treat headers in this directory as system headers. (SYSTEM didn't help)
-target_include_directories(${TARGET_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/libraries/port/ioLibrary_Driver/inc
-    # ${CMAKE_SOURCE_DIR}/libraries
-)
+
 
 set_source_files_properties(
     wizchip_custom.c
@@ -76,6 +50,7 @@ set_source_files_properties(
 # pull in common dependencies and additional spi hardware support
 target_link_libraries(${TARGET_NAME} PRIVATE
         pico_stdlib
+        # pico_unique_id
         hardware_spi
         hardware_i2c
         hardware_pwm
@@ -88,24 +63,15 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_flash
         boot_uf2_headers
         hardware_clocks         # ??? for setting clock speeds
-        )
+)
 
-# add_custom_target(show_pio_headers_${TARGET_NAME}
-#     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
-# )
 
-# target_compile_options(${TARGET_NAME} PRIVATE
-#     -Wall
-#     -Wextra
-#     -Wconversion
-#     -Wsign-conversion
-#     -Wshadow
-#     -Wno-format
-#     -Wno-unused-function
-#     -Wno-maybe-uninitialized
-#     $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
-# )
-target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
+enable_strict_warnings(${TARGET_NAME})
+
+# Then suppress SDK warnings properly:
+target_compile_options(pico_stdlib INTERFACE -Wno-sign-conversion)
+# And vendor:
+target_compile_options(IOLIBRARY_FILES PRIVATE -Wno-unused-function)
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)
 

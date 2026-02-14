@@ -349,7 +349,7 @@ bool pwm_rgbw_ddp_ingest(const uint8_t* payload, uint16_t payload_len)
 
 static const char* skip_ws(const char* s) { while (s && *s && isspace((unsigned char)*s)) s++; return s; }
 
-static bool read_u32(const char** ps, uint32_t* out)
+static bool __attribute__((unused)) read_u32(const char** ps, uint32_t* out)
 {
     const char* s = skip_ws(*ps);
     if (!s || !*s || !isdigit((unsigned char)*s)) return false;

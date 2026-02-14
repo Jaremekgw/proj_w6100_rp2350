@@ -86,25 +86,28 @@ add_definitions(-DMBEDTLS_CONFIG_FILE="${PORT_DIR}/mbedtls/inc/ssl_config.h")
 add_definitions(-DSET_TRUSTED_CERT_IN_SAMPLES)
 add_definitions(-DPICO_USE_FASTEST_SUPPORTED_CLOCK=1)
 
-# # Set compile options
-# add_compile_options(
-#         -fdiagnostics-show-location=once
-#         $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
-#         )
+# #  Create a dedicated warning interface library (see: target_link_libraries)
+# add_library(project_warnings INTERFACE)
+# target_compile_options(project_warnings INTERFACE
+#     -Wall
+#     -Wextra
+#     -Wconversion
+#     -Wsign-conversion
+#     -Wshadow
+#     # -Wformat
+#     -Wno-format
+# )
 
-#  Create a dedicated warning interface library (see: target_link_libraries)
-add_library(project_warnings INTERFACE)
-
-target_compile_options(project_warnings INTERFACE
-    -Wall
-    -Wextra
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-    # -Wformat
-    -Wno-format
-    # -Wno-unused-function    # suppress: libraries/port/ioLibrary_Driver/inc/wizchip_spi.h:146:13: warning: 'wizchip_critical_section_lock' declared 'static' but never defined [-Wunused-function]
-)
+function(enable_strict_warnings target)
+    target_compile_options(${target} PRIVATE
+        -Wall
+        -Wextra
+        -Wconversion
+        -Wsign-conversion
+        -Wshadow
+        -Wno-format
+    )
+endfunction()
 
 # Turn off CMake deprecation warnings for subprojects
 set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "Disable deprecated warnings")
