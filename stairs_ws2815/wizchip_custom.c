@@ -133,7 +133,7 @@ void wizchip_init_nonblocking(void) {
 
     for (SOCKET sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
         close(sn);                  // Force close all sockets
-        setSn_IR(sn, 0xFF);         // Clear any pending interrupts
+        setSn_IR((uint32_t)sn, 0xFF);         // Clear any pending interrupts
     }
 }
 

@@ -87,10 +87,24 @@ hardware_pio
 
 function(disable_vendor_warnings target)
     target_compile_options(${target} PRIVATE
-        -Wno-conversion
-        -Wno-sign-conversion
-        -Wno-pedantic
-        -Wno-pointer-sign
+        # -Wno-conversion
+        # -Wno-sign-conversion
+        # -Wno-pedantic
+        # -Wno-pointer-sign
+        # # -Wno-unused-function
+
+        $<$<COMPILE_LANGUAGE:C>:
+            -Wno-conversion
+            -Wno-sign-conversion
+            -Wno-pedantic
+            -Wno-pointer-sign
+            -Wno-unused-function
+        >
+        $<$<COMPILE_LANGUAGE:CXX>:
+            -Wno-conversion
+            -Wno-sign-conversion
+            -Wno-pedantic
+        >
     )
 endfunction()
 

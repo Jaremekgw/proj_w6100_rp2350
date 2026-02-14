@@ -17,7 +17,8 @@
 
 
 // dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)" dir = [-1, 0, 1]
-static int t = 0, dir = 1;
+static uint32_t t = 0;
+static int dir = 1;
 
 // horrible temporary hack to avoid changing pattern code
 static uint8_t *current_strip_out;
@@ -72,20 +73,20 @@ static inline uint8_t gamma2_u8(uint8_t x) {
 }
 // If you start from 0..100%:
 static inline uint8_t gamma2_percent(uint8_t p) {
-    uint16_t x = (uint16_t)p * 255 / 100;       // scale to 0..255
+    uint16_t x = (uint16_t)(p * 255 / 100);       // scale to 0..255
     return gamma2_u8((uint8_t)x);
 }
 
-// Best quality, still small: LUT (γ=2.2)
-static uint8_t gamma22_lut[256];
-static void build_gamma22_lut(void) {
-    const float gamma = 2.2f;
-    for (int i = 0; i < 256; ++i) {
-        float lin = (float)i / 255.0f;
-        int v = (int)(255.0f * powf(lin, gamma) + 0.5f);
-        gamma22_lut[i] = (uint8_t)(v > 255 ? 255 : v);
-    }
-}
+// // Best quality, still small: LUT (γ=2.2)
+// static uint8_t gamma22_lut[256];
+// static void build_gamma22_lut(void) {
+//     const float gamma = 2.2f;
+//     for (int i = 0; i < 256; ++i) {
+//         float lin = (float)i / 255.0f;
+//         int v = (int)(255.0f * powf(lin, gamma) + 0.5f);
+//         gamma22_lut[i] = (uint8_t)(v > 255 ? 255 : v);
+//     }
+// }
 
 // typedef void (*pattern)(uint8_t *buffer, uint strips, uint pixels);
 
@@ -96,15 +97,15 @@ static uint8_t start_column_sel_color[NUM_PIXELS];  // random color selection fo
 
 
 void init_start_strips(void) {
-    uint32_t y, x;
+    uint16_t y, x;
     uint8_t color, r, g, b, val;
 
     for (y = 0; y < NUM_STRIPS; ++y) {
-        start_strip_pos[y] = (rand() % NUM_PIXELS);
+        start_strip_pos[y] = (uint32_t)(rand() % NUM_PIXELS);
     }
     for (y = 0; y < NUM_STRIPS; ++y) {
-        color = rand() % 7;
-        val = rand() % 256;
+        color = (typeof(color))(rand() % 7);
+        val = (typeof(val))(rand() % 256);
         r = (color & 0x4) ? val : 0;
         g = (color & 0x2) ? val : 0;
         b = (color & 0x1) ? val : 0;
@@ -112,28 +113,30 @@ void init_start_strips(void) {
         start_strip_color[y] = urgb_u32(r, g, b);
     }
     for (x = 0; x < NUM_PIXELS; ++x) {
-        start_column_pos[x] = rand() % NUM_STRIPS;
+        start_column_pos[x] = (uint32_t)(rand() % NUM_STRIPS);
     }
     for (x = 0; x < NUM_PIXELS; ++x) {
-        start_column_sel_color[x] = rand() % 8;
+        start_column_sel_color[x] = (uint8_t)(rand() % 8);
     }
 
     for (y = 0; y < sizeof(linear_brightness_percent); y++) {
-        linear_brightness_percent[y] = percent_to_u8(y);
+        linear_brightness_percent[y] = percent_to_u8((uint8_t)y);
     }
     for (y = 0; y < sizeof(linear_brightness_percept); y++) {
-        linear_brightness_percept[y] = percept_to_u8(y);
+        linear_brightness_percept[y] = percept_to_u8((uint8_t)y);
     }
 }  
 
 void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
-    uint y, x, pos;
+    uint16_t y, x;
+    uint pos;
 
     for ( y = 0; y < strips; ++y) {
         pos = start_strip_pos[y];
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         for (uint i = 0; i < pixels; ++i) {
-            x = (i + pos + (t >> 1)) % 64;
+            uint tmp = (uint)(t >> 1);
+            x = (typeof(x))((i + pos + tmp) % 64);
             if (x < 10)
                 put_pixel(urgb_u32(0xff, 0, 0));
             else if (x >= 15 && x < 25)
@@ -144,12 +147,13 @@ void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
                 put_pixel(0);
         }
     }
-    t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 
 void pattern_random(uint8_t *buffer, uint strips, uint pixels) {
-    uint y;
+    uint16_t y;
     uint8_t color, r, g, b, val;
     // uint32_t px;
 
@@ -160,8 +164,8 @@ void pattern_random(uint8_t *buffer, uint strips, uint pixels) {
      for ( y = 0; y < strips; ++y) {
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         for (uint i = 0; i < pixels; ++i) {
-            color = rand() % 7;
-            val = rand() % 256;
+            color = (typeof(color))(rand() % 7);
+            val = (typeof(val))(rand() % 256);
             r = (color & 0x4) ? val : 0;
             g = (color & 0x2) ? val : 0;
             b = (color & 0x1) ? val : 0;
@@ -204,9 +208,10 @@ void pattern_drop1(uint8_t *buffer, uint strips, uint pixels) {
     //uint max = 100; // let's not draw too much current!
     //t %= max;
     //start_column_pos[NUM_PIXELS]
-    uint x, y;
+    uint16_t x, y;
     uint8_t sel, c, r, g, b;
     uint32_t pos;
+    uint a;
 
     for ( x = 0; x < pixels; ++x) {
         pos = start_column_pos[x];
@@ -214,7 +219,10 @@ void pattern_drop1(uint8_t *buffer, uint strips, uint pixels) {
 
         for ( y = 0; y < strips; ++y) {
             current_strip_out = buffer + (y * pixels * NUM_CHANNELS) + (x * NUM_CHANNELS);
-            c = (y + pos + (t >> 1)) % 26;    // changes position every 2 frames (40ms)
+            // c = (typeof(c))((y + pos + (t >> 1)) % 26);    // changes position every 2 frames (40ms)
+            a = y + pos + (t >> 1);
+            c = (typeof(c))(a % 26);
+            
             if (c > 3)
                 c -= 3;
             else
@@ -235,34 +243,36 @@ void pattern_drop1(uint8_t *buffer, uint strips, uint pixels) {
     //     put_pixel(t * 0x10101);
     //     if (++t >= max) t = 0;
     // }
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 #define STRIP_LED_RANGE 15
 #define STRIP_LED_FACTOR (240 / STRIP_LED_RANGE)
 void pattern_solid(uint8_t *buffer, uint strips, uint pixels) {
-    uint y, x, len;
+    uint16_t y, x, len;
     uint8_t c, r, g, b, select;
     
     for (y = 0; y < strips; y++) {
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         if (y < 14)
-            len = pixels - 2;   // 55 leds
+            len = (typeof(len))(pixels - 2);   // 55 leds
         else
-            len = pixels;
+            len = (typeof(len))pixels;
 
         for (x = 0; x < pixels; ++x) {
             if (x < STRIP_LED_RANGE) {
                 // c = (STRIP_LED_RANGE - x) << 3;
-                c = (STRIP_LED_RANGE - x) * STRIP_LED_FACTOR;
+                c = (typeof(c))((STRIP_LED_RANGE - x) * STRIP_LED_FACTOR);
             } else if ((x <= len) && ((len - x) < STRIP_LED_RANGE)) {
                 // c = (STRIP_LED_RANGE + x - len) << 3;
-                c = (STRIP_LED_RANGE + x - len) * STRIP_LED_FACTOR;
+                c = (typeof(c))((STRIP_LED_RANGE + x - len) * STRIP_LED_FACTOR);
             } else {
                 c = 0;
             }
             r = g = b = 0;
-            select = (y % 7) + 1;
+            select = (typeof(select))((y % 7) + 1);
             if (select & 0x04)
                 r = c;
             if (select & 0x02)
@@ -272,7 +282,9 @@ void pattern_solid(uint8_t *buffer, uint strips, uint pixels) {
             put_pixel(urgb_u32(r, g, b));
         }
     }
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 
 #ifdef USE_TABLE_JAREMEK
@@ -294,7 +306,7 @@ uint32_t jaremektable[] = {
 // #define LINEAR_TABLE linear_brightness_percent
 #define LINEAR_TABLE linear_brightness_percept
 void pattern_jaremek(uint8_t *buffer, uint strips, uint pixels) {
-    uint y, x, mul, max, select;
+    uint16_t y, x, mul, max, select;
     uint8_t c, r, g, b;
 
     max = count_of(LINEAR_TABLE);
@@ -304,11 +316,11 @@ void pattern_jaremek(uint8_t *buffer, uint strips, uint pixels) {
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         for(x = 0; x < pixels; x++) {
             // linear on every strip for one color
-            select = (x * mul + t) % max;
+            select = (typeof(select))((x * mul + t) % max);
             c = LINEAR_TABLE[select];
 
             r = g = b = 0;
-            select = (y % 7) + 1;
+            select = (typeof(select))((y % 7) + 1);
             if (select & 0x04)
                 r = c;
             if (select & 0x02)
@@ -320,6 +332,8 @@ void pattern_jaremek(uint8_t *buffer, uint strips, uint pixels) {
         }
     }
     // }
-    t += dir;
+    // t += dir;
+    int64_t tmp = (int64_t)t + (int64_t)dir;
+    t = (typeof(t))tmp;
 }
 

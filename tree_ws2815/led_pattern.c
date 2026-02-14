@@ -81,16 +81,16 @@ static inline uint8_t gamma2_percent(uint8_t p) {
     return gamma2_u8((uint8_t)x);
 }
 
-// Best quality, still small: LUT (γ=2.2)
-static uint8_t gamma22_lut[256];
-static void build_gamma22_lut(void) {
-    const float gamma = 2.2f;
-    for (int i = 0; i < 256; ++i) {
-        float lin = (float)i / 255.0f;
-        int v = (int)(255.0f * powf(lin, gamma) + 0.5f);
-        gamma22_lut[i] = (uint8_t)(v > 255 ? 255 : v);
-    }
-}
+// // Best quality, still small: LUT (γ=2.2)
+// static uint8_t gamma22_lut[256];
+// static void build_gamma22_lut(void) {
+//     const float gamma = 2.2f;
+//     for (int i = 0; i < 256; ++i) {
+//         float lin = (float)i / 255.0f;
+//         int v = (int)(255.0f * powf(lin, gamma) + 0.5f);
+//         gamma22_lut[i] = (uint8_t)(v > 255 ? 255 : v);
+//     }
+// }
 
 // typedef void (*pattern)(uint8_t *buffer, uint strips, uint pixels);
 
@@ -170,6 +170,7 @@ void pattern_snakes1(uint32_t *buffer, uint32_t pixels, int dir) {
     snake_tail = 8; // 7
 
     x = (t >> 1) % snake_len;
+    y = 0;
 
     if (!(t & 1) && (dir > 0) && (x == 0)) {
         if (++color_first > COLOR_LAST)
@@ -384,6 +385,7 @@ void pattern_snakes4(uint32_t *buffer, uint32_t pixels, int dir) {
     snake_len = 50;
     snake_tail = 39;
 
+    r = g = b = 0;
     x = t % snake_len;
     if ((dir > 0) && (x == 0)) {
         if (++color_first > COLOR_LAST)
@@ -483,6 +485,7 @@ void pattern_snakes5(uint32_t *buffer, uint32_t pixels, int dir) {
         //y = a / snake_len;
         x = a % snake_len;     // % 64;
 
+        r = g = b = 0;
         uint8_t on_half = (uint8_t)(snake_len / 2);
         uint8_t on_full = (uint8_t)(snake_len);
         if (x == 0) {

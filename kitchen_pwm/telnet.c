@@ -185,7 +185,7 @@ void cmd_config_set_dns(uint8_t *dns) {
     };
         const char *efu_stat_msg = efu_status_table[0];
 
-        int8_t efu_status = get_efu_socket_status();
+        uint8_t efu_status = get_efu_socket_status();
         switch(efu_status) {
             case SOCK_CLOSED:
                 efu_stat_msg = efu_status_table[1];

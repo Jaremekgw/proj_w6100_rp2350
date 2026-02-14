@@ -149,7 +149,7 @@ int msg_printf(char **cursor, size_t *remaining, const char *fmt, ...) {
     }
 
     *cursor += written;
-    *remaining -= written;
+    *remaining -= (size_t)written;
     return written;
 }
 

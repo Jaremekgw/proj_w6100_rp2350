@@ -1,4 +1,21 @@
 set(TARGET_NAME kitchen_pwm)
+set(APP_OBJ kitchen_pwm_app)
+
+# Correct structure:
+# add_library(kitchen_pwm_app OBJECT main.c pwm_api.c ... )
+#
+# target_link_libraries(kitchen_pwm_app PRIVATE project_warnings)
+#
+# add_executable(kitchen_pwm)
+#
+# target_link_libraries(kitchen_pwm PRIVATE kitchen_pwm_app ... )
+#
+
+# add_library($APP_OBJ OBJECT 
+
+
+# )
+
 
 add_executable(${TARGET_NAME})
 
@@ -35,6 +52,21 @@ target_sources(${TARGET_NAME} PRIVATE
 #        ${CMAKE_SOURCE_DIR}/libraries/
 #        )
 
+# This tells GCC: Treat headers in this directory as system headers. (SYSTEM didn't help)
+target_include_directories(${TARGET_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/libraries/port/ioLibrary_Driver/inc
+    # ${CMAKE_SOURCE_DIR}/libraries
+)
+
+set_source_files_properties(
+    wizchip_custom.c
+    network.c
+    main.c
+    efu_update.c
+    telnet.c
+    PROPERTIES COMPILE_OPTIONS -Wno-unused-function
+)
+
 # This creats problem in clangd with assert.h
 # # if you want warning suppression for external libraries
 # target_compile_options(${TARGET_NAME} PRIVATE
@@ -62,21 +94,18 @@ target_link_libraries(${TARGET_NAME} PRIVATE
 #     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
 # )
 
-target_compile_options(${TARGET_NAME} PRIVATE
-    -Wall
-    -Wextra
-
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-#     -Wundef
-
-#     -Wpedantic
-    -Wno-format
-    -Wno-unused-function
-    -Wno-maybe-uninitialized
-    $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
-)
+# target_compile_options(${TARGET_NAME} PRIVATE
+#     -Wall
+#     -Wextra
+#     -Wconversion
+#     -Wsign-conversion
+#     -Wshadow
+#     -Wno-format
+#     -Wno-unused-function
+#     -Wno-maybe-uninitialized
+#     $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
+# )
+target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)
 

@@ -274,8 +274,8 @@ uint8_t get_pattern_index(void) {
  */
 void ws2815_pattern_loop(uint32_t period_ms) {
     // static int t = 0;
-    static int loop_count = 0;
-    static int pat=0; // dir=0;
+    static uint16_t loop_count = 0;
+    static uint16_t pat=0; // dir=0;
 
     if (ddp_update_timeout) {
         ddp_update_timeout =
@@ -301,8 +301,12 @@ void ws2815_pattern_loop(uint32_t period_ms) {
         if (++loop_count > 800) {   // 200 * 20ms = 4s
             loop_count = 0;
             // change pattern
-            pat = rand() % count_of(pattern_table);
-            pattern_last_index = pat + 1;
+
+            uint tmp = (uint)((unsigned)rand() % count_of(pattern_table));
+            pat = (typeof(pat))(tmp);
+            // pat = (typeof(pat))(rand() % (count_of(pattern_table)));
+
+            pattern_last_index = (uint8_t)(pat + 1);
             // dir = (rand() >> 30) & 1 ? 1 : -1;
             // if (rand() & 1) dir = 0;
             // printf("Pattern %d=%s dir:%s\n", pat + 1, pattern_table[pat].name, dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)");
@@ -333,6 +337,7 @@ void ws2815_loop(uint32_t period_ms) {
 
     //printf("strip0.len=%d strip0.0=%#04x strip0.1=%#04x strip0.2=%#04x strip0.3=%#04x strip0.4=%#04x\n", strip0.data_len, strip0.data[0], strip0.data[1], strip0.data[2], strip0.data[3], strip0.data[4]);
 
+    (void)period_ms;
     if (!ddp_update_framebuf && !patern_update_framebuf)
         return;
     ddp_update_framebuf = false;

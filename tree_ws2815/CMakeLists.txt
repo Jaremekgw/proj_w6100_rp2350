@@ -37,13 +37,25 @@ target_sources(${TARGET_NAME} PRIVATE
 #        ${CMAKE_CURRENT_BINARY_DIR}/generated
 #        )
 
+# SYSTEM didn't help
 target_include_directories(${TARGET_NAME} PRIVATE
         ${PIO_OUTPUT_DIR}                       # see: # ${CMAKE_CURRENT_BINARY_DIR}/generated
         # ${CMAKE_CURRENT_LIST_DIR}               # for local headers
         # ${CMAKE_CURRENT_SOURCE_DIR}
         # ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_SOURCE_DIR}/libraries
-        )
+
+        # ${CMAKE_SOURCE_DIR}/libraries
+        ${CMAKE_SOURCE_DIR}/libraries/port/ioLibrary_Driver/inc
+)
+
+set_source_files_properties(
+    wizchip_custom.c
+    network.c
+    main.c
+    efu_update.c
+    telnet.c
+    PROPERTIES COMPILE_OPTIONS -Wno-unused-function
+)
 
 # and make sure the folder exists but ignored by Git
 file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
@@ -73,20 +85,18 @@ add_custom_target(show_pio_headers_${TARGET_NAME}
     COMMAND ${CMAKE_COMMAND} -E echo "Headers generated in: ${CMAKE_CURRENT_BINARY_DIR}/generated"
 )
 
-target_compile_options(${TARGET_NAME} PRIVATE
-    -Wall
-    -Wextra
-
-    -Wconversion
-    -Wsign-conversion
-    -Wshadow
-
-    #-Wpedantic
-    -Wno-format
-    -Wno-unused-function
-    -Wno-maybe-uninitialized
-    $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
-)
+# target_compile_options(${TARGET_NAME} PRIVATE
+#     -Wall
+#     -Wextra
+#     -Wconversion
+#     -Wsign-conversion
+#     -Wshadow
+#     -Wno-format
+#     -Wno-unused-function
+#     -Wno-maybe-uninitialized
+#     $<$<COMPILE_LANGUAGE:C>:-Wno-sign-conversion>
+# )
+target_link_libraries(${TARGET_NAME} PRIVATE project_warnings)
 
 pico_embed_pt_in_binary(${TARGET_NAME} ${CMAKE_CURRENT_LIST_DIR}/../w6100_partitions.json)
 # create absolute uf2, and package in flash, use it for only first load on board
