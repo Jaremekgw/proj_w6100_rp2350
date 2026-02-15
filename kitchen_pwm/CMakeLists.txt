@@ -7,9 +7,6 @@ target_sources(${TARGET_NAME} PRIVATE
         network.c
         wizchip_custom.c
         telnet.c
-        # partition.c
-        efu_update.c
-        # utility.c
         flash_cfg.c
         vl53l8cx_drv.c
         vl53l8cx_api.c
