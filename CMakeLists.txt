@@ -118,7 +118,10 @@ add_subdirectory(
     ${CMAKE_BINARY_DIR}/wiznet
 )
 
-# Add your projects
+# add files which are common to multiple projects into a library
+add_subdirectory(common)
+
+# Add your projects (targets) here
 add_subdirectory(stairs_ws2815)
 # add_subdirectory(scd30_meter)
 add_subdirectory(tree_ws2815)

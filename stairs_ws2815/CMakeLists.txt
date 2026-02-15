@@ -22,9 +22,9 @@ target_sources(${TARGET_NAME} PRIVATE
         wizchip_custom.c
         led_pattern.c
         telnet.c
-        partition.c
+        # partition.c
         efu_update.c
-        utility.c
+        # utility.c
         flash_cfg.c
         )
 
@@ -60,6 +60,7 @@ file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
 
 # pull in common dependencies and additional spi hardware support
 target_link_libraries(${TARGET_NAME} PRIVATE
+        common
         pico_stdlib
         hardware_spi
         hardware_dma            # added for DMA support

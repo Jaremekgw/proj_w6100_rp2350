@@ -1,8 +1,10 @@
 set(TARGET_NAME proj_scd30_meter)
 
-add_executable(${TARGET_NAME}
-        main.c
-        )
+add_executable(${TARGET_NAME})
+
+target_sources(${TARGET_NAME} PRIVATE
+    main.c
+)
 
 target_link_libraries(${TARGET_NAME}
         pico_stdlib
@@ -14,24 +16,21 @@ target_link_libraries(${TARGET_NAME}
         PORT_COMMON_FILES
         LOOPBACK_FILES
         TIMER_FILES
-        )
-
-add_definitions(-DCMAKE_BUILD_TYPE=Debug)
-
-target_compile_definitions(${TARGET_NAME} PRIVATE PICO_STDIO_ENABLE_DEBUG=1)
-
-target_include_directories(${TARGET_NAME} SYSTEM PRIVATE
-    ${CMAKE_SOURCE_DIR}/libraries
 )
 
-target_compile_options(${TARGET_NAME} PRIVATE
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wno-format
-    -Wno-unused-function
-    -Wno-maybe-uninitialized
-)
+# add_definitions(-DCMAKE_BUILD_TYPE=Debug)
+# target_compile_definitions(${TARGET_NAME} PRIVATE PICO_STDIO_ENABLE_DEBUG=1)
+
+# target_include_directories(${TARGET_NAME} SYSTEM PRIVATE
+#     ${CMAKE_SOURCE_DIR}/libraries
+# )
+
+# call function from root CMakeLists.txt to set strict warning flags for this target
+enable_strict_warnings(${TARGET_NAME})
+# Then suppress SDK warnings properly:
+target_compile_options(pico_stdlib INTERFACE -Wno-sign-conversion)
+# And vendor:
+target_compile_options(IOLIBRARY_FILES PRIVATE -Wno-unused-function)
 
 pico_enable_stdio_usb(${TARGET_NAME} 0)
 pico_enable_stdio_uart(${TARGET_NAME} 1)

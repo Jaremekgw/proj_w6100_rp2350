@@ -7,9 +7,9 @@ target_sources(${TARGET_NAME} PRIVATE
         network.c
         wizchip_custom.c
         telnet.c
-        partition.c
+        # partition.c
         efu_update.c
-        utility.c
+        # utility.c
         flash_cfg.c
         vl53l8cx_drv.c
         vl53l8cx_api.c
@@ -22,16 +22,7 @@ target_sources(${TARGET_NAME} PRIVATE
         rd03d_cli.c
 )
 
-# Remove this entirely, 
-# - You are manually exposing library headers to the executable
-# - This bypasses CMake’s dependency model
-#target_include_directories(${TARGET_NAME} PRIVATE
-#        ${CMAKE_SOURCE_DIR}/libraries/
-#        )
-
-# This tells GCC: Treat headers in this directory as system headers. (SYSTEM didn't help)
-
-
+# This is a bit of a hack to suppress warnings for unused functions in the VL53L8CX driver, which is a third-party library that we don't want to modify directly. By setting the COMPILE_OPTIONS property for these source files, we can suppress the -Wunused-function warning for this specific target without affecting other targets that might use the same library.
 set_source_files_properties(
     wizchip_custom.c
     network.c
@@ -41,16 +32,10 @@ set_source_files_properties(
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
 
-# This creats problem in clangd with assert.h
-# # if you want warning suppression for external libraries
-# target_compile_options(${TARGET_NAME} PRIVATE
-#         -isystem ${CMAKE_SOURCE_DIR}/libraries/
-# )
-
 # pull in common dependencies and additional spi hardware support
 target_link_libraries(${TARGET_NAME} PRIVATE
+        common
         pico_stdlib
-        # pico_unique_id
         hardware_spi
         hardware_i2c
         hardware_pwm
@@ -65,7 +50,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_clocks         # ??? for setting clock speeds
 )
 
-
+# call function from root CMakeLists.txt to set strict warning flags for this target
 enable_strict_warnings(${TARGET_NAME})
 
 # Then suppress SDK warnings properly:
