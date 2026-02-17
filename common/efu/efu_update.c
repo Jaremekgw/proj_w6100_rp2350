@@ -15,8 +15,15 @@
 #include "boot/picoboot_constants.h"
 #include "partition.h"
 
-#include "config_efu.h"
 #include "utility.h"
+
+// #define _EFU_DEBUG_
+// size of the CHUNK in python app.
+#define EFU_BUF_SIZE        2048
+// temprary, later set dynamcally in init
+#define TCP_EFU_SOCKET      1
+#define TCP_EFU_PORT        4243    // OTA port=4242
+// efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT)
 
 // EFU server states
 typedef enum {
@@ -38,19 +45,22 @@ typedef struct {
 
     uint8_t header_buf[8];
     uint8_t header_received;
+    uint8_t socket;
+    uint16_t port;
 
     uint8_t buf[EFU_BUF_SIZE];
     uint32_t total_written;
-    bool complete;
-    bool reboot_requested;
     // add for crc
     uint32_t expected_crc;
     uint32_t crc_calc;
     uint8_t crc_buf[4];
     uint8_t crc_received;
-} ota_server_t;
 
-static ota_server_t efu_srv;
+    bool complete;
+    bool reboot_requested;
+} efu_server_t;
+
+static efu_server_t efu_srv;
 uint8_t hdr[2] = {'H', 'D'};    // headeer ack
 uint8_t ack[2] = {'O', 'K'};    // write ack
 uint8_t err[2] = {'E', 'R'};    // error nack
@@ -58,7 +68,7 @@ uint8_t crc[2] = {'C', 'C'};    // crc ack
 
 
 uint8_t get_efu_socket_status(void) {
-    uint8_t sn = TCP_EFU_SOCKET;
+    uint8_t sn = efu_srv.socket;
     uint32_t sr = getSn_SR((uint32_t)sn);
     return (uint8_t)sr;
 }
@@ -66,7 +76,7 @@ uint8_t get_efu_socket_status(void) {
 // --------------------------------------------------------------------
 // Initialize OTA listener (open TCP socket)
 // --------------------------------------------------------------------
-void efu_server_init(void) {
+void efu_server_init(uint8_t sn, uint16_t port) {
     efu_srv.state = EFU_IDLE;
     efu_srv.complete = false;
     efu_srv.total_written = 0;
@@ -74,19 +84,22 @@ void efu_server_init(void) {
     efu_srv.crc_calc = 0;
     efu_srv.crc_received = 0;
 
-    if (socket(TCP_EFU_SOCKET, Sn_MR_TCP, TCP_EFU_PORT, Sn_MR_ND) != TCP_EFU_SOCKET) {
+    efu_srv.socket = sn;
+    efu_srv.port = port;
+
+    if (socket(efu_srv.socket, Sn_MR_TCP, efu_srv.port, Sn_MR_ND) != efu_srv.socket) {
         printf("[EFU] Socket open failed\r\n");
         efu_srv.state = EFU_ERROR;
         return;
     }
-    if (listen(TCP_EFU_SOCKET) != SOCK_OK) {
+    if (listen(efu_srv.socket) != SOCK_OK) {
         printf("[EFU] Listen failed\r\n");
         efu_srv.state = EFU_ERROR;
         return;
     }
 
     efu_srv.state = EFU_LISTENING;
-    printf("[EFU] Listening on port %d\r\n", TCP_EFU_PORT);
+    printf("[EFU] Listening on port %d\r\n", efu_srv.port);
 }
 
 
@@ -96,7 +109,7 @@ void efu_server_init(void) {
 // --------------------------------------------------------------------
 void efu_server_poll(void) {
     // static partition_info_t alt_part[1];
-    uint8_t sn = TCP_EFU_SOCKET;
+    uint8_t sn = efu_srv.socket;
     uint8_t destip[4];
     uint16_t destport;
     int32_t ret;
@@ -336,7 +349,7 @@ void efu_server_poll(void) {
             }
             efu_srv.state = EFU_IDLE;
             // reopen socket to listen again
-            efu_server_init();
+            efu_server_init(efu_srv.socket, efu_srv.port);
         }
         break;
 

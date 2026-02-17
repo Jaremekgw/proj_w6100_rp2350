@@ -87,7 +87,7 @@ int main() {
     // --- Network init ---
     init_net_info();
     show_current_partition();
-    efu_server_init();
+    efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT);
 
     // --- Open UDP socket for DDP ---
     udp_socket_init();

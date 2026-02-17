@@ -86,7 +86,6 @@
  */
 #define TCP_EFU_SOCKET      1
 #define TCP_EFU_PORT        4243    // OTA port=4242
-#define EFU_BUF_SIZE        2048
 
 /**
  * Configuration for UDP protocols
