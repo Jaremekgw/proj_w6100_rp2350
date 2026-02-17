@@ -159,5 +159,3 @@ void check_phy_link_W6x00(void) {
 }
  */
 
-
-

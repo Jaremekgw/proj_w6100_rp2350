@@ -7,18 +7,18 @@
 // #include <stdio.h>
 #include "pico/stdio.h"
 #include "stdlib.h"
-#include "port_common.h"
+// #include "port_common.h"
 
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
 #include "loopback.h"
-#include "socket.h"
+// #include "wiznet_socket.h"
 #include "config_kitchen.h"
-#include "network.h"
+#include "network.h"        // see tree
 #include "wizchip_custom.h"
 #include "efu_update.h"
 #include "partition.h"
-#include "flash_cfg.h"
+#include "flash_cfg.h"      // see tree
 #include "vl53l8cx_drv.h"
 #include "pwm_api.h"
 #include "rd03d_api.h"

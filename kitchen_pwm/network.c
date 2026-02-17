@@ -21,11 +21,13 @@
 #include "network.h"
 
 
-#include <port_common.h>
+//#include <port_common.h>
 #include "wizchip_conf.h"
-#include "wizchip_spi.h"
+//#include "wizchip_spi.h"
 #include "loopback.h"
-#include "socket.h"
+// #include "wiznet_socket.h"
+#include "pico/time.h"
+#include "hardware/gpio.h"
 
 #include "pico/unique_id.h"
 #include "wizchip_conf.h"

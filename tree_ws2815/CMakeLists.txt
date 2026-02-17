@@ -18,11 +18,10 @@ file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
 target_sources(${TARGET_NAME} PRIVATE
         main.c
         ws2815_control_dma.c
-        network.c
-        wizchip_custom.c
+        network.c               # move to common, problem with config
         led_pattern.c
         telnet.c
-        flash_cfg.c
+        flash_cfg.c             # move to common, problem with config
         vl53l8cx_drv.c
         vl53l8cx_api.c
         vl53l8cx_platform.c
@@ -39,7 +38,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
 )
 
 set_source_files_properties(
-    wizchip_custom.c
+    # wizchip_custom.c
     network.c
     main.c
     telnet.c
@@ -54,7 +53,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_i2c
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
-        ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
+        # ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
         LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
         pico_bootrom

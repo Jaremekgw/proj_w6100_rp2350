@@ -11,10 +11,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <port_common.h>
+#include "pico/stdlib.h"
+// #include <port_common.h>
 #include "wizchip_conf.h"
 // #include "wizchip_spi.h"
-#include "socket.h"
+#include "wiznet_socket.h"
 #include "pico/bootrom.h"
 #include "telnet.h"
 #include "config_kitchen.h"

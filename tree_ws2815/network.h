@@ -17,11 +17,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "socket.h"
+#include "wiznet_socket.h"
 // #include "stdio.h"
 // #include "string.h"
 // #include "wizchip_spi.h"
 
+/* for the following we need files from library
+    wiz_NetInfo     // need: wizchip_conf.h  }wiz_NetInfo;
+    SOCKET        // Ethernet/socket.h:93:#define SOCKET    uint8_t 
+*/
+
+void network_initialize(wiz_NetInfo *net_info);
+void print_network_information(void);
+void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr);
 
 void wiznet_gpio_irq_init(void);
 void udp_interrupts_enable(void);

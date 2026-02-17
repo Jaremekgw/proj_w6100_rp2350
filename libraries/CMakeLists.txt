@@ -1,9 +1,3 @@
-# this part is only for (${BOARD_NAME} STREQUAL W6100_EVB_PICO2)
-#    set(PICO_PLATFORM rp2350)
-#    set(WIZNET_CHIP W6100)
-#    add_definitions(-D_WIZCHIP_=W6100)
-#    add_definitions(-DDEVICE_BOARD_NAME=W6100_EVB_PICO2)
-#
 
 message(STATUS "WIZNET_CHIP = ${WIZNET_CHIP}")
 message(STATUS "PICO_PLATFORM = ${PICO_PLATFORM}")
@@ -12,7 +6,6 @@ message(STATUS "PICO_PLATFORM = ${PICO_PLATFORM}")
 # add_subdirectory(ioLibrary_Driver)	# don't add this, no CMakeLists.txt file inside
 add_subdirectory(mbedtls)
 add_subdirectory(port)
-
 
 function(disable_vendor_warnings target)
     target_compile_options(${target} PRIVATE
@@ -42,79 +35,61 @@ add_library(ETHERNET_FILES STATIC)
 target_sources(ETHERNET_FILES PRIVATE
         ${WIZNET_DIR}/Ethernet/socket.c
         ${WIZNET_DIR}/Ethernet/wizchip_conf.c
-        )
-
-                # # was  SYSTEM PUBLIC  tested INTERFACE without change
-                # target_include_directories(ETHERNET_FILES SYSTEM PUBLIC
-                #         ${WIZNET_DIR}/Ethernet
-                #         ${WIZNET_DIR}/Ethernet/W6100
-                #         )
-
-
-
+)
 
 if(${WIZNET_CHIP} STREQUAL W5100S)
-# add_library(W5100S_FILES STATIC)
 
 target_sources(ETHERNET_FILES PRIVATE
         ${WIZNET_DIR}/Ethernet/W5100S/w5100s.c
-        )
+)
 
 target_include_directories(ETHERNET_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Ethernet/W5100S
-        )
+)
 
 # target_link_libraries(W5100S_FILES PRIVATE
 #         ETHERNET_FILES
 #         )
 elseif(${WIZNET_CHIP} STREQUAL W5500)
-# add_library(W5500_FILES STATIC)
 
 target_sources(ETHERNET_FILES PRIVATE
         ${WIZNET_DIR}/Ethernet/W5500/w5500.c
-        )
+)
 
 target_include_directories(ETHERNET_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Ethernet/W5500
-        )
+)
 
-# target_link_libraries(W5500_FILES PRIVATE
-#         ETHERNET_FILES
-#         )
 elseif(${WIZNET_CHIP} STREQUAL W6100)
 # =============================  W6100 Start
-#add_library(W6100_FILES STATIC)
 
 target_sources(ETHERNET_FILES PRIVATE
         ${WIZNET_DIR}/Ethernet/W6100/w6100.c
-        )
+)
 
-target_include_directories(ETHERNET_FILES SYSTEM PUBLIC
+# SYSTEM removed and no difference, but let's keep it consistent with the other W6100 files
+target_include_directories(ETHERNET_FILES PUBLIC
+        ${WIZNET_DIR}
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Ethernet/W6100
-        )
+)
 
-#target_link_libraries(W6100_FILES PRIVATE
-#        ETHERNET_FILES
-#        )
 # =============================  W6100 End
 elseif(${WIZNET_CHIP} STREQUAL W6300)
-#add_library(W6300_FILES STATIC)
+# =============================  W6300 Start
 
 target_sources(ETHERNET_FILES PRIVATE
         ${WIZNET_DIR}/Ethernet/W6300/w6300.c
-        )
+)
 
 target_include_directories(ETHERNET_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Ethernet/W6300
-        )
+)
 
-# target_link_libraries(W6300_FILES PRIVATE
-#         ETHERNET_FILES
-#         )
+# =============================  W6300 End
 endif()
 
 # Loopback
@@ -122,30 +97,26 @@ add_library(LOOPBACK_FILES STATIC)
 
 target_sources(LOOPBACK_FILES PRIVATE
         ${WIZNET_DIR}/Application/loopback/loopback.c
-        )
+)
 
 target_include_directories(LOOPBACK_FILES SYSTEM PUBLIC
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Application/loopback
-        )
-
-# target_link_libraries(LOOPBACK_FILES PRIVATE
-#     ETHERNET_FILES
-# )
+)
 
 # DHCP
 add_library(AAC_FILES STATIC)
 
 target_sources(AAC_FILES PRIVATE
         ${WIZNET_DIR}/Internet/AAC/AddressAutoConfig.c
-        )
+)
 
 target_include_directories(AAC_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/AAC
         ${WIZNET_DIR}/../port/
         ${WIZNET_DIR}/../port/ioLibrary_Driver/inc
-        )
+)
 
 
 # DHCP
@@ -153,36 +124,36 @@ add_library(DHCP_FILES STATIC)
 
 target_sources(DHCP_FILES PRIVATE
         ${WIZNET_DIR}/Internet/DHCP/dhcp.c
-        )
+)
 
 target_include_directories(DHCP_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/DHCP
-        )
+)
 
 # DHCP
 add_library(DHCP6_FILES STATIC)
 
 target_sources(DHCP6_FILES PRIVATE
         ${WIZNET_DIR}/Internet/DHCP6/dhcpv6.c
-        )
+)
 
 target_include_directories(DHCP6_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/DHCP6
-        )
+)
 
 # DNS
 add_library(DNS_FILES STATIC)
 
 target_sources(DNS_FILES PRIVATE
         ${WIZNET_DIR}/Internet/DNS/dns.c
-        )
+)
 
 target_include_directories(DNS_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/DNS
-        )
+)
         
 # HTTP Server
 add_library(HTTPSERVER_FILES STATIC)
@@ -191,12 +162,12 @@ target_sources(HTTPSERVER_FILES PRIVATE
         ${WIZNET_DIR}/Internet/httpServer/httpParser.c
         ${WIZNET_DIR}/Internet/httpServer/httpServer.c
         ${WIZNET_DIR}/Internet/httpServer/httpUtil.c
-        )
+)
 
 target_include_directories(HTTPSERVER_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/httpServer
-        )
+)
 
 # MQTT
 add_library(MQTT_FILES STATIC)
@@ -214,37 +185,37 @@ target_sources(MQTT_FILES PRIVATE
         ${WIZNET_DIR}/Internet/MQTT/MQTTPacket/src/MQTTSubscribeServer.c
         ${WIZNET_DIR}/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeClient.c
         ${WIZNET_DIR}/Internet/MQTT/MQTTPacket/src/MQTTUnsubscribeServer.c
-        )
+)
 
 target_include_directories(MQTT_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/MQTT
         ${WIZNET_DIR}/Internet/MQTTPacket/src
-        ) 
+)
 
 # SNTP
 add_library(SNTP_FILES STATIC)
 
 target_sources(SNTP_FILES PRIVATE
         ${WIZNET_DIR}/Internet/SNTP/sntp.c
-        )
+)
 
 target_include_directories(SNTP_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/SNTP
-        )
+)
         
 # SNMP
 add_library(SNMP_FILES STATIC)
 
 target_sources(SNMP_FILES PRIVATE
         ${WIZNET_DIR}/Internet/SNMP/snmp.c
-        )
+)
 
 target_include_directories(SNMP_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/SNMP
-        )
+)
 
         
 # TFTP Server
@@ -253,24 +224,24 @@ add_library(TFTP_FILES STATIC)
 target_sources(TFTP_FILES PRIVATE
         ${WIZNET_DIR}/Internet/TFTP/tftp.c
         ${WIZNET_DIR}/Internet/TFTP/netutil.c
-        )
+)
 
 target_include_directories(TFTP_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Internet/TFTP
-        )
+)
 
 # multicast
 add_library(MULTI_FILES STATIC)
 
 target_sources(MULTI_FILES PRIVATE
         ${WIZNET_DIR}/Application/multicast/multicast.c
-        )
+)
 
 target_include_directories(MULTI_FILES SYSTEM PRIVATE
         ${WIZNET_DIR}/Ethernet
         ${WIZNET_DIR}/Application/multicast
-        )
+)
 
 
 disable_vendor_warnings(ETHERNET_FILES)
