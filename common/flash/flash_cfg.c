@@ -10,22 +10,44 @@
 #include "partition.h"
 #include "hardware/flash.h"
 #include "flash_cfg.h"
-#include "config_tree.h"
 #include "utility.h"
 #include "wizchip_conf.h"
 #include "pico/unique_id.h"
 
+/**
+ * Configuration for Flash memory Config partition
+ */
+#define CONFIG_FLASH_OFFSET 0x001f6000
+#define CONFIG_SECTOR_SIZE  4096
+#define CONFIG_DATA_OFFSET (CONFIG_FLASH_OFFSET + CONFIG_SECTOR_SIZE)
+#define CONFIG_DATA_SIZE   (32*1024 - CONFIG_SECTOR_SIZE)
+
+/**
+ * Configuration for networking
+ */
+#define NETINFO_MAC     {0x00, 0x08, 0xDC, 0x12, 0x34, 0x59}    // MAC address; 00:08:DC Wiznet's OUI
+
+#if _WIZCHIP_ > W5500
+#define NETINFO_LLA     {0xfe,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x08,0xdc,0xff,0xfe,0x57,0x57,0x25}
+#define NETINFO_GUA     {0x00}
+#define NETINFO_SN6     {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
+#define NETINFO_GW6     {0x00}
+#define NETINFO_DNS6    {0x20,0x01,0x48,0x60,0x48,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x88,0x88}
+#define NETINFO_IPMODE  NETINFO_STATIC_ALL
+#else
+#define NETINFO_DHCP    NETINFO_STATIC
+#endif
 
 // #define NETINFO_IP      {192, 168, 178, 225} 
-const config_t default_config = {
+config_t default_config = {
     .version = 0x0101,
     .reserved = 0,
 
     .net_info.mac    = NETINFO_MAC,
-    .net_info.ip     = NETINFO_IP,
-    .net_info.sn     = NETINFO_SN,
-    .net_info.gw     = NETINFO_GW,
-    .net_info.dns    = NETINFO_DNS,
+    .net_info.ip     = {0,0,0,0},   // NETINFO_IP,
+    .net_info.sn     = {0,0,0,0},   // NETINFO_SN,
+    .net_info.gw     = {0,0,0,0},   // NETINFO_GW,
+    .net_info.dns    = {0,0,0,0},   // NETINFO_DNS,
 #if _WIZCHIP_ > W5500
     // for _WIZCHIP_ > W5500
     .net_info.lla    = NETINFO_LLA,
@@ -57,7 +79,13 @@ static config_t gen_cfg[3];
  * and put it to id = 0 (current config)
  * 
  */
-void config_init(void) {
+void config_init(const network_t *default_network) {
+
+    memcpy(default_config.net_info.ip, default_network->ip, sizeof(default_config.net_info.ip));
+    memcpy(default_config.net_info.sn, default_network->sn, sizeof(default_config.net_info.sn));
+    memcpy(default_config.net_info.gw, default_network->gw, sizeof(default_config.net_info.gw));
+    memcpy(default_config.net_info.dns, default_network->dns, sizeof(default_config.net_info.dns));
+
     if (config_load() == BOOTROM_OK) {
         // loaded successfully from flash
         memcpy(&gen_cfg[0], &gen_cfg[2], sizeof(config_t));

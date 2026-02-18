@@ -5,6 +5,7 @@ add_library(${COMMON_LIB} STATIC
     utils/utility.c
     efu/efu_update.c
     wiznet/wizchip_custom.c
+    flash/flash_cfg.c
 )
 
 target_include_directories(${COMMON_LIB}
@@ -13,6 +14,7 @@ target_include_directories(${COMMON_LIB}
         ${CMAKE_CURRENT_LIST_DIR}/utils
         ${CMAKE_CURRENT_LIST_DIR}/efu
         ${CMAKE_CURRENT_LIST_DIR}/wiznet
+        ${CMAKE_CURRENT_LIST_DIR}/flash
 )
 # you can set         ${CMAKE_CURRENT_LIST_DIR}/board  and then include "partition.h" in your source files, or just         ${CMAKE_CURRENT_LIST_DIR} and then include "board/partition.h" in your source files, whatever you prefer. The important thing is that the directory containing the header file is included in the target_include_directories for the common library, and that the common library is linked to any targets that need to use the partition functions.
 # or just         ${CMAKE_CURRENT_LIST_DIR} and then include "board/partition.h" in your source files
@@ -23,6 +25,8 @@ target_link_libraries(${COMMON_LIB} PUBLIC
     pico_bootrom
     hardware_flash
     boot_uf2_headers
+
+    pico_unique_id
 
     ETHERNET_FILES
     IOLIBRARY_FILES

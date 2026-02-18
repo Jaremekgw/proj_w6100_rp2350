@@ -6,7 +6,6 @@ target_sources(${TARGET_NAME} PRIVATE
         main.c
         network.c
         telnet.c
-        flash_cfg.c
         vl53l8cx_drv.c
         vl53l8cx_api.c
         vl53l8cx_platform.c

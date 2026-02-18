@@ -12,7 +12,6 @@
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
 #include "loopback.h"
-// #include "wiznet_socket.h"
 #include "config_kitchen.h"
 #include "network.h"        // see tree
 #include "wizchip_custom.h"
@@ -35,6 +34,12 @@ int32_t ret;
 static repeating_timer_t timer;
 volatile uint32_t tmr_ms_tick = 0;
 
+const network_t default_network = {
+    .ip  = NETINFO_IP,
+    .sn  = NETINFO_SN,
+    .gw  = NETINFO_GW,
+    .dns = NETINFO_DNS
+};
 
 // bool timer_callback(repeating_timer_t *rt) {
 bool timer_callback() {
@@ -67,7 +72,7 @@ int main() {
     wizchip_check();            // reads version register, verifies SPI comm
 
     // --- Set general configuration ---
-    config_init();
+    config_init(&default_network);
 
     // --- Network init ---
     init_net_info();

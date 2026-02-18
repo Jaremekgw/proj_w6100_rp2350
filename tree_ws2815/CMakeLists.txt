@@ -21,7 +21,7 @@ target_sources(${TARGET_NAME} PRIVATE
         network.c               # move to common, problem with config
         led_pattern.c
         telnet.c
-        flash_cfg.c             # move to common, problem with config
+        # flash_cfg.c             # move to common, problem with config
         vl53l8cx_drv.c
         vl53l8cx_api.c
         vl53l8cx_platform.c

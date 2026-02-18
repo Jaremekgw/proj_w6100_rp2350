@@ -16,7 +16,7 @@ target_sources(${TARGET_NAME} PRIVATE
         # wizchip_custom.c
         led_pattern.c
         telnet.c
-        flash_cfg.c
+        # flash_cfg.c
         )
 
 target_include_directories(${TARGET_NAME} PRIVATE

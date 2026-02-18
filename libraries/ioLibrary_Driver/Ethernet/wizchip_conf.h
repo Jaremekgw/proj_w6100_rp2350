@@ -763,6 +763,14 @@ typedef struct wiz_NetInfo_t
    dhcp_mode dhcp;  ///< 1 - Static, 2 - DHCP
 }wiz_NetInfo;
 
+typedef struct
+{
+   uint8_t     ip[4];     ///< Source IPv4 Address
+   uint8_t     sn[4];     ///< Subnet Mask value
+   uint8_t     gw[4];     ///< Gateway IPv4 Address
+   uint8_t     dns[4];    ///< DNS server IPv4 Address
+}network_t;
+
 /**
  * @ingroup DATA_TYPE
  * @brief Network mode Configuration

@@ -18,26 +18,13 @@ typedef struct {
 
     wiz_NetInfo net_info;
 
-    // uint8_t ip[4];
-    // uint8_t sn[4];
-    // uint8_t gw[4];
-    // uint8_t dns[4];
-
-    // uint8_t lla[16];
-    // uint8_t gua[16];
-    // uint8_t sn6[16];
-    // uint8_t gw6[16];
-    // uint8_t dns6[16];
-
-    // uint32_t ip_mode;
-
-
     /* MUST be last field */
     uint32_t crc32;
 } __attribute__((packed)) config_t;
 
 
-void config_init(void);
+// void config_init(void);
+void config_init(const network_t *default_network);
 config_t *config_get(uint8_t select);
 
 wiz_NetInfo *config_get_net_info(void);

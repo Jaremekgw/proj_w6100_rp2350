@@ -19,19 +19,19 @@
 // #define PIN_TEST_14 14
 // #define PIN_TEST_15 15
 
-/**
- * Configuration for Flash memory Config partition
- */
-#define CONFIG_FLASH_OFFSET 0x001f6000
-#define CONFIG_SECTOR_SIZE  4096
-#define CONFIG_DATA_OFFSET (CONFIG_FLASH_OFFSET + CONFIG_SECTOR_SIZE)
-#define CONFIG_DATA_SIZE   (32*1024 - CONFIG_SECTOR_SIZE)
+// /**
+//  * Configuration for Flash memory Config partition
+//  */
+// #define CONFIG_FLASH_OFFSET 0x001f6000
+// #define CONFIG_SECTOR_SIZE  4096
+// #define CONFIG_DATA_OFFSET (CONFIG_FLASH_OFFSET + CONFIG_SECTOR_SIZE)
+// #define CONFIG_DATA_SIZE   (32*1024 - CONFIG_SECTOR_SIZE)
 
 /**
  * Configuration for networking
  * For checking OUI, see https://www.wireshark.org/tools/oui-lookup.html or https://maclookup.app/
  */
-#define NETINFO_MAC     {0x00, 0x08, 0xDC, 0x12, 0x34, 0x59}    // MAC address; 00:08:DC Wiznet's OUI
+// #define NETINFO_MAC     {0x00, 0x08, 0xDC, 0x12, 0x34, 0x59}    // MAC address; 00:08:DC Wiznet's OUI
 
 #define NETINFO_IP      {192, 168, 178, 225}                    // IP address
 // #define NETINFO_IP      {192, 168, 14, 225}                  // IP address
@@ -39,16 +39,16 @@
 #define NETINFO_GW      {192, 168, 178, 1}                      // Gateway
 #define NETINFO_DNS     {8, 8, 8, 8}                            // DNS server
 
-#if _WIZCHIP_ > W5500
-#define NETINFO_LLA     {0xfe,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x08,0xdc,0xff,0xfe,0x57,0x57,0x25}
-#define NETINFO_GUA     {0x00}
-#define NETINFO_SN6     {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
-#define NETINFO_GW6     {0x00}
-#define NETINFO_DNS6    {0x20,0x01,0x48,0x60,0x48,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x88,0x88}
-#define NETINFO_IPMODE  NETINFO_STATIC_ALL
-#else
-#define NETINFO_DHCP    NETINFO_STATIC
-#endif
+// #if _WIZCHIP_ > W5500
+// #define NETINFO_LLA     {0xfe,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x08,0xdc,0xff,0xfe,0x57,0x57,0x25}
+// #define NETINFO_GUA     {0x00}
+// #define NETINFO_SN6     {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
+// #define NETINFO_GW6     {0x00}
+// #define NETINFO_DNS6    {0x20,0x01,0x48,0x60,0x48,0x60,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x88,0x88}
+// #define NETINFO_IPMODE  NETINFO_STATIC_ALL
+// #else
+// #define NETINFO_DHCP    NETINFO_STATIC
+// #endif
 
 #define ETHERNET_BUF_MAX_SIZE 1024
 

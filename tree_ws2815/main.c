@@ -32,6 +32,12 @@ int32_t ret;
 static repeating_timer_t timer;
 volatile uint32_t tmr_ms_tick = 0;
 
+const network_t default_network = {
+    .ip  = NETINFO_IP,
+    .sn  = NETINFO_SN,
+    .gw  = NETINFO_GW,
+    .dns = NETINFO_DNS
+};
 
 bool timer_callback(repeating_timer_t *rt) {
     (void)rt;
@@ -82,7 +88,7 @@ int main() {
     wizchip_check();            // reads version register, verifies SPI comm
 
     // --- Set general configuration ---
-    config_init();
+    config_init(&default_network); // load configuration from flash or use default
 
     // --- Network init ---
     init_net_info();
