@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "pwm_api.h"
 #include "pwm_drv.h"
-#include "config_kitchen.h"
+#include "config.h"
 
 #include "pico/time.h"     // absolute_time_t, get_absolute_time, absolute_time_diff_us
 #include <string.h>

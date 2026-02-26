@@ -12,7 +12,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 
-#include "config_tree.h"
+#include "config.h"
 #include "ws2815_control_dma.h"
 #include "ws2815.pio.h"
 #include "led_pattern.h"

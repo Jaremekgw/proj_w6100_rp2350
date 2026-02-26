@@ -12,7 +12,7 @@
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
-#include "config_kitchen.h"
+#include "config.h"
 #include "pwm_drv.h"
 
 // /* Pin definitions */ see config_kitchen.h

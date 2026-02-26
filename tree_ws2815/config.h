@@ -8,6 +8,7 @@
 
 #include "wizchip_conf.h"
 
+#define PROJECT_NAME "tree_ws2815"
 #define FW_VERSION "1.0.1"
 
 // MOD_VER_OUTDOOR_TREE_WS2815
@@ -16,11 +17,11 @@
 
 
 /**
- * Pin connected to OE for TXB0108 - remove this because was used only for debugging
+ * Pin connected to OE for TXB0108
  */
-// #define OE_PIN 22
-// #define OE_OFF false
-// #define OE_ON true
+#define OE_PIN 22
+#define OE_OFF false
+#define OE_ON true
 
 // #define PIN_TEST_14 14
 // #define PIN_TEST_15 15
@@ -42,10 +43,11 @@
  */
 // #define NETINFO_MAC     {0x00, 0x08, 0xDC, 0x12, 0x34, 0x59}    // MAC address; 00:08:DC Wiznet's OUI
 
-#define NETINFO_IP      {192, 168, 14, 228}                  // IP address
+#define NETINFO_IP      {192, 168, 178, 226}                    // IP address
+// #define NETINFO_IP      {192, 168, 14, 226}                  // IP address
 #define NETINFO_SN      {255, 255, 255, 0}                      // Subnet Mask
-#define NETINFO_GW      {192, 168, 14, 1}                      // Gateway
-#define NETINFO_DNS     {192, 168, 14, 1}                            // DNS server
+#define NETINFO_GW      {192, 168, 178, 1}                      // Gateway
+#define NETINFO_DNS     {8, 8, 8, 8}                            // DNS server
 
 // #if _WIZCHIP_ > W5500
 // #define NETINFO_LLA     {0xfe,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x08,0xdc,0xff,0xfe,0x57,0x57,0x25}
@@ -107,9 +109,40 @@
 // #define UDP_DESTIP       192.168.14.200
 // #define UDP_DESTPORT     3000
 
-#define NUM_CHANNELS        4   // 3 for RGB, or 4 for RGBW - used in DDP (network.c)
-#define NUM_PIXELS          1
+/**
+ * Configuration for WS2815 LED strip
+ * for project 'stairs' leds are connected parallel on GPIO0..GPIO15
+ * for project 'tree' leds are connected individually on GPIO2..GPIO5
+ * Possible NUM_STRIPS=1 and NUM_STRIPS=4
+ * 
+ * led strip for christmas tree has 591 leds. max 8A
+ * 500 leds --> 2,99 A  (max 6,7 A)
+ * 100 leds --> 1,1 A   (max 1,3 A)
+ * 50 leds  --> 0,67 A
+ */
+#define NUM_CHANNELS        3   // 3 for RGB, or 4 for RGBW - used in DDP (network.c)
+#define NUM_STRIPS          1  // 1 or 4 number of parallel strips being driven
 
+#if NUM_STRIPS > 1
+
+#define NUM_LEDS_SM0 30
+#define NUM_LEDS_SM1 30
+#define NUM_LEDS_SM2 30
+#define NUM_LEDS_SM3 30
+#define NUM_PIXELS NUM_LEDS_SM0 + NUM_LEDS_SM1 + NUM_LEDS_SM2 + NUM_LEDS_SM3
+
+#else
+
+// only if NUM_STRIPS = 1
+#ifdef OUTDOOR_TREE_WS2815
+#define NUM_PIXELS          409  // for outside leds
+#else
+#define NUM_PIXELS          591     // for christmas tree
+#endif  //  OUTDOOR_TREE_WS2815
+
+#endif  //  NUM_STRIPS > 1
+
+#define WS2815_PIN_BASE     2   // first GPIO of 16 used for parallel output
 
 #define _LOOPBACK_DEBUG_    // Enable LOOPBACK debug messages on USB
 #define _DDP_DEBUG_         // Enable DDP debug messages on USB
@@ -149,49 +182,9 @@
 
 #endif // VL53_SPI
 
-// doc: I2C0_SDA --> 0,
-// doc: I2C0_SCL --> 1,
-
-// doc: I2C1_SDA --> 2, 6, 10, 14, 18, 22, 26, 30, 34, 38
-// doc: I2C1_SCL --> 3, 7, 11, 15, 19, 23, 27, 31, 35, 39
-
-// doc: UART0_TX --> 0, 2, 12, 14, 16, 18, 28, 30, 32
-// doc: UART0_RX --> 1, 3, 13, 15, 17, 19, 29, 31, 33
-
-// doc: UART1_TX --> 4, 6, 8, 10, 20, 22, 24, 26
-// doc: UART1_RX --> 5, 7, 9, 11, 21, 23, 25, 27
-
-/**
- * PWM configuration for RGBW LED driver
- */
-#define WRAP_BITS   10      // bits for PWM_WRAP
-#define PWM_WRAP ((1 << WRAP_BITS) - 1)  // 10-bit resolution
-#define LINEAR_BITS 10
-#define LINEAR_MAX ((1 << LINEAR_BITS) - 1) // 12 -> 4095 = 12-bit logical light domain
-                                            // 10 -> 1023 = 10-bit logical light domain
-#define PWM_MAX      PWM_WRAP     // hardware domain
-#define PWM_MIN_ON   1
-
-/**
- * Optionally 1 driver (gp3) or rgbw (gp4,5,6,7)
- */
-
-// #define PWM_FREQ   600   // max value 600 kHz (min 100 Hz)
-// for direct LED driviing set 2kHz
-#define PWM_FREQ   2000   //
-
-// #define PWM_LED_W    3  // GP4 -> PWM_1B     cos nie dziala, 
-#define PWM_LED_W    4  // GP4 -> PWM_2A
-#define PWM_LED_B    5  // GP5 -> PWM_2B
-#define PWM_LED_R    6  // GP6 -> PWM_3A
-#define PWM_LED_G    7  // GP7 -> PWM_3B
 
 // // Fixed wiring
 // #define VL53_PIN_SPI_I2C_N -1  // tied to 3V3 on PCB
 
-//+5V                     //                    green
-// GND                    //                    yellow
-#define RD03D_TX_PIN  15  // GP15 -> UART0_RX   black
-#define RD03D_RX_PIN  14  // GP14 -> UART0_TX   red
-#define RD03D_BAUDRATE 256000  // default UART rate for RD03D
+
 

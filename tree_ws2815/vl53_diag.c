@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "config_tree.h"
+#include "config.h"
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"

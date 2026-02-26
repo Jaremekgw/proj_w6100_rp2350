@@ -12,7 +12,7 @@
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
 #include "loopback.h"
-#include "config_kitchen.h"
+#include "config.h"
 #include "network.h"        // see tree
 #include "wizchip_custom.h"
 #include "efu_update.h"

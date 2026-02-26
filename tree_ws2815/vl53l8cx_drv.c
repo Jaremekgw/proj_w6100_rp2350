@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <pico/time.h>
-#include "config_tree.h"
+#include "config.h"
 
 #include "vl53l8cx_drv.h"
 #include "vl53l8cx_platform.h"

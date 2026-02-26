@@ -12,7 +12,7 @@
 #include "wizchip_spi.h"
 #include "loopback.h"
 // #include "socket.h"
-#include "config_tree.h"
+#include "config.h"
 #include "network.h"
 #include "ws2815_control_dma.h"
 #include "wizchip_custom.h"

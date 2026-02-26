@@ -23,3 +23,6 @@ typedef struct
 void cli_send(uint8_t sn, const char *msg);
 void cli_flush(uint8_t sn, const char *msg);
 
+// --- Common functions for telnet ---
+bool parse_ipv4(const char *s, uint8_t out[4]);
+

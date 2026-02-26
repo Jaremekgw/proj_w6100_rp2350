@@ -18,7 +18,6 @@ file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
 target_sources(${TARGET_NAME} PRIVATE
         main.c
         ws2815_control_dma.c
-        #network.c               # move to common, problem with config
         led_pattern.c
         telnet.c
         vl53l8cx_drv.c
@@ -37,10 +36,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
 )
 
 set_source_files_properties(
-    # wizchip_custom.c
-    # network.c
     main.c
-    telnet.c
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
 

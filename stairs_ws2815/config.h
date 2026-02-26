@@ -8,6 +8,7 @@
 
 #include "wizchip_conf.h"
 
+#define PROJECT_NAME "stairs_ws2815"
 #define FW_VERSION "1.0.4"
 /**
  * Pin connected to OE for TXB0108

@@ -29,11 +29,7 @@ target_include_directories(${TARGET_NAME} PRIVATE
 )
 
 set_source_files_properties(
-    # wizchip_custom.c
-    #network.c
     main.c
-    #efu_update.c
-    telnet.c
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
 

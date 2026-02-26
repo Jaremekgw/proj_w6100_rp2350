@@ -13,7 +13,7 @@
 #include "hardware/irq.h"
 #include <math.h>
 
-#include "config_tree.h"
+#include "config.h"
 
 
 // dir == 1 ? "(forward)" : dir ? "(backward)" : "(still)" dir = [-1, 0, 1]

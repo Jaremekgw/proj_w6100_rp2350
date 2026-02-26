@@ -17,7 +17,7 @@
 #include "pico/bootrom.h"
 #include "telnet.h"
 #include "ws2815_control_dma.h"
-#include "config_tree.h"
+#include "config.h"
 #include "partition.h"
 #include "flash_cfg.h"
 #include "utility.h"
@@ -69,8 +69,9 @@ const char *help_msg =
 const char *cli_greeting =
 "\r\n"
 "========================================\r\n"
-"   Welcome to WIZnet RP2350 CLI Shell   \r\n"
+"   Welcome to w6100 RP2350 CLI Shell    \r\n"
 "========================================\r\n"
+"Project: %s  ver: %s\r\n"
 "Connected from: %d.%d.%d.%d\r\n"
 "Type 'help' to see available commands.\r\n"
 "----------------------------------------\r\n";
@@ -81,28 +82,32 @@ const char *cli_greeting =
 // CLI variables
 uint8_t cli_buf_rx[CLI_BUF_RX_SIZE];
 
-
+/**
+ * In network called by:
+ * cli_hooks.on_connect(cli_sn, destip);
+ * 
+ */
 void telnet_greeting(uint8_t sn, const uint8_t *client_ip) {
     char msg[256];
 
-    snprintf(msg, sizeof(msg), cli_greeting, 
+    snprintf(msg, sizeof(msg), cli_greeting, PROJECT_NAME, FW_VERSION,
         client_ip[0], client_ip[1], client_ip[2], client_ip[3]);
 
     cli_flush(sn, msg);  // (uint8_t*)  , strlen(msg)
 }
 
-static bool parse_ipv4(const char *s, uint8_t out[4]) {
-    int a, b, c, d;
-    if (sscanf(s, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
-        return false;
-    if ((a|b|c|d) & ~0xFF)
-        return false;
-    out[0] = (uint8_t)a;
-    out[1] = (uint8_t)b;
-    out[2] = (uint8_t)c;
-    out[3] = (uint8_t)d;
-    return true;
-}
+// static bool parse_ipv4(const char *s, uint8_t out[4]) {
+//     int a, b, c, d;
+//     if (sscanf(s, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
+//         return false;
+//     if ((a|b|c|d) & ~0xFF)
+//         return false;
+//     out[0] = (uint8_t)a;
+//     out[1] = (uint8_t)b;
+//     out[2] = (uint8_t)c;
+//     out[3] = (uint8_t)d;
+//     return true;
+// }
 
 void cmd_config_show(uint8_t sn) {
         char msg[200];     // current use ??? bytes
