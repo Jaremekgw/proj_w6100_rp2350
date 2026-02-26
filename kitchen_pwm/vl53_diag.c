@@ -14,9 +14,9 @@
 #include "pico/time.h"
 #include "vl53l8cx_drv.h"
 #include "vl53l8cx_api.h"
-
-// Your project function
-extern void telnet_send(int sn, const char *msg);
+// #include "telnet.h"
+#include "tcp_cli.h"
+// extern void cli_flush(int sn, const char *msg);
 
 // --- Must match your wiring ---
 // #define VL53_SPI            spi1
@@ -60,16 +60,16 @@ static const char *gpio_func_name(gpio_function_t f) {
     }
 }
 
-static void sendf(int sn, const char *fmt, ...) {
+static void sendf(uint8_t sn, const char *fmt, ...) {
     char buf[256];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
-    telnet_send(sn, buf);
+    cli_flush(sn, buf);
 }
 
-static void dump_one_gpio(int sn, uint pin, const char *name)
+static void dump_one_gpio(uint8_t sn, uint pin, const char *name)
 {
     if (pin > 29) {
         sendf(sn, "  %-8s: (not connected)\r\n", name);
@@ -90,9 +90,9 @@ static void dump_one_gpio(int sn, uint pin, const char *name)
 // Public diagnostics
 // --------------------------------------------------------------------------
 
-void vl53_diag_print_gpio(int sn)
+void vl53_diag_print_gpio(uint8_t sn)
 {
-    telnet_send(sn, "[VL53] GPIO status\r\n");
+    cli_flush(sn, "[VL53] GPIO status\r\n");
     dump_one_gpio(sn, VL53_PIN_CS,   "CS");
     dump_one_gpio(sn, VL53_PIN_INT,  "INT");
     #ifdef VL53_SPI
@@ -107,13 +107,13 @@ void vl53_diag_print_gpio(int sn)
 
     // VL53_PIN_SPI_I2C_N is not used, directly tied to 3V3
     // dump_one_gpio(sn, VL53_PIN_SPI_I2C_N, "SPI_I2C_N");
-    telnet_send(sn, "\r\n");
+    cli_flush(sn, "\r\n");
 }
 
 #ifdef VL53_SPI
-void vl53_diag_print_spi1(int sn)
+void vl53_diag_print_spi1(uint8_t sn)
 {
-    telnet_send(sn, "[VL53] SPI1 status\r\n");
+    cli_flush(sn, "[VL53] SPI1 status\r\n");
 
     // SPI hardware registers (RP2040/RP2350 compatible naming in Pico SDK)
     spi_hw_t *hw = spi_get_hw(VL53_SPI);
@@ -148,23 +148,23 @@ void vl53_diag_print_spi1(int sn)
           prescale, scr, (unsigned long)sck_hz);
 
     // Pin function sanity check
-    telnet_send(sn, "  pin mux:\r\n");
+    cli_flush(sn, "  pin mux:\r\n");
     dump_one_gpio(sn, VL53_PIN_SCK,  "SCK");
     dump_one_gpio(sn, VL53_PIN_MOSI, "MOSI");
     dump_one_gpio(sn, VL53_PIN_MISO, "MISO");
     dump_one_gpio(sn, VL53_PIN_CS,   "CS");
 
-    telnet_send(sn, "\r\n");
+    cli_flush(sn, "\r\n");
 }
 #endif // VL53_SPI
 
-void vl53_diag_probe_bus(int sn)
+void vl53_diag_probe_bus(uint8_t sn)
 {
-    telnet_send(sn, "[VL53] Bus probe\r\n");
+    cli_flush(sn, "[VL53] Bus probe\r\n");
 
     VL53L8CX_Configuration *dev = vl53_get_dev();
     if (!dev) {
-        telnet_send(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
+        cli_flush(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
         return;
     }
 
@@ -176,14 +176,14 @@ void vl53_diag_probe_bus(int sn)
 }
 
 
-void vl53_diag_raw_spi_test(int sn)
+void vl53_diag_raw_spi_test(uint8_t sn)
 {
     uint8_t val = 0xAA;
     uint8_t rd  = 0x00;
     uint8_t st;
     VL53L8CX_Configuration *p_dev = vl53_get_dev();
 
-    telnet_send(sn, "[VL53] RAW SPI test\r\n");
+    cli_flush(sn, "[VL53] RAW SPI test\r\n");
 
     // Write 0xAA to register 0x7FFF
     st = WrByte(&p_dev->platform, 0x7FFF, val);
@@ -193,25 +193,25 @@ void vl53_diag_raw_spi_test(int sn)
     st = RdByte(&p_dev->platform, 0x7FFF, &rd);
     printf("RdByte(0x7FFF) status=%u value=0x%02X\r\n", st, rd);
 
-    telnet_send(sn, "\r\n");
+    cli_flush(sn, "\r\n");
 }
 
 
 
 
-void vl53_diag_cs_active(int sn)
+void vl53_diag_cs_active(uint8_t sn)
 {
-    telnet_send(sn, "[VL53] CS active\r\n");
+    cli_flush(sn, "[VL53] CS active\r\n");
 
     VL53L8CX_Configuration *dev = vl53_get_dev();
     if (!dev) {
-        telnet_send(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
+        cli_flush(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
         return;
     }
 
     vl53_cs_set_active(&dev->platform);
 
-    telnet_send(sn, "    GPIO status\r\n");
+    cli_flush(sn, "    GPIO status\r\n");
     dump_one_gpio(sn, VL53_PIN_CS,   "  CS");
     dump_one_gpio(sn, VL53_PIN_INT,  "  INT");
     #ifdef VL53_SPI
@@ -222,22 +222,22 @@ void vl53_diag_cs_active(int sn)
     dump_one_gpio(sn, VL53_PIN_SCL,  "  SCL");
     dump_one_gpio(sn, VL53_PIN_SDA, "  SDA");
     #endif // VL53_SPI
-    telnet_send(sn, "\r\n");
+    cli_flush(sn, "\r\n");
 }
 
-void vl53_diag_cs_inactive(int sn)
+void vl53_diag_cs_inactive(uint8_t sn)
 {
-    telnet_send(sn, "[VL53] CS inactive\r\n");
+    cli_flush(sn, "[VL53] CS inactive\r\n");
 
     VL53L8CX_Configuration *dev = vl53_get_dev();
     if (!dev) {
-        telnet_send(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
+        cli_flush(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
         return;
     }
 
     vl53_cs_set_inactive(&dev->platform);
 
-    telnet_send(sn, "    GPIO status\r\n");
+    cli_flush(sn, "    GPIO status\r\n");
     dump_one_gpio(sn, VL53_PIN_CS,   "  CS");
     dump_one_gpio(sn, VL53_PIN_INT,  "  INT");
     #ifdef VL53_SPI
@@ -248,7 +248,7 @@ void vl53_diag_cs_inactive(int sn)
     dump_one_gpio(sn, VL53_PIN_SCL,  "  SCL");
     dump_one_gpio(sn, VL53_PIN_SDA, "  SDA");
     #endif // VL53_SPI
-    telnet_send(sn, "\r\n");
+    cli_flush(sn, "\r\n");
 }
 
 // void vl53_diag_read_one(int sn)
@@ -266,10 +266,10 @@ void vl53_diag_cs_inactive(int sn)
 //              (unsigned long)results.streamcount,
 //              (int)results.distance_mm[0],
 //              (unsigned)results.target_status[0]);
-//     telnet_send(sn, msg);
+//     cli_flush(sn, msg);
 // }
 
-void vl53_diag_read_one(int sn)
+void vl53_diag_read_one(uint8_t sn)
 {
     VL53L8CX_Configuration *dev = vl53_get_dev();
     static VL53L8CX_ResultsData results;
@@ -309,19 +309,19 @@ void vl53_diag_read_one(int sn)
         (unsigned)dev->streamcount
     );
 
-    telnet_send(sn, msg);
+    cli_flush(sn, msg);
 }
 
-void vl53_diag_start_ranging(int sn)
+void vl53_diag_start_ranging(uint8_t sn)
 {
     uint8_t st = 0xee;
     uint8_t v = 0xdd;
 
-    telnet_send(sn, "[VL53] Start ranging\r\n");
+    cli_flush(sn, "[VL53] Start ranging\r\n");
 
     VL53L8CX_Configuration *dev = vl53_get_dev();
     if (!dev) {
-        telnet_send(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
+        cli_flush(sn, "  ERROR: vl53 device handle is NULL\r\n\r\n");
         return;
     }
     st = vl53l8cx_start_ranging(dev);

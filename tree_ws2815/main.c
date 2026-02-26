@@ -21,6 +21,7 @@
 #include "partition.h"
 #include "flash_cfg.h"
 #include "vl53l8cx_drv.h"
+#include "telnet.h"
 
 // variables for TCP loopback
 // static uint8_t message_buf[2] = {
@@ -44,6 +45,14 @@ bool timer_callback(repeating_timer_t *rt) {
     tmr_ms_tick++;     // Increment every 1 ms
     return true;    // Return true to keep repeating
 }
+
+// // CLI variables
+// uint8_t cli_buf_rx[CLI_BUF_RX_SIZE];
+
+// DDP variables
+//                            (NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS)
+#define DDP_DATA_BUF_SIZE     (NUM_PIXELS*NUM_CHANNELS)  // clamp to your RAM
+uint8_t ddp_buf_frame[DDP_DATA_BUF_SIZE]; // buffer for receiving DDP packets
 
 void run_periodically_ws2815_tasks(void) {
     static uint32_t last_tmr_loop = 0;
@@ -95,8 +104,13 @@ int main() {
     show_current_partition();
     efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT);
 
+    // --- Telnet CLI init ---
+    telnet_init();
+    // tcp_cli_init(TCP_CLI_SOCKET, TCP_CLI_PORT, cli_buf_rx, CLI_BUF_RX_SIZE, CLI_TIMEOUT);
+
     // --- Open UDP socket for DDP ---
-    udp_socket_init();
+    // udp_socket_init();
+    udp_ddp_init(UDP_DDP_SOCKET, UDP_DDP_PORT, ddp_buf_frame, DDP_DATA_BUF_SIZE);
     udp_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
     wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 
@@ -132,7 +146,7 @@ int main() {
     #ifndef OUTDOOR_TREE_WS2815
     printf("[VL53] Jump to loop\n");
     #endif  // OUTDOOR_TREE_WS2815
-
+    
     // --- Main loop ---
     while (true) {
         // time_start = time_us_32();  // compare with get_absolute_time()

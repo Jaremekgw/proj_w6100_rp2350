@@ -50,7 +50,7 @@
 // #define NETINFO_DHCP    NETINFO_STATIC
 // #endif
 
-#define ETHERNET_BUF_MAX_SIZE 1024
+// #define ETHERNET_BUF_MAX_SIZE 1024
 
 /**
  * Configuration for TCP LOOPBACK
@@ -67,7 +67,8 @@
  */
 #define TCP_CLI_SOCKET      0
 #define TCP_CLI_PORT        5000
-#define CLI_TIMEOUT_MS      20000
+#define CLI_TIMEOUT         20   // 20 seconds
+#define CLI_BUF_RX_SIZE     1024
 
 /**
  * An Over-The-Air (OTA) software update mechanism

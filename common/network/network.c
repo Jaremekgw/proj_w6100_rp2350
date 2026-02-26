@@ -4,26 +4,36 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <stdio.h>
+/**
+ * Disable sign-conversion warnings locally from WIZnet code
+ * 
+ * Or you can wrap function getSn_SR:
+ * static inline uint32_t wiz_get_sn_sr(uint8_t sn)
+ *   {
+ *       return (uint32_t)getSn_SR(sn);
+ *   }
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
+#include <stdio.h>  
 #include <string.h>
 #include "network.h"
 
 
-#include <port_common.h>
+//#include <port_common.h>
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
 #include "loopback.h"
-#include "socket.h"
+#include "pico/time.h"
+#include "hardware/gpio.h"
 
 #include "pico/unique_id.h"
 #include "wizchip_conf.h"
-#include "config.h"
-#include "ws2815_control_dma_parallel.h"
-#include "telnet.h"
 #include "flash_cfg.h"
-// #include "utility.h"
 
 
+#define _TIME_DEBUG_
 
 // Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
 //#define TCP_LOOPBACK_SOCKET  0      // with port TCP_LOOPBACK_PORT 8000
@@ -37,11 +47,26 @@
 #define DDP_DATA_BUF_SIZE     (DDP_HEADER_LEN + MAX_DDP_PAYLOAD)  // clamp to your RAM
 
 
-// --- Variables for Network ---
-// TCP loopback buffer
-// #define ETHERNET_BUF_MAX_SIZE (1024 * 2) // Send and receive cache size
-// static uint8_t ethernet_buf[ETHERNET_BUF_MAX_SIZE] = { 0, };     // it was for loopback
-static uint8_t ethernet_cli_buf[ETHERNET_BUF_MAX_SIZE + 1];
+// --- CLI Variables ---
+// Buffer used for telnet
+// static uint8_t ethernet_cli_buf[ETHERNET_BUF_MAX_SIZE + 1];
+// static uint8_t *ethernet_cli_buf;
+
+static uint8_t *cli_buf_rx = NULL;  // separate pointer for CLI RX buffer, can be used for other purposes if needed
+ // ETHERNET_BUF_MAX_SIZE
+static uint16_t cli_buf_size = 0;  // size of the CLI buffer, set during initialization, should not exceed
+ // CLI_TIMEOUT_MS
+static int64_t cli_timeout_ms = 30000;  // 30 seconds timeout for idle CLI connections
+static uint8_t cli_sn = 0xff;
+static uint16_t cli_port = 0;
+static tcp_cli_hooks_t cli_hooks = {0}; // struct for CLI hooks, set during initialization
+
+
+// --- DDP Variables ---
+static uint8_t *ddp_buf_frame; // pointer to DDP payload area in the buffer for receiving DDP packets
+static uint16_t ddp_buf_size = 0; // size of the DDP buffer, set during initialization, should not exceed DDP_DATA_BUF_SIZE
+static uint8_t ddp_sn = 0xff; // UDP_DDP_SOCKET
+static uint16_t ddp_port = 0;
 
 // UDP receive buffer for interrupt processing
 #define UDP_RING_COUNT      5
@@ -56,9 +81,11 @@ static volatile uint16_t udp_rx_buf_len[UDP_RING_COUNT] = {0,};
 static volatile bool wiznet_rx_pending = false;
 // network.h
 
+#if _UDP_DEBUG_
 static uint8_t* msg_ip_v4 = (uint8_t*)"IPv4 mode";  // the same: static const uint8_t msg_v4[]   = "IPv4 mode";
 static uint8_t* msg_ip_v6 = (uint8_t*)"IPv6 mode";
 static uint8_t* msg_ip_dual = (uint8_t*)"Dual IP mode";
+#endif
 static uint8_t loopback_mode = AS_IPV4;
 
 // --- WIZnet W6100 interrupt pin ---
@@ -66,53 +93,16 @@ static uint8_t loopback_mode = AS_IPV4;
 
 // --- Framebuffer for patterns ---
 // uint8_t framebuf[NUM_STRIPS][NUM_PIXELS][NUM_CHANNELS];   // fb[strip][pixel][channel], channel = G,R,B
-uint8_t rx_fb[NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
+// uint8_t rx_fb[NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
+// uint8_t rx_fb[NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
 
 
 // --- Unique ID ---
-pico_unique_board_id_t id;
+// pico_unique_board_id_t id;
 
 
 // --- Functions ---
 void init_net_info(void) {
-    // wiz_NetInfo *config_get_net_info()
-
-//     pico_get_unique_board_id(&id);
-
-//     // WIZnet OUI 00:08:DC:...
-//     uint8_t mac[6] = NETINFO_MAC;
-//     // Use 3 least significant bytes from unique ID
-//     mac[3] = id.id[5];
-//     mac[4] = id.id[6];
-//     mac[5] = id.id[7];
-//     uint8_t ip[4]  = NETINFO_IP;
-//     uint8_t sn[4]  = NETINFO_SN;
-//     uint8_t gw[4]  = NETINFO_GW;
-//     uint8_t dns[4] = NETINFO_DNS;
-
-//     memcpy(g_net_info.mac, mac, sizeof(mac));
-//     memcpy(g_net_info.ip, ip, sizeof(ip));
-//     memcpy(g_net_info.sn, sn, sizeof(sn));
-//     memcpy(g_net_info.gw, gw, sizeof(gw));
-//     memcpy(g_net_info.dns, dns, sizeof(dns));
-
-// #if _WIZCHIP_ > W5500
-//     uint8_t lla[16] = NETINFO_LLA;
-//     uint8_t gua[16] = NETINFO_GUA;
-//     uint8_t sn6[16] = NETINFO_SN6;
-//     uint8_t gw6[16] = NETINFO_GW6;
-//     uint8_t dns6[16] = NETINFO_DNS6;
-
-//     memcpy(g_net_info.lla, lla, sizeof(lla));
-//     memcpy(g_net_info.gua, gua, sizeof(gua));
-//     memcpy(g_net_info.sn6, sn6, sizeof(sn6));
-//     memcpy(g_net_info.gw6, gw6, sizeof(gw6));
-//     memcpy(g_net_info.dns6, dns6, sizeof(dns6));
-//     g_net_info.ipmode = NETINFO_IPMODE;
-// #else
-//     g_net_info.dhcp = NETINFO_DHCP;
-// #endif
-
     network_initialize(config_get_net_info()); // configures IP address etc.
     print_network_information(); // Read back the configuration information and print it
 }
@@ -226,121 +216,127 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
     return 1;
 } */
 
-// ----------------------------------------------------------------
-// TCP CLI Service
-// ----------------------------------------------------------------
+
+
+/**
+ * Initialize TCP CLI server parameters
+ * @param sn Socket number to use for CLI (must be 0-7 and not used by other services)
+ * @param port TCP port to listen on (e.g. 8000)
+ * @param buf Pointer to buffer for receiving CLI data (must be allocated by caller)
+ * @param buf_size Size of the CLI buffer (must be sufficient for expected command length, e.g. 256 bytes)
+ * @param timeout_sec Timeout for idle CLI connections in seconds (e.g. 30 seconds)
+ */
+void tcp_cli_init(uint8_t sn, uint16_t port,
+                  uint8_t *buf, uint16_t buf_size, int16_t timeout_sec) {
+    cli_sn = sn;
+    cli_port = port;
+    cli_buf_rx = buf;
+    cli_buf_size = buf_size;
+    cli_timeout_ms = timeout_sec * 1000;  // convert to milliseconds
+}
+
+void cli_hook_init(const tcp_cli_hooks_t *hooks) {
+    // This function can be called during initialization to set up CLI hooks
+    if (hooks)
+        cli_hooks = *hooks;  // copy hooks struct if provided
+    else
+        cli_hooks = (tcp_cli_hooks_t){0}; // initialize to zero if no hooks provided
+
+}
+
+/**
+ * TCP CLI service loop on one socket
+ */
 int32_t tcp_cli_service(void) {
-    uint8_t  sn = TCP_CLI_SOCKET;
-    uint16_t port = TCP_CLI_PORT;
     static absolute_time_t last_rx_time = {0};   // Timestamp of last received byte
     int32_t ret;
     uint16_t size;
     uint8_t destip[4];
     uint16_t destport;
 
-    switch (getSn_SR((uint32_t)sn)) {
+    switch (getSn_SR((uint32_t)cli_sn)) {
 
     case SOCK_ESTABLISHED:
         // On new connection
-        if (getSn_IR((uint32_t)sn) & Sn_IR_CON) {
-            getSn_DIPR((uint32_t)sn, destip);
-            destport = getSn_DPORT((uint32_t)sn);
+        if (getSn_IR((uint32_t)cli_sn) & Sn_IR_CON) {
+            getSn_DIPR((uint32_t)cli_sn, destip);
+            destport = getSn_DPORT((uint32_t)cli_sn);
 
             printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
-                   sn, destip[0], destip[1], destip[2], destip[3], destport);
+                   cli_sn, destip[0], destip[1], destip[2], destip[3], destport);
 
-            setSn_IR((uint32_t)sn, Sn_IR_CON);
+            setSn_IR((uint32_t)cli_sn, Sn_IR_CON);
 
             // Reset timeout timer
             last_rx_time = get_absolute_time();
+            printf("[CLI] established, current time: %lld\r\n", last_rx_time);
 
-            telnet_greeting(sn, destip);
+            // telnet_greeting(cli_sn, destip);
+            if (cli_hooks.on_connect) {
+                cli_hooks.on_connect(cli_sn, destip);
+            }
         }
 
         // Handle received data
-        size = getSn_RX_RSR(sn);
+        size = getSn_RX_RSR(cli_sn);
         if (size > 0) {
-            if (size > ETHERNET_BUF_MAX_SIZE) {
-                size = ETHERNET_BUF_MAX_SIZE;
+            if (size >= cli_buf_size) {
+                size = cli_buf_size - 1;  // clamp to buffer size, leaving space for null terminator
             }
 
-            ret = recv(sn, ethernet_cli_buf, size);
+            ret = recv(cli_sn, cli_buf_rx, size);
             if (ret <= 0) return ret;
 
-            ethernet_cli_buf[ret] = 0;
+            cli_buf_rx[ret] = 0;
 
             // Update timeout timestamp
             last_rx_time = get_absolute_time();
 
             // Trim CR/LF
-            char *cmd = (char*)ethernet_cli_buf;
+            char *cmd = (char*)cli_buf_rx;
             char *newline = strpbrk(cmd, "\r\n");
             if (newline) *newline = 0;
 
             printf("[CLI] Command received: '%s'\r\n", cmd);
-            handle_command(cmd, sn);
+            if (cli_hooks.handle_command) {
+                cli_hooks.handle_command(cmd, cli_sn);
+            } else {
+                // Default handling if no hook provided
+                const char *msg = "No command handler\r\n";
+                send(cli_sn, (uint8_t*)msg, (uint16_t)strlen(msg));
+            }
+            // handle_command(cmd, cli_sn);
         } else {
             // No data – check timeout
-            if (absolute_time_diff_us(last_rx_time, get_absolute_time()) >= (CLI_TIMEOUT_MS * 1000LL)) {
+            if (absolute_time_diff_us(last_rx_time, get_absolute_time()) >= (cli_timeout_ms * 1000)) {
                 const char *msg = "timeout\r\n";
-                send(sn, (uint8_t*)msg, (uint16_t)strlen(msg));
-                printf("[CLI] Idle timeout, closing socket %d\r\n", sn);
-                disconnect(sn);
+                send(cli_sn, (uint8_t*)msg, (uint16_t)strlen(msg));
+                printf("[CLI] Idle timeout, closing socket %d\r\n", cli_sn);
+                disconnect(cli_sn);
                 return 0;
             }
         }
-        break;    
-            // if (getSn_IR(sn) & Sn_IR_CON) {
-            //     getSn_DIPR(sn, destip);
-            //     destport = getSn_DPORT(sn);
-            //     printf("[CLI] Socket %d connected from %d.%d.%d.%d:%d\r\n",
-            //            sn, destip[0], destip[1], destip[2], destip[3], destport);
-            //     setSn_IR(sn, Sn_IR_CON);
-
-            //     // Send formatted greeting with client IP
-            //     telnet_greeting(sn, destip);
-            // }
-
-            // size = getSn_RX_RSR(sn);
-            // if (size > 0) {
-            //     if (size > ETHERNET_BUF_MAX_SIZE) size = ETHERNET_BUF_MAX_SIZE;
-            //     ret = recv(sn, ethernet_cli_buf, size);
-            //     if (ret <= 0) return ret;
-
-            //     ethernet_cli_buf[ret] = 0;
-            //     // Trim CRLF
-            //     char *cmd = (char*)ethernet_cli_buf;
-            //     char *newline = strpbrk(cmd, "\r\n");
-            //     if (newline) *newline = 0;
-
-            //     printf("[CLI] Command received: '%s'\r\n", cmd);
-            //     handle_command(cmd, sn);
-
-            //     // // Optional: send acknowledgment
-            //     // const char *ok = "OK\r\n";
-            //     // send(sn, (uint8_t*)ok, strlen(ok));
-            // }
-            // break;
+        break;
 
     case SOCK_CLOSE_WAIT:
-        printf("[CLI] Close wait, closing socket %d\r\n", sn);
-        if ((ret = disconnect(sn)) != SOCK_OK) return ret;
+        printf("[CLI] Close wait, closing socket %d\r\n", cli_sn);
+        if ((ret = disconnect(cli_sn)) != SOCK_OK) return ret;
         break;
 
     case SOCK_INIT:
-        if ((ret = listen(sn)) != SOCK_OK) {
+        if ((ret = listen(cli_sn)) != SOCK_OK) {
             printf("[CLI] Listen error %d\r\n", ret);
             return ret;
         }
-        printf("[CLI] Listening on port %d\r\n", port);
+        printf("[CLI] Listening on port %d\r\n", cli_port);
         break;
 
     case SOCK_CLOSED:
-        if ((ret = socket(sn, Sn_MR_TCP, port, Sn_MR_ND)) != sn) {
+        if ((ret = socket(cli_sn, Sn_MR_TCP, cli_port, Sn_MR_ND)) != cli_sn) {
             printf("[CLI] Socket open error %d\r\n", ret);
             return ret;
         }
-        printf("[CLI] Socket %d opened on port %d\r\n", sn, port);
+        printf("[CLI] Socket %d opened on port %d\r\n", cli_sn, cli_port);
         break;
 
     default:
@@ -350,9 +346,8 @@ int32_t tcp_cli_service(void) {
 }
 
 
-
 void udp_interrupts_enable(void) {
-    SOCKET ddp_sock = UDP_DDP_SOCKET;
+    SOCKET ddp_sock = ddp_sn;
     intr_kind imr = 0, ir;
 
     // You can enable just the sockets you use to avoid extra wakeups. In the global mask (SIMR).
@@ -367,8 +362,6 @@ void udp_interrupts_enable(void) {
     ir = IK_INT_ALL;
     ctlwizchip(CW_CLR_INTERRUPT, &ir);  // wizchip_clrinterrupt(*((intr_kind*)arg));
 }
-
-
 
 #ifdef _TIME_DEBUG_
 static volatile uint32_t time_irq_start = 0, time_routine_start, time_irq_duration, time_routine_duration;
@@ -392,7 +385,7 @@ static volatile uint8_t ik_pending_table_idx = 0;
 // This will be called when INTn (GPIO 21) goes low
 /* void wiznet_gpio_irq_handler_single_socket(uint gpio, uint32_t events)
 {
-    SOCKET ddp_sock = UDP_DDP_SOCKET;
+    SOCKET ddp_sock = ddp_sn;  // UDP_DDP_SOCKET;
     uint16_t recv_len;
     uint8_t srcip[16];
     uint8_t addr_len;
@@ -473,13 +466,13 @@ void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
 
     int32_t ret;
     // intr_kind pending;  // 
-    intr_kind sock_bit = (IK_SOCK_0 << UDP_DDP_SOCKET);
+    intr_kind sock_bit = (IK_SOCK_0 << ddp_sn);
     uint16_t recv_len;
     uint16_t srcport;
     uint8_t srcip[16];
     uint8_t addr_len;
     // uint8_t sn_ir;
-    SOCKET sock_num = UDP_DDP_SOCKET;
+    SOCKET sock_num = ddp_sn;
 
 #ifdef _TIME_DEBUG_
     t_irq_routine_start = time_us_32();
@@ -564,50 +557,65 @@ void wiznet_gpio_irq_init(void) {
     // );
 }
 
+// was: udp_socket_init(void)
+// new: void tcp_cli_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size, int16_t timeout_sec);
 
-void udp_socket_init(void) {
-    uint16_t port = UDP_DDP_PORT;
-    SOCKET ddp_sock = UDP_DDP_SOCKET;
-    SOCKET sn;
+void udp_ddp_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size) {
+    ddp_sn = sn;
+    ddp_port = port;
+    ddp_buf_frame = buf;
+    ddp_buf_size = buf_size;
+
+    // uint16_t port = ddp_port;
+    // SOCKET ddp_sock = ddp_sn;
+    // SOCKET sn;
     uint8_t protocol;
+    #ifdef _UDP_DEBUG_
     uint8_t* mode_msg;
+    #endif
 
     check_loopback_mode_W6x00();    // as default set to AS_IPV4
 
     switch(loopback_mode) {
     case AS_IPV4:
         protocol = Sn_MR_UDP4;
+        #ifdef _UDP_DEBUG_
         mode_msg = msg_ip_v4;
+        #endif
         break;
     case AS_IPV6:
         protocol = Sn_MR_UDP6;
+        #ifdef _UDP_DEBUG_
         mode_msg = msg_ip_v6;
+        #endif
         break;
     case AS_IPDUAL:
     default:
         protocol = Sn_MR_UDPD;
+        #ifdef _UDP_DEBUG_
         mode_msg = msg_ip_dual;
+        #endif
         break;
     }
 
-    intr_kind sock_bit = (IK_SOCK_0 << ddp_sock);
-    int8_t rc = socket(ddp_sock, protocol, port, SOCK_IO_NONBLOCK);
+    intr_kind sock_bit = (IK_SOCK_0 << ddp_sn);
+    int8_t rc = socket((uint32_t)ddp_sn, protocol, ddp_port, SOCK_IO_NONBLOCK);
     if (rc < 0) return;
     sn = (typeof(sn))rc;
 
-    if(sn != ddp_sock){    /* reinitialize the socket */
+    if(sn != ddp_sn){    /* reinitialize the socket */
         #ifdef _UDP_DEBUG_
-            printf("%d : Fail to create socket.\r\n", ddp_sock);
+            printf("%d : Fail to create socket.\r\n", ddp_sn);
         #endif
         return; // SOCKERR_SOCKNUM;
     }
     #ifdef _UDP_DEBUG_
-        printf("%d:Socket UDP opened, port [%d] as %s\r\n",ddp_sock, port, mode_msg);   // getSn_SR(ddp_sock)
+        printf("%d:Socket UDP opened, port [%d] as %s\r\n", ddp_sn, ddp_port, mode_msg);   // getSn_SR(ddp_sock)
     #endif
 
     // Per-socket: enable only RECV interrupt
     // Sn_IMR bits: Sn_IR_SENDOK(0x10), Sn_IR_TIMEOUT(0x08), Sn_IR_RECV(0x04), ...
-    setSn_IMR((uint32_t)ddp_sock, Sn_IR_RECV);     // mask bit RECV=1
+    setSn_IMR(ddp_sn, Sn_IR_RECV);     // mask bit RECV=1
     // Clear any pending per-socket interrupts
     ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);  // wizchip_clrinterrupt(sock_bit);  // clear any pending per-socket interrupts  // setSn_IR(ddp_sock, 0xFF);
 }
@@ -616,16 +624,19 @@ void udp_socket_init(void) {
 
 void process_udp_ring(void) {
 
-    uint8_t rd_idx = (typeof(rd_idx))((udp_ring_idx + 1) % UDP_RING_COUNT);
+    int tmp = (udp_ring_idx + 1) % UDP_RING_COUNT;
+    uint8_t rd_idx = (uint8_t)tmp;  // (udp_ring_idx + 1) % UDP_RING_COUNT;
 
-    for (uint8_t x = 0; x < UDP_RING_COUNT; x++) {
+    for (uint8_t id = 0; id < UDP_RING_COUNT; id++) {
         // printf("UDP ring slot %d: len=%d\n", id, udp_rx_buf_len[id]);
         if (udp_rx_buf_len[rd_idx] != 0) {
             drain_loop_count++;
             process_ddp_packet(udp_rx_ring_buf[rd_idx], udp_rx_buf_len[rd_idx]);
             udp_rx_buf_len[rd_idx] = 0;  // mark slot free
         }
-        rd_idx = (typeof(rd_idx))((rd_idx + 1) % UDP_RING_COUNT);
+        tmp = (rd_idx + 1) % UDP_RING_COUNT;
+        // rd_idx = (rd_idx + 1) % UDP_RING_COUNT;
+        rd_idx = (uint8_t)tmp;
     }
 }
 
@@ -699,7 +710,7 @@ static void ddp_copy_payload(const uint8_t *payload, uint32_t offset, uint32_t l
     uint32_t in, out;
 
     for(in = 0, out = offset; in < length; in++, out++) {
-        rx_fb[out] = payload[in];
+        ddp_buf_frame[out] = payload[in];
     }
 
     // uint32_t led_start = offset / NUM_CHANNELS;
@@ -769,7 +780,7 @@ void process_ddp_udp(SOCKET s, uint32_t *pkt_counter, uint32_t *last_push_ms)
 
         // if PUSH bit set → render
         if (flags1 & DDP_FLAGS1_PUSH) {
-            ws2815_show(rx_fb);   // push frame to LEDs (pass flat uint8_t pointer)
+            ws2815_show(ddp_buf_frame);   // push frame to LEDs (pass flat uint8_t pointer)
             *last_push_ms = to_ms_since_boot(get_absolute_time());
         }
     }
@@ -792,7 +803,12 @@ static void process_ddp_packet(uint8_t *buf, uint16_t recv_len)
     ddp_copy_payload(&buf[DDP_HEADER_LEN], offset, length);
 
     if (flags1 & DDP_FLAGS1_PUSH) {
-        // ws2815_show((uint8_t*)framebuf);  // push to LEDs
-        ws2815_show(rx_fb);   // push frame to LEDs (pass flat uint8_t pointer)
+        printf("DDP - push to ws2815, blocked for a while.\r\n");
+        // ws2815_show(rx_fb);   // push frame to LEDs (pass flat uint8_t pointer)
     }
 }
+
+/**
+ * Re-enable sign-conversion warnings
+ */
+#pragma GCC diagnostic pop

@@ -12,7 +12,7 @@ pico_generate_pio_header(${TARGET_NAME}
 target_sources(${TARGET_NAME} PRIVATE
         main.c
         ws2815_control_dma_parallel.c
-        network.c
+        # network.c
         # wizchip_custom.c
         led_pattern.c
         telnet.c
@@ -30,9 +30,9 @@ target_include_directories(${TARGET_NAME} PRIVATE
 
 set_source_files_properties(
     # wizchip_custom.c
-    network.c
+    #network.c
     main.c
-    efu_update.c
+    #efu_update.c
     telnet.c
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
@@ -48,8 +48,8 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
         # ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
-        IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
-        LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
+        # IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
+        # LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
         pico_bootrom
         hardware_flash
         boot_uf2_headers

@@ -11,7 +11,6 @@
 #include "wizchip_conf.h"
 #include "wizchip_spi.h"
 #include "loopback.h"
-#include "socket.h"
 #include "config.h"
 #include "network.h"
 #include "ws2815_control_dma_parallel.h"
@@ -20,6 +19,7 @@
 #include "efu_update.h"
 #include "partition.h"
 #include "flash_cfg.h"
+#include "telnet.h"
 
 // variables for TCP loopback
 // static uint8_t message_buf[2] = {
@@ -42,6 +42,15 @@ bool timer_callback() {
     tmr_ms_tick++;     // Increment every 1 ms
     return true;    // Return true to keep repeating
 }
+
+// // CLI variables
+// uint8_t cli_buf_rx[CLI_BUF_RX_SIZE];
+
+// DDP variables
+//                            (NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS)
+#define DDP_DATA_BUF_SIZE     (NUM_PIXELS*NUM_CHANNELS)  // clamp to your RAM
+uint8_t ddp_buf_frame[DDP_DATA_BUF_SIZE]; // buffer for receiving DDP packets
+// uint8_t rx_fb[NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
 
 void run_periodically_ws2815_tasks(void) {
     static uint32_t last_tmr_loop = 0;
@@ -93,8 +102,14 @@ int main() {
     show_current_partition();
     efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT);
 
+    // --- Telnet CLI init ---
+    telnet_init();
+    // tcp_cli_init(TCP_CLI_SOCKET, TCP_CLI_PORT, cli_buf_rx, CLI_BUF_RX_SIZE, CLI_TIMEOUT);
+
     // --- Open UDP socket for DDP ---
-    udp_socket_init();
+    // udp_socket_init();
+    udp_ddp_init(UDP_DDP_SOCKET, UDP_DDP_PORT, ddp_buf_frame, DDP_DATA_BUF_SIZE);
+
     udp_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
     wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 

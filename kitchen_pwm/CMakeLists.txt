@@ -4,7 +4,7 @@ add_executable(${TARGET_NAME})
 
 target_sources(${TARGET_NAME} PRIVATE
         main.c
-        network.c
+        # network.c
         telnet.c
         vl53l8cx_drv.c
         vl53l8cx_api.c
@@ -18,12 +18,9 @@ target_sources(${TARGET_NAME} PRIVATE
 )
 
 # This is a bit of a hack to suppress warnings for unused functions in the VL53L8CX driver, which is a third-party library that we don't want to modify directly. By setting the COMPILE_OPTIONS property for these source files, we can suppress the -Wunused-function warning for this specific target without affecting other targets that might use the same library.
+# because of: ioLibrary_Driver/inc/wizchip_spi.h:76
 set_source_files_properties(
-    # wizchip_custom.c
-    network.c
     main.c
-    efu_update.c
-    telnet.c
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
 
@@ -37,7 +34,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
         # IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
-        LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
+        # LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
         # ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         pico_bootrom
         hardware_flash

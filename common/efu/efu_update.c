@@ -11,7 +11,8 @@
 #include "hardware/flash.h"
 #include "pico/bootrom.h"
 #include "wizchip_conf.h"
-#include "socket.h"             // <-- need separate set_source_files_properties for this to avoid pulling in socket dependency to other targets that include config_efu.h
+// #include "socket.h"             // <-- need separate set_source_files_properties for this to avoid pulling in socket dependency to other targets that include config_efu.h
+#include "network.h"
 #include "boot/picoboot_constants.h"
 #include "partition.h"
 
