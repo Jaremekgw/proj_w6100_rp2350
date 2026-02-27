@@ -10,7 +10,7 @@ import time
 # [4 bytes]  CRC32 of image data (big-endian)
 
 # Example usage:
-# python efu_fw_upload_v12.py 192.168.178.225 build/stairs_ws2815/proj_stairs_ws2815.bin
+# python efu_upload.py 192.168.178.225 build/stairs_ws2815/proj_stairs_ws2815.bin
 
 PROTO = 0x12
 STAMP = b"\xD1\x36\x4A"

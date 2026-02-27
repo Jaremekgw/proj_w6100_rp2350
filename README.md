@@ -49,7 +49,8 @@ target_link_libraries(my_project
 
 - after partition are defined convert to uf2 format:
   $ sudo picotool partition create w6100_partitions.json w6100_part.uf2
-  $ sudo picotool partition create w6100_partitions_v2.json w6100_part2.uf2
+  # example for 4 partitions: A, B, Conf, Data
+  $ sudo picotool partition create w6100_partitions4.json w6100_part4.uf2
 
 - load new partition table into board
   $ sudo picotool load w6100_part2.uf2
