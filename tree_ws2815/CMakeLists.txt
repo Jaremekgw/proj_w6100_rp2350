@@ -35,26 +35,24 @@ target_include_directories(${TARGET_NAME} PRIVATE
         # ${CMAKE_SOURCE_DIR}/libraries/port/ioLibrary_Driver/inc
 )
 
-set_source_files_properties(
-    main.c
-    PROPERTIES COMPILE_OPTIONS -Wno-unused-function
-)
+# set_source_files_properties(
+#     main.c
+#     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
+# )
 
 # pull in common dependencies and additional externals
 target_link_libraries(${TARGET_NAME} PRIVATE
         common
         pico_stdlib
-        hardware_spi
+        # hardware_spi
         hardware_i2c
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
         # ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         # IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
         # LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
-        pico_bootrom
-        hardware_flash
-        boot_uf2_headers
-        hardware_clocks         # ??? for setting clock speeds
+        
+        # hardware_clocks         # ??? for setting clock speeds
         )
 
 #add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py

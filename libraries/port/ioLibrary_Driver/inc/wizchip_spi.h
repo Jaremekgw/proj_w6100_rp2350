@@ -108,6 +108,7 @@ static void wizchip_write(uint8_t tx_data);
 
 
 #if (_WIZCHIP_ == W6100)
+typedef   uint16_t  datasize_t;
 static void wizchip_read_buf(uint8_t* rx_data, datasize_t len);
 static void wizchip_write_buf(uint8_t* tx_data, datasize_t len);
 #endif

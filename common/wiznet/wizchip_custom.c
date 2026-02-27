@@ -23,6 +23,8 @@
 #include "hardware/dma.h"
 #include "socket.h"
 
+#include "flash_cfg.h"
+
 
 static inline void wizchip_select(void) {
     gpio_put(PIN_CS, 0);
@@ -158,4 +160,31 @@ void check_phy_link_W6x00(void) {
     // ctlwizchip(CW_GET_PHYSTATUS, &temp);
 }
  */
+
+// --- Functions ---
+void init_net_info(void) {
+    network_initialize(config_get_net_info()); // configures IP address etc.
+    print_network_information(); // Read back the configuration information and print it
+}
+
+ /**
+  * Custom initialization function to set up SPI and WIZnet callbacks
+  * This is called from main() before the rest of the network initialization
+  */
+ void wizchip_custom_init(const network_t *net_info) {
+    // --- WIZnet init ---    
+    // #define SPI_CLK  40      // remember to set in wizchip_spi.h speed 40 MHz to receive at 4 Mbps DDP
+    wizchip_spi_initialize();   // sets up SPI hardware (not PIO)
+    wizchip_cris_initialize();  // sets up interrupt control macros
+    wizchip_reset();            // toggles GPIO for chip reset
+    wizchip_init_nonblocking(); // non-blocking version of wizchip_initialize() for W6100
+    wizchip_check();            // reads version register, verifies SPI comm
+
+    // --- Set general configuration ---
+    config_init(net_info);
+
+    // --- Network init ---
+    init_net_info();
+    // show_current_partition();
+}
 

@@ -20,9 +20,7 @@
 #include <string.h>
 #include "network.h"
 
-
-//#include <port_common.h>
-#include "wizchip_conf.h"
+#include "wizchip_conf.h"  // we need wiz_NetInfo for wizchip_spi.h
 #include "wizchip_spi.h"
 #include "loopback.h"
 #include "pico/time.h"
@@ -102,10 +100,10 @@ static uint8_t loopback_mode = AS_IPV4;
 
 
 // --- Functions ---
-void init_net_info(void) {
-    network_initialize(config_get_net_info()); // configures IP address etc.
-    print_network_information(); // Read back the configuration information and print it
-}
+// void init_net_info(void) {
+//     network_initialize(config_get_net_info()); // configures IP address etc.
+//     print_network_information(); // Read back the configuration information and print it
+// }
 
 static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
 
@@ -618,6 +616,9 @@ void udp_ddp_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size) {
     setSn_IMR(ddp_sn, Sn_IR_RECV);     // mask bit RECV=1
     // Clear any pending per-socket interrupts
     ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);  // wizchip_clrinterrupt(sock_bit);  // clear any pending per-socket interrupts  // setSn_IR(ddp_sock, 0xFF);
+
+    udp_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
+    wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 }
 
 

@@ -10,27 +10,19 @@
 // #include "port_common.h"
 
 #include "wizchip_conf.h"
-#include "wizchip_spi.h"
 #include "loopback.h"
 #include "config.h"
-#include "network.h"        // see tree
+#include "network.h"
 #include "wizchip_custom.h"
 #include "efu_update.h"
 #include "partition.h"
-#include "flash_cfg.h"      // see tree
+#include "flash_cfg.h"
 #include "vl53l8cx_drv.h"
 #include "pwm_api.h"
 #include "rd03d_api.h"
 #include <stdio.h>
 #include "telnet.h"
 
-
-// variables for TCP loopback
-// static uint8_t message_buf[2] = {
-//     0, 0
-// };
-
-int32_t ret;
 
 static repeating_timer_t timer;
 volatile uint32_t tmr_ms_tick = 0;
@@ -48,9 +40,6 @@ bool timer_callback() {
     return true;    // Return true to keep repeating
 }
 
-// // CLI variables
-// uint8_t cli_buf_rx[CLI_BUF_RX_SIZE];
-
 // DDP variables
 //                            (NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS)
 #define DDP_DATA_BUF_SIZE     (NUM_PIXELS*NUM_CHANNELS)  // clamp to your RAM
@@ -59,8 +48,7 @@ uint8_t ddp_buf_frame[DDP_DATA_BUF_SIZE]; // buffer for receiving DDP packets
 
 
 int main() {
-    // variables for performance measurement
-    // uint32_t time_start, time_diff, time_min=0, time_max=0;
+    // int32_t ret;
 
     // --- MCU Init ---
     stdio_init_all(); // Initialize the main control peripheral. Sets up UART/USB for logging
@@ -70,33 +58,19 @@ int main() {
     sleep_ms(2000);
     // sleep_ms(8000);
 
-    // wizchip_sw_reset();            // Full chip reset via MR register - it creates a problem with ctlwizchip(CW_INIT_WIZCHIP, memsize)
-    
-    // --- WIZnet init ---
-    // #define SPI_CLK  40      // remember to set in wizchip_spi.h speed 40 MHz to receive at 4 Mbps DDP
-    wizchip_spi_initialize();   // sets up SPI hardware (not PIO)
-    wizchip_cris_initialize();  // sets up interrupt control macros
-    wizchip_reset();            // toggles GPIO for chip reset
-    wizchip_init_nonblocking(); // non-blocking version of wizchip_initialize() for W6100
-    wizchip_check();            // reads version register, verifies SPI comm
+    // --- WIZnet init with network configuration ---
+    wizchip_custom_init(&default_network);
 
-    // --- Set general configuration ---
-    config_init(&default_network);
-
-    // --- Network init ---
-    init_net_info();
     show_current_partition();
+
+    // --- Eth-Fw-Upd server init ---
     efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT);
 
     // --- Telnet CLI init ---
     telnet_init();
-    // tcp_cli_init(TCP_CLI_SOCKET, TCP_CLI_PORT, cli_buf_rx, CLI_BUF_RX_SIZE, CLI_TIMEOUT);
-
+ 
     // --- Open UDP socket for DDP ---
-    // udp_socket_init();
     udp_ddp_init(UDP_DDP_SOCKET, UDP_DDP_PORT, ddp_buf_frame, DDP_DATA_BUF_SIZE);
-    udp_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
-    wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 
     #ifndef OUTDOOR_TREE_WS2815
     // --- VL53L8CX driver init ---
@@ -139,23 +113,23 @@ int main() {
 
     // --- Main loop ---
     while (true) {
-        // time_start = time_us_32();  // compare with get_absolute_time()
-        // remove: loopback_loop(message_buf);
+        // Poll the TCP CLI for telnet connections and commands
         tcp_cli_service();          // Socket 0 : CLI                       [5000]
-        // http_server_service();   // TCP_HTTP_SOCKET : HTTP (future)      [80]
-        // tcp_ota_service(); $ vim ../pico-examples/pico_w/wifi/ota_update/README.md
+
+        // Poll the Eth-Fw-Upd server for incoming firmware update requests
         efu_server_poll();          // TCP_EFU_SOCKET  : Eth-Fw-Upd         [4243]
 
-
         // Poll the UDP socket
-        ddp_loop();       //  (&pkt_counter, &last_push_ms);
+        ddp_loop();
 
-        pwm_api_poll();   // non-blocking, cheap
+        // non-blocking, cheap
+        pwm_api_poll();
 
+        // sensor radar RD03D non-blocking polling
         rd03d_api_poll();
 
         // Manage ws2815 loop control
-        // run_periodically_ws2815_tasks();    // ws2815_loop();
+        // run_periodically_ws2815_tasks();
 
         // VL53L8CX non-blocking polling
         #ifdef VL53L8CX_DEV

@@ -28,10 +28,10 @@ target_include_directories(${TARGET_NAME} PRIVATE
         #${CMAKE_SOURCE_DIR}/libraries/port/ioLibrary_Driver/inc
 )
 
-set_source_files_properties(
-    main.c
-    PROPERTIES COMPILE_OPTIONS -Wno-unused-function
-)
+# set_source_files_properties(
+#     main.c
+#     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
+# )
 
 # and make sure the folder exists but ignored by Git
 file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
@@ -40,15 +40,16 @@ file(MAKE_DIRECTORY ${PIO_OUTPUT_DIR})
 target_link_libraries(${TARGET_NAME} PRIVATE
         common
         pico_stdlib
-        hardware_spi
         hardware_dma            # added for DMA support
         hardware_pio            # added for PIO support
         # ETHERNET_FILES          # libraries/CMakeLists.txt:2:add_library(ETHERNET_FILES STATIC)
         # IOLIBRARY_FILES         # port/CMakeLists.txt:2:add_library(IOLIBRARY_FILES STATIC)
         # LOOPBACK_FILES          # libraries/CMakeLists.txt:110:add_library(LOOPBACK_FILES STATIC)
-        pico_bootrom
-        hardware_flash
-        boot_uf2_headers
+
+        # pico_bootrom
+        # pico_bootrom
+        # hardware_flash
+        # boot_uf2_headers
         )
 
 enable_strict_warnings(${TARGET_NAME})

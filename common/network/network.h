@@ -18,7 +18,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "tcp_cli.h"
-#include "wizchip_conf.h"
+// #include "wizchip_conf.h"
 
 
 
@@ -145,7 +145,6 @@ int32_t recvfrom_W6x00(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, 
 // --- end from socket.h ---
 
 
-void network_initialize(wiz_NetInfo *net_info);
 void print_network_information(void);
 void print_ipv6_addr(uint8_t* name, uint8_t* ip6addr);
 

@@ -31,6 +31,7 @@ target_link_libraries(${COMMON_LIB} PUBLIC
     boot_uf2_headers
 
     pico_unique_id
+    # hardware_spi
 
     ETHERNET_FILES
     IOLIBRARY_FILES
@@ -44,10 +45,9 @@ enable_strict_warnings(${COMMON_LIB})
 # for network.c see
 #          network/network.c   # libraries/port/ioLibrary_Driver/inc/wizchip_spi.h:76:20: warning: 'wizchip_select' declared 'static'
 set_source_files_properties(
-    # efu/efu_update.c
     wiznet/wizchip_custom.c
     network/network.c
-    network/tcp_cli.c
+    # network/tcp_cli.c
     PROPERTIES COMPILE_OPTIONS -Wno-unused-function
 )
 
