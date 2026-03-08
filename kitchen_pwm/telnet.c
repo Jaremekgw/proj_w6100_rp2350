@@ -26,6 +26,27 @@
 #include "tcp_cli.h"
 #include "network.h"
 
+#include "rd03d_api.h"
+#include "rd03d_drv.h"
+#include "rd03d_cli.h"
+#include "diag_pio.h"
+
+/*
+
+"  time   \t\t\t- Show timing statistics (min/max execution)\r\n"
+"  status \t\t\t- Show system analog and digital state\r\n"
+"  on     \t\t\t- Enable outputs\r\n"
+"  off    \t\t\t- Disable outputs\r\n"
+"  load   \t\t\t- Load config from flash - for debug\r\n"
+"  save   \t\t\t- Save config to flash\r\n"
+"  show   \t\t\t- Show config values\r\n"
+"  max <value> \t\t- Show config values\r\n"
+"  rgb <r> <g> <b> \t\t- Set color LEDs\r\n"
+"  rgbw <r> <g> <b> <w> \t\t- Set color LEDs\r\n"
+"  fade <r> <g> <b> <w> \t\t- Set color LEDs\r\n"
+"  callpoll \t\t\t- Call the RD03D poll routine\r\n"
+
+*/
 // This help has 790 bytes
 const char *help_msg =
 "\r\n"
@@ -36,17 +57,10 @@ const char *help_msg =
 "Available commands:\r\n"
 "  help   \t\t\t- Show this help menu\r\n"
 "  info   \t\t\t- Display board and firmware information\r\n"
-"  set [p]\t\t\t- Set active LED/pattern index to value [p]\r\n"
-"  get    \t\t\t- Get current pattern index\r\n"
-"  time   \t\t\t- Show timing statistics (min/max execution)\r\n"
-"  status \t\t\t- Show system analog and digital state\r\n"
-"  on     \t\t\t- Enable outputs\r\n"
-"  off    \t\t\t- Disable outputs\r\n"
-"  load   \t\t\t- Load config from flash - for debug\r\n"
-"  save   \t\t\t- Save config to flash\r\n"
-"  show   \t\t\t- Show config values\r\n"
-"  rgb <r> <g> <b> \t\t- Set color LEDs\r\n"
-"  max <value> \t\t- Show config values\r\n"
+"  debugdrv [n]\t\t\t- Change debug rd03d driver settings\r\n"
+"  rdcheck \t\t\t- Call the RD03D check frame routine\r\n"
+"  setpat [p]\t\t\t- Set active LED/pattern index to value [p]\r\n"
+"  getpat    \t\t\t- Get current pattern index\r\n"
 "  part   \t\t\t- Show partition information\r\n"
 "  config ip <a.b.c.d>  \t- Set IP address\r\n"
 "  config sn <a.b.c.d>  \t- Set Subnet Mask\r\n"
@@ -56,6 +70,10 @@ const char *help_msg =
 "  config show          \t- Show current config values\r\n"
 "  config clean         \t- Clean current config (use default)\r\n"
 "  config default       \t- Restore factory default configuration\r\n"
+
+"  pwm status \t\t\t- Print PWM status\r\n"
+"  freq <f> \t\t\t- Set PWM frequency\r\n"
+"  led <w> \t\t\t- Set color LEDs\r\n"
 "  exit   \t\t\t- Close the CLI connection\r\n"
 "\r\n"
 "Examples:\r\n"
@@ -76,15 +94,13 @@ const char *cli_greeting =
 "Type 'help' to see available commands.\r\n"
 "----------------------------------------\r\n";
 
-// #define TELNET_PROMPT  "> "
 
 // --- global variables for CLI ---
-// CLI variables
 uint8_t cli_buf_rx[CLI_BUF_RX_SIZE];
 
 
 void telnet_greeting(uint8_t sn, const uint8_t *client_ip) {
-    char msg[256];
+    char msg[320];
 
     snprintf(msg, sizeof(msg), cli_greeting, PROJECT_NAME, FW_VERSION,
         client_ip[0], client_ip[1], client_ip[2], client_ip[3]);
@@ -92,18 +108,7 @@ void telnet_greeting(uint8_t sn, const uint8_t *client_ip) {
     cli_flush(sn, msg);  // (uint8_t*)  , strlen(msg)
 }
 
-// static bool parse_ipv4(const char *s, uint8_t out[4]) {
-//     int a, b, c, d;
-//     if (sscanf(s, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
-//         return false;
-//     if ((a|b|c|d) & ~0xFF)
-//         return false;
-//     out[0] = (uint8_t)a;
-//     out[1] = (uint8_t)b;
-//     out[2] = (uint8_t)c;
-//     out[3] = (uint8_t)d;
-//     return true;
-// }
+
 
 void cmd_config_show(uint8_t sn) {
         char msg[200];     // current use ??? bytes
@@ -176,7 +181,7 @@ void cmd_config_set_dns(uint8_t *dns) {
             "SOCK_LISTEN",      // 3
             "SOCK_ESTABLISHED", // 4
             "SOCK_CLOSE_WAIT"   // 5
-    };
+        };
         const char *efu_stat_msg = efu_status_table[0];
 
         uint8_t efu_status = get_efu_socket_status();
@@ -208,39 +213,135 @@ void cmd_config_set_dns(uint8_t *dns) {
         // read_boot_info();
     }
     else if (strcmp(cmd, "part") == 0) {
-        char msg[800];     // current use 407 bytes
+        char msg[600];     // current use 499 bytes
         int len = partition_info(msg, sizeof(msg));
         printf("Telnet sent %d bytes to console\r\n", len);
         cli_flush(sn, msg);
     }
 
 
-    else if (strncmp(cmd, "rgbw", 4) == 0) {
-        uint16_t r, g, b, w;
+    else if (strcmp(cmd, "rdcheck") == 0) {
+        char msg[1800];
+        int len = rd03d_api_print_state(msg, sizeof(msg));
+        printf("Telnet sent %d bytes to console\r\n", len);
+        cli_flush(sn, msg);
+    }
 
-        // Skip "rgbw" and parse four integers
-        if (sscanf(cmd + 4, "%u %u %u %u", &r, &g, &b, &w) == 4 &&
-            r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023) 
+
+    else if (strcmp(cmd, "dumpcont") == 0) {
+        char msg[80];
+        bool dump_continuous = rd03d_cli_change_dump_continuous();
+        snprintf(msg, sizeof(msg), "Change dump_continuous mode to: %s\r\n", dump_continuous ? "ON" : "OFF");
+        cli_flush(sn, msg);
+    }
+
+    else if (strcmp(cmd, "multi") == 0) {
+        rd03d_drv_send_multi_target_cmd();
+        cli_flush(sn, "Sent multi-target detection command to RD03D\r\n");
+    }
+
+    else if (strcmp(cmd, "single") == 0) {
+        rd03d_drv_send_single_target_cmd();
+        cli_flush(sn, "Sent single-target detection command to RD03D\r\n");
+    }
+
+    else if (strcmp(cmd, "draw1") == 0) {
+        rd03d_drv_set_raw_debug(true);
+        cli_flush(sn, "Enabled RD03D raw debug mode\r\n");
+    }
+    else if (strcmp(cmd, "draw0") == 0) {
+        rd03d_drv_set_raw_debug(false);
+        cli_flush(sn, "Disabled RD03D raw debug mode\r\n");
+    }
+    else if (strcmp(cmd, "dprn1") == 0) {
+        rd03d_drv_set_debug(true);
+        cli_flush(sn, "Enabled RD03D print debug mode\r\n");
+    }
+    else if (strcmp(cmd, "dprn0") == 0) {
+        rd03d_drv_set_debug(false);
+        cli_flush(sn, "Disabled RD03D print debug mode\r\n");
+    }
+
+
+    // else if (strcmp(cmd, "flag1") == 0) {
+    //     rd03d_drv_set_flag_debug(true);
+    //     cli_flush(sn, "Enabled RD03D flag debug mode\r\n");
+    // }
+    // else if (strcmp(cmd, "flag0") == 0) {
+    //     rd03d_drv_set_flag_debug(false);
+    //     cli_flush(sn, "Disabled RD03D flag debug mode\r\n");
+    // }
+
+    // else if (strcmp(cmd, "callpoll") == 0) {
+    //     rd03d_api_poll();
+    //     cli_flush(sn, NULL);
+    // }
+
+    else if (strncmp(cmd, "debugdrv", 8) == 0) {
+        char msg[64];
+        uint16_t w;
+
+        if (sscanf(cmd + 8, "%u", &w) == 1 &&
+            w <= 1) 
         {
-            char msg[64];
-            pwm_rgbw_set((rgbw16_t){
-                .r = r,
-                .g = g,
-                .b = b,
-                .w = w,
-            });
+            if (w == 1) {
+                rd03d_drv_set_debug(true);
+            } else {
+                rd03d_drv_set_debug(false);
+            }
 
             snprintf(msg, sizeof(msg),
-                    "RGBW set to %u %u %u %u\r\n", r, g, b, w);
-            cli_flush(sn, msg);
+                    "[RD03D] Set debug to %u\r\n", w);
+            // cli_flush(sn, msg);
         } 
         else {
-            const char *err =
-                "Usage: rgbw <r> <g> <b> <w>\r\n"
-                "Each value must be 0–1023.\r\n";
-            cli_flush(sn, err);
+            char err[64];
+            snprintf(err, sizeof(err),
+                    "Usage: debug <w>\r\nEach value must be 0–1.\r\n");
+            // cli_flush(sn, err);
         }
+        cli_flush(sn, msg);
     }
+
+    else if (strcmp(cmd, "diag0") == 0) {
+        char test_msg[64];
+        print_uart_gpio_config(uart0, 15, 14);
+        snprintf(test_msg, sizeof(test_msg), "Show UART0 GPIO config.\r\n");
+        cli_flush(sn, test_msg);
+    }
+    else if (strcmp(cmd, "diag1") == 0) {
+        char test_msg[64];
+        print_uart_gpio_config(uart1, 15, 14);
+        snprintf(test_msg, sizeof(test_msg), "Show UART1 GPIO config.\r\n");
+        cli_flush(sn, test_msg);
+    }
+
+    // else if (strncmp(cmd, "rgbw", 4) == 0) {
+    //     uint16_t r, g, b, w;
+
+    //     // Skip "rgbw" and parse four integers
+    //     if (sscanf(cmd + 4, "%u %u %u %u", &r, &g, &b, &w) == 4 &&
+    //         r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023) 
+    //     {
+    //         char msg[64];
+    //         pwm_rgbw_set((rgbw16_t){
+    //             .r = r,
+    //             .g = g,
+    //             .b = b,
+    //             .w = w,
+    //         });
+
+    //         snprintf(msg, sizeof(msg),
+    //                 "RGBW set to %u %u %u %u\r\n", r, g, b, w);
+    //         cli_flush(sn, msg);
+    //     } 
+    //     else {
+    //         const char *err =
+    //             "Usage: rgbw <r> <g> <b> <w>\r\n"
+    //             "Each value must be 0–1023.\r\n";
+    //         cli_flush(sn, err);
+    //     }
+    // }
 
     
     else if (strncmp(cmd, "led", 3) == 0) {
@@ -269,66 +370,66 @@ void cmd_config_set_dns(uint8_t *dns) {
     }
 
 
-    else if (strncmp(cmd, "fade", 4) == 0) {
-        uint16_t r, g, b, w, ms;
+    // else if (strncmp(cmd, "fade", 4) == 0) {
+    //     uint16_t r, g, b, w, ms;
 
-        // Skip "fade" and parse four integers
-        if (sscanf(cmd + 4, "%u %u %u %u %u", &r, &g, &b, &w, &ms) == 5 &&
-            r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023 && ms <= 32000) 
-        {
-            char msg[64];
+    //     // Skip "fade" and parse four integers
+    //     if (sscanf(cmd + 4, "%u %u %u %u %u", &r, &g, &b, &w, &ms) == 5 &&
+    //         r <= 1023 && g <= 1023 && b <= 1023 && w <= 1023 && ms <= 32000) 
+    //     {
+    //         char msg[64];
 
-        // pwm_rgbw_fade_to((rgbw16_t){
-        //     .r = scale8_to_wrap((uint8_t)clamp_u16(r,0,255)),
-        //     .g = scale8_to_wrap((uint8_t)clamp_u16(g,0,255)),
-        //     .b = scale8_to_wrap((uint8_t)clamp_u16(b,0,255)),
-        //     .w = scale8_to_wrap((uint8_t)clamp_u16(w,0,255)),
-        // }, ms);
+    //     // pwm_rgbw_fade_to((rgbw16_t){
+    //     //     .r = scale8_to_wrap((uint8_t)clamp_u16(r,0,255)),
+    //     //     .g = scale8_to_wrap((uint8_t)clamp_u16(g,0,255)),
+    //     //     .b = scale8_to_wrap((uint8_t)clamp_u16(b,0,255)),
+    //     //     .w = scale8_to_wrap((uint8_t)clamp_u16(w,0,255)),
+    //     // }, ms);
 
-            // pwm_rgbw_set((rgbw16_t){
-            pwm_rgbw_fade_to((rgbw16_t){
-                .r = r,
-                .g = g,
-                .b = b,
-                .w = w,
-            }, ms);
+    //         // pwm_rgbw_set((rgbw16_t){
+    //         pwm_rgbw_fade_to((rgbw16_t){
+    //             .r = r,
+    //             .g = g,
+    //             .b = b,
+    //             .w = w,
+    //         }, ms);
 
-            snprintf(msg, sizeof(msg),
-                    "Fade set to %u %u %u %u\r\n", r, g, b, w);
-            cli_flush(sn, msg);
-        } 
-        else {
-            const char *err =
-                "Usage: fade <r> <g> <b> <w> <ms>\r\n"
-                "Each r g b w value must be 0–1023 and time must be 0–65535.\r\n";
-            cli_flush(sn, err);
-        }
-    }
+    //         snprintf(msg, sizeof(msg),
+    //                 "Fade set to %u %u %u %u\r\n", r, g, b, w);
+    //         cli_flush(sn, msg);
+    //     } 
+    //     else {
+    //         const char *err =
+    //             "Usage: fade <r> <g> <b> <w> <ms>\r\n"
+    //             "Each r g b w value must be 0–1023 and time must be 0–65535.\r\n";
+    //         cli_flush(sn, err);
+    //     }
+    // }
 
 
-    else if (strncmp(cmd, "rgb", 3) == 0) {
-        uint32_t r, g, b;
+    // else if (strncmp(cmd, "rgb", 3) == 0) {
+    //     uint32_t r, g, b;
 
-        // Skip "rgb" and parse three integers
-        if (sscanf(cmd + 3, "%u %u %u", &r, &g, &b) == 3 &&
-            r <= 255 && g <= 255 && b <= 255) 
-        {
-            char msg[64];
-            // Example: your function to apply RGB globally or per pattern
-            // set_global_rgb((uint8_t)r, (uint8_t)g, (uint8_t)b);
-            // set_rgb(r, g, b);
+    //     // Skip "rgb" and parse three integers
+    //     if (sscanf(cmd + 3, "%u %u %u", &r, &g, &b) == 3 &&
+    //         r <= 255 && g <= 255 && b <= 255) 
+    //     {
+    //         char msg[64];
+    //         // Example: your function to apply RGB globally or per pattern
+    //         // set_global_rgb((uint8_t)r, (uint8_t)g, (uint8_t)b);
+    //         // set_rgb(r, g, b);
 
-            snprintf(msg, sizeof(msg),
-                    "RGB set to %u %u %u\r\n", r, g, b);
-            cli_flush(sn, msg);
-        } 
-        else {
-            const char *err =
-                "Usage: rgb <r> <g> <b>\r\n"
-                "Each value must be 0–255.\r\n";
-            cli_flush(sn, err);
-        }
-    }
+    //         snprintf(msg, sizeof(msg),
+    //                 "RGB set to %u %u %u\r\n", r, g, b);
+    //         cli_flush(sn, msg);
+    //     } 
+    //     else {
+    //         const char *err =
+    //             "Usage: rgb <r> <g> <b>\r\n"
+    //             "Each value must be 0–255.\r\n";
+    //         cli_flush(sn, err);
+    //     }
+    // }
     else if (strncmp(cmd, "freq", 4) == 0) {
         uint32_t val;
 
@@ -398,11 +499,11 @@ void cmd_config_set_dns(uint8_t *dns) {
     //         cli_flush(sn, err);
     //     }
     // }
-    else if (strncmp(cmd, "set", 3) == 0) {
+    else if (strncmp(cmd, "setpat", 6) == 0) {
         int pattern = -1;
         uint8_t ret_pattern = 0;
 
-        if (strlen(cmd) < 4) {
+        if (strlen(cmd) < 7) {
             char msg[64];
             // switch off LEDs
             ret_pattern = 0;    // set_pattern_index(0);
@@ -410,7 +511,7 @@ void cmd_config_set_dns(uint8_t *dns) {
                     "Pattern index set to %d\r\n", ret_pattern);
             cli_flush(sn, msg);
         }
-        else if (sscanf(cmd + 3, "%d", &pattern) == 1 && pattern >= 0) {
+        else if (sscanf(cmd + 6, "%d", &pattern) == 1 && pattern >= 0) {
             char msg[64];
 
             ret_pattern = 0;    // set_pattern_index((uint8_t)pattern);
@@ -419,7 +520,7 @@ void cmd_config_set_dns(uint8_t *dns) {
             cli_flush(sn, msg);
         } else {
             // ❌ parameter missing or invalid
-            char *err = "Usage: set [p]\r\nExample: set 3\r\n";
+            char *err = "Usage: setpat [p]\r\nExample: setpat 3\r\n";
             cli_flush(sn, err);
         }
     }
@@ -439,7 +540,7 @@ void cmd_config_set_dns(uint8_t *dns) {
     // }
 
 
-    else if (strcmp(cmd, "get") == 0) {
+    else if (strcmp(cmd, "getpat") == 0) {
         uint8_t ret_pattern;
         char msg[64];
 

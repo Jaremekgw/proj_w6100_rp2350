@@ -7,6 +7,8 @@
 #pragma once
 
 #include "wizchip_conf.h"
+// #include "hardware/io_bank0.h"
+// #include "hardware/uart.h"
 
 #define PROJECT_NAME "kitchen_pwm"
 #define FW_VERSION "1.0.1"
@@ -181,18 +183,21 @@
 // for direct LED driviing set 2kHz
 #define PWM_FREQ   2000   //
 
-// #define PWM_LED_W    3  // GP4 -> PWM_1B     cos nie dziala, 
-#define PWM_LED_W    4  // GP4 -> PWM_2A
-#define PWM_LED_B    5  // GP5 -> PWM_2B
-#define PWM_LED_R    6  // GP6 -> PWM_3A
-#define PWM_LED_G    7  // GP7 -> PWM_3B
+// #define PWM_LED_W_PIN    3  // GP4 -> PWM_1B     cos nie dziala, 
+#define PWM_LED_W_PIN    4  // GP4 -> PWM_2A
+#define PWM_LED_B_PIN    5  // GP5 -> PWM_2B
+#define PWM_LED_R_PIN    6  // GP6 -> PWM_3A
+#define PWM_LED_G_PIN    7  // GP7 -> PWM_3B
 
 // // Fixed wiring
 // #define VL53_PIN_SPI_I2C_N -1  // tied to 3V3 on PCB
 
+// GPIO_FUNC_UART_AUX
 //+5V                     //                    green
 // GND                    //                    yellow
-#define RD03D_TX_PIN  15  // GP15 -> UART0_RX   black
-#define RD03D_RX_PIN  14  // GP14 -> UART0_TX   red
+#define RD03D_UART_INST    uart0
+#define RD03D_UART_FUNC    GPIO_FUNC_UART_AUX
+#define RD03D_UART_RX_PIN  15  // GP15 | RD03D_TX -> UART0_RX   black
+#define RD03D_UART_TX_PIN  14  // GP14 | RD03D_RX -> UART0_TX   red
 #define RD03D_BAUDRATE 256000  // default UART rate for RD03D
 

@@ -17,6 +17,7 @@ Owns:
 #pragma once
 
 #include <stdint.h>
+#include <string.h>
 #include <stdbool.h>
 
 #ifdef __cplusplus
@@ -58,6 +59,9 @@ typedef struct
 bool rd03d_api_init(const rd03d_filter_cfg_t *cfg);
 void rd03d_api_poll(void);
 bool rd03d_api_get_state(rd03d_state_t *out);
+
+// Additional helper for debugging : print current state to console
+int rd03d_api_print_state(char *msg, size_t msg_max_sz);
 
 // typedef struct
 // {

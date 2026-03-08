@@ -8,7 +8,7 @@ add_library(${COMMON_LIB} STATIC
     flash/flash_cfg.c
     network/network.c
     network/tcp_cli.c
-
+    diagnostic/diag_pio.c
 )
 
 target_include_directories(${COMMON_LIB}
@@ -19,6 +19,7 @@ target_include_directories(${COMMON_LIB}
         ${CMAKE_CURRENT_LIST_DIR}/wiznet
         ${CMAKE_CURRENT_LIST_DIR}/flash
         ${CMAKE_CURRENT_LIST_DIR}/network
+        ${CMAKE_CURRENT_LIST_DIR}/diagnostic
 )
 # you can set         ${CMAKE_CURRENT_LIST_DIR}/board  and then include "partition.h" in your source files, or just         ${CMAKE_CURRENT_LIST_DIR} and then include "board/partition.h" in your source files, whatever you prefer. The important thing is that the directory containing the header file is included in the target_include_directories for the common library, and that the common library is linked to any targets that need to use the partition functions.
 # or just         ${CMAKE_CURRENT_LIST_DIR} and then include "board/partition.h" in your source files

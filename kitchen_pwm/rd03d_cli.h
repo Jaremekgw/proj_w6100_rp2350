@@ -5,5 +5,11 @@
  */
 
 #pragma once
-void cli_rd03d_register(void);
 
+#include <stdbool.h>
+#include "rd03d_drv.h"
+
+void rd03d_cli_register(void);
+void rd03d_cli_tick(void);
+bool rd03d_cli_change_dump_continuous(void);
+void rd03d_cli_print_raw_data(rd03d_data_t *data);

@@ -4,16 +4,42 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-
-// #include <stdio.h>
+#include <stdio.h>  // need for printf in debug
 #include <string.h>
-// #include "pico/stdlib.h"
-// #include "hardware/uart.h"
-// #include "hardware/gpio.h"
+
+#include "hardware/gpio.h"  // for UART pin config
 #include "pico/time.h"
 
+#include "config.h"
 #include "rd03d_drv.h"
 #include "rd03d_api.h"
+#include "utility.h"
+
+
+// #ifndef RD03D_UART
+// #error "RD03D_UART not defined"
+// #endif
+
+// #ifndef RD03D_TX_PIN
+// #error "RD03D_UART_TX_PIN not defined"
+// #endif
+
+// #ifndef RD03D_RX_PIN
+// #error "RD03D_UART_RX_PIN not defined"
+// #endif
+
+// #ifndef RD03D_BAUDRATE
+// #error "RD03D_BAUDRATE not defined"
+// #endif
+
+#if !defined(RD03D_UART_INST) || \
+    !defined(RD03D_UART_FUNC) || \
+    !defined(RD03D_UART_RX_PIN) || \
+    !defined(RD03D_UART_TX_PIN) || \
+    !defined(RD03D_BAUDRATE)
+#error "RD03D UART configuration macros are not fully defined"
+#endif
+
 
 /* ---------- RD-03D sign encoding decoder ----------
  * Manual example indicates:
@@ -73,6 +99,13 @@ static bool det_is_zero(const rd03d_object_raw_t *o)
 /* ---------- init ---------- */
 bool rd03d_api_init(const rd03d_filter_cfg_t *cfg)
 {
+    uart_cfg_t uart_cfg = {
+        .instance = RD03D_UART_INST,
+        .func = RD03D_UART_FUNC,
+        .rx_pin = RD03D_UART_RX_PIN,
+        .tx_pin = RD03D_UART_TX_PIN,
+        .baudrate = RD03D_BAUDRATE
+    };
     /* Defaults chosen for 10 Hz report rate (manual typical) :contentReference[oaicite:4]{index=4} */
     rd03d_filter_cfg_t def = {
         .max_match_dist_mm = 600,  /* targets shouldn't jump farther than this frame-to-frame */
@@ -88,7 +121,11 @@ bool rd03d_api_init(const rd03d_filter_cfg_t *cfg)
     memset(&s_state, 0, sizeof(s_state));
     s_state_valid = false;
 
-    return rd03d_drv_init();
+
+    return rd03d_drv_init(&uart_cfg);
+    // sleep_ms(1); /* let UART settle */
+    // rd03d_drv_write_raw(multi_target_cmd, sizeof(multi_target_cmd));
+    // return true;
 }
 
 /* ---------- tracking update ----------
@@ -228,11 +265,14 @@ static void update_tracks(const det_t det[RD03D_OBJECT_SLOTS], uint32_t t_ms)
 /* ---------- poll ---------- */
 void rd03d_api_poll(void)
 {
-    rd03d_drv_poll();
+    // rd03d_drv_poll(); - call it from main loop, not here, to keep latency low and avoid starving main loop
 
     rd03d_frame_t f;
     if (!rd03d_drv_get_frame(&f))
         return;
+
+    // For debugging: print raw data on every received frame
+    rd03d_drv_debug_print_raw_data();
 
     det_t det[RD03D_OBJECT_SLOTS] = {0};
 
@@ -267,5 +307,73 @@ bool rd03d_api_get_state(rd03d_state_t *out)
     return true;
 }
 
+// --- Additional helper for debugging : print current state to console ---
+int rd03d_api_print_state(char *msg, size_t msg_max_sz)
+{
+    if (msg == NULL || msg_max_sz == 0) {
+        return -1;
+    }
 
+    char *cursor = msg;
+    size_t remaining = msg_max_sz;
+
+    rd03d_state_t *state = &s_state;
+
+    printf("---- RD03D STATE ----\r\n");
+    printf("state_valid: %d\r\n", s_state_valid);
+    printf("presence: %u\r\n", state->presence);
+    printf("rx_time_ms: %u\r\n", state->rx_time_ms);
+    // next will be s_state.track[0..2]
+    printf("----------------------\r\n");
+
+    msg_printf(&cursor, &remaining,
+               "RD03D state:\n");
+    msg_printf(&cursor, &remaining,
+               "  presence      : %s\n",
+               state->presence ? "YES" : "NO");
+    msg_printf(&cursor, &remaining,
+               "  rx_time_ms    : %lu\n",
+               (unsigned long)state->rx_time_ms);
+
+    for (int i = 0; i < RD03D_TRACKS; i++) {
+        rd03d_track_t *t = &state->track[i];
+
+        msg_printf(&cursor, &remaining,
+                   "  Track %d:\n", i);
+
+        msg_printf(&cursor, &remaining,
+                   "    valid       : %s\n",
+                   t->valid ? "YES" : "NO");
+
+        if (!t->valid) {
+            continue;
+        }
+
+        msg_printf(&cursor, &remaining,
+                   "    confidence  : %u\n",
+                   (unsigned)t->confidence);
+
+        msg_printf(&cursor, &remaining,
+                   "    x_mm        : %d\n",
+                   (int)t->x_mm);
+
+        msg_printf(&cursor, &remaining,
+                   "    y_mm        : %d\n",
+                   (int)t->y_mm);
+
+        msg_printf(&cursor, &remaining,
+                   "    speed_cms   : %d\n",
+                   (int)t->speed_cms);
+
+        msg_printf(&cursor, &remaining,
+                   "    distance_mm : %u\n",
+                   (unsigned)t->distance_mm);
+
+        msg_printf(&cursor, &remaining,
+                   "    last_seen_ms: %lu\n",
+                   (unsigned long)t->last_seen_ms);
+    }
+
+    return (int)(msg_max_sz - remaining);
+}
 

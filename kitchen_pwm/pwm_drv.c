@@ -16,10 +16,10 @@
 #include "pwm_drv.h"
 
 // /* Pin definitions */ see config_kitchen.h
-// #define PWM_LED_W    4
-// #define PWM_LED_B    5
-// #define PWM_LED_R    6
-// #define PWM_LED_G    7
+// #define PWM_LED_W_PIN    4
+// #define PWM_LED_B_PIN    5
+// #define PWM_LED_R_PIN    6
+// #define PWM_LED_G_PIN    7
 
 static pwm_drv_hw_t hw[PWM_CH_COUNT];
 
@@ -172,27 +172,27 @@ void pwm_drv_ch_set(pwm_drv_channel_t ch, uint16_t linear_level)
 bool pwm_drv_init(uint32_t pwm_freq_hz, uint16_t pwm_wrap)
 {
     hw[PWM_CH_R] = (pwm_drv_hw_t){ 
-        .gpio = PWM_LED_R, 
-        .slice = pwm_gpio_to_slice_num(PWM_LED_R), 
-        .channel = pwm_gpio_to_channel(PWM_LED_R), 
+        .gpio = PWM_LED_R_PIN, 
+        .slice = pwm_gpio_to_slice_num(PWM_LED_R_PIN), 
+        .channel = pwm_gpio_to_channel(PWM_LED_R_PIN), 
         .active_low = true
     };
     hw[PWM_CH_G] = (pwm_drv_hw_t){
-        .gpio = PWM_LED_G, 
-        .slice = pwm_gpio_to_slice_num(PWM_LED_G), 
-        .channel = pwm_gpio_to_channel(PWM_LED_G), 
+        .gpio = PWM_LED_G_PIN, 
+        .slice = pwm_gpio_to_slice_num(PWM_LED_G_PIN), 
+        .channel = pwm_gpio_to_channel(PWM_LED_G_PIN), 
         .active_low = true
     };
     hw[PWM_CH_B] = (pwm_drv_hw_t){
-        .gpio = PWM_LED_B, 
-        .slice = pwm_gpio_to_slice_num(PWM_LED_B), 
-        .channel = pwm_gpio_to_channel(PWM_LED_B), 
+        .gpio = PWM_LED_B_PIN, 
+        .slice = pwm_gpio_to_slice_num(PWM_LED_B_PIN), 
+        .channel = pwm_gpio_to_channel(PWM_LED_B_PIN), 
         .active_low = true
     };
     hw[PWM_CH_W] = (pwm_drv_hw_t){
-        .gpio = PWM_LED_W, 
-        .slice = pwm_gpio_to_slice_num(PWM_LED_W), 
-        .channel = pwm_gpio_to_channel(PWM_LED_W), 
+        .gpio = PWM_LED_W_PIN, 
+        .slice = pwm_gpio_to_slice_num(PWM_LED_W_PIN), 
+        .channel = pwm_gpio_to_channel(PWM_LED_W_PIN), 
         .active_low = false      // false for 1 led, true for rgbw
     };
     gamma_lut_init();

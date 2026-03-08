@@ -142,3 +142,43 @@ void rd03d_cli_tick(void)
             s_dump_once = false;
     }
 }
+
+bool rd03d_cli_change_dump_continuous(void)
+{
+    s_dump_continuous = !s_dump_continuous;
+    return s_dump_continuous;
+}
+
+void rd03d_cli_print_state(void)
+{
+    rd03d_state_t st;
+    if (rd03d_api_get_state(&st))
+        print_state(&st);
+    else
+        printf("[RD03D] no data yet\n");
+}
+
+void rd03d_cli_print_raw_data(rd03d_data_t *data)
+{
+    if (!data || !data->ready) {
+        printf("[RD03D] no raw data available\n");
+        return;
+    }
+
+    printf("\r\n[RD03D][RAW DATA] t=%08lu ms", (unsigned long)data->rx_time_ms);
+    for (int i = 0; i < RD03D_OBJECT_SLOTS; i++) {
+        const rd03d_target_raw_t *t = &data->target[i];
+        if (t->active) {
+            printf("  t_%d x=%dmm y=%dmm v=%dcm/s d=%umm",
+                i,
+                (int)t->x_raw,
+                (int)t->y_raw,
+                (int)t->v_raw,
+                (unsigned)t->dist_mm);
+        // } else {
+        //     printf("  t_%d <empty>", i);
+        //     // continue;
+        }
+    }
+}
+

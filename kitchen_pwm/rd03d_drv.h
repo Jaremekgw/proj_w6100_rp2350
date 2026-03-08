@@ -24,6 +24,7 @@ Does NOT:
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "hardware/uart.h"
 #include "rd03d_protocol.h"
 
 #ifdef __cplusplus
@@ -37,6 +38,15 @@ extern "C" {
 //     uint8_t  len;
 //     uint8_t  payload[64];
 // } rd03d_frame_t;
+
+typedef struct
+{
+    uart_inst_t *instance;
+    uint8_t func;
+    uint rx_pin;
+    uint tx_pin;
+    int baudrate;
+} uart_cfg_t;
 
 /* RD-03D reports exactly 3 objects per frame */
 #define RD03D_OBJECT_SLOTS 3
@@ -61,15 +71,42 @@ typedef struct
     uint32_t           rx_time_ms;
 } rd03d_frame_t;
 
+// New proposal
+typedef struct __attribute__((packed))
+{
+    /* Sign-bit + magnitude encoding (NOT two's complement), see decode helper */
+    int16_t x_raw;
+    int16_t y_raw;
+    int16_t v_raw;
+    uint16_t dist_mm; /* already uint16 in mm */
+    bool active; /* true if this slot has a valid target, false if it's just empty data */
+} rd03d_target_raw_t;
+typedef struct
+{
+    rd03d_target_raw_t target[RD03D_OBJECT_SLOTS];
+    uint32_t            rx_time_ms;
+    volatile bool       ready; /* set to true by driver when a new frame is ready, cleared by main loop after consuming */
+} rd03d_data_t;
 
 /* Hardware + driver init */
-bool rd03d_drv_init(void);
+bool rd03d_drv_init(uart_cfg_t *cfg);
 
 /* Poll UART and assemble frames */
 void rd03d_drv_poll(void);
 
 /* Non-blocking frame fetch */
 bool rd03d_drv_get_frame(rd03d_frame_t *out);
+
+void rd03d_drv_set_debug(bool enable);
+void rd03d_drv_set_raw_debug(bool enable);
+
+void rd03d_drv_send_multi_target_cmd(void);
+void rd03d_drv_send_single_target_cmd(void);
+void rd03d_drv_debug_print_raw_data(void);
+// void rd03d_drv_set_flag_debug(bool enable);
+
+
+// bool rd03d_drv_write_raw(const uint8_t *data, size_t len);
 
 #ifdef __cplusplus
 }

@@ -22,6 +22,9 @@
 #include "rd03d_api.h"
 #include <stdio.h>
 #include "telnet.h"
+// for debug: #include "rd03d_drv.h"
+#include "rd03d_drv.h"
+#include "rd03d_cli.h"
 
 
 static repeating_timer_t timer;
@@ -88,6 +91,7 @@ int main() {
     pwm_mod_init();
 
     // --- radar sensor RD03D driver init ---
+    // Many radar modules need: 100–500 ms after power-up
     rd03d_filter_cfg_t *cfg = NULL;
     rd03d_api_init(cfg);
 
@@ -98,14 +102,7 @@ int main() {
         while (1);
     }
 
-    // absolute_time_t last_log = get_absolute_time();
-    // gpio_init(PIN_TEST_14);
-    // gpio_init(PIN_TEST_15);
-    // gpio_set_dir(PIN_TEST_14, GPIO_OUT);
-    // gpio_set_dir(PIN_TEST_15, GPIO_OUT);
- 
     // debug: gpio_put(OE_PIN, OE_ON);
-
 
     #ifndef OUTDOOR_TREE_WS2815
     printf("[VL53] Jump to loop\n");
@@ -126,7 +123,10 @@ int main() {
         pwm_api_poll();
 
         // sensor radar RD03D non-blocking polling
+        // first check if data parsed, then call driver poll to fetch new data, to keep latency low and avoid starving main loop
         rd03d_api_poll();
+        rd03d_drv_poll();
+        // rd03d_cli_tick();
 
         // Manage ws2815 loop control
         // run_periodically_ws2815_tasks();
