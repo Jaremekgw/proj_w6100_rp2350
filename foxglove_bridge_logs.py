@@ -7,18 +7,37 @@
 # On foxglove  connection WebSocket:   ws://localhost:8765
 
 import argparse
+import select
 import socket
 import struct
 import time
 
 import foxglove
-from foxglove.schemas import Log, LogLevel, Timestamp
+from foxglove.channels import LogChannel, SceneUpdateChannel
+from foxglove.schemas import (
+    Color,
+    Log,
+    LogLevel,
+    Pose,
+    Quaternion,
+    SceneEntity,
+    SceneUpdate,
+    SpherePrimitive,
+    Timestamp,
+    Vector3,
+)
 
 DEVICE_PORT = 3000
 BUFFER_SIZE = 2048
 HELLO_INTERVAL = 2.0
 RD03D_OBJECT_SLOTS = 3
 EXPECTED_PACKET_SIZE = 32
+MCAP_FILE = "rd03d_logs.mcap"
+
+# 3D scene settings
+SCENE_FRAME_ID = "rd03d"          # set this same frame in the 3D panel's "Display frame"
+TARGET_SPHERE_M = 0.15            # sphere diameter in metres
+MM_TO_M = 1.0 / 1000.0           # RD03D reports millimetres; 3D panel uses metres
 
 
 def parse_target(data: bytes, offset: int) -> dict:
@@ -68,6 +87,39 @@ def format_frame_for_log(frame: dict) -> str:
     return " | ".join(lines)
 
 
+def build_scene_update(frame: dict) -> SceneUpdate:
+    """One sphere per active target, placed at its (x, y) position in metres.
+
+    A fresh SceneEntity per slot id replaces the previous one each frame, so
+    inactive/disappeared targets are cleared automatically.
+    """
+    entities = []
+    for i, t in enumerate(frame["targets"]):
+        spheres = []
+        if t["active"]:
+            spheres.append(
+                SpherePrimitive(
+                    pose=Pose(
+                        position=Vector3(
+                            x=t["x_raw"] * MM_TO_M,
+                            y=t["y_raw"] * MM_TO_M,
+                            z=0.0,
+                        ),
+                        orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0),
+                    ),
+                    size=Vector3(x=TARGET_SPHERE_M, y=TARGET_SPHERE_M, z=TARGET_SPHERE_M),
+                    color=Color(r=1.0, g=0.2, b=0.0, a=1.0),
+                )
+            )
+        # Emit the entity every frame (with or without a sphere) so a target
+        # that goes inactive is removed from the scene.
+        entities.append(
+            SceneEntity(id=f"target_{i}", frame_id=SCENE_FRAME_ID, spheres=spheres)
+        )
+
+    return SceneUpdate(entities=entities)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="RD03D Foxglove bridge over UDP")
     parser.add_argument("ip", help="device IPv4 address")
@@ -82,69 +134,77 @@ def main() -> None:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setblocking(False)
 
-    foxglove.start_server()
+    # Create a channel up front (like the quickstart example creates
+    # SceneUpdateChannel / Channel) and log every message onto it.
+    log_channel = LogChannel("/rd03d")
+    scene_channel = SceneUpdateChannel("/rd03d/scene")
 
-    print(f"Foxglove server started")
-    print(f"Sending HELLO to {device_ip}:{device_port}")
-    print("Open a Log panel in Foxglove and subscribe to /rd03d")
-    print("Press Ctrl-C to exit")
+    # Record to an MCAP file as well as streaming to the live app.
+    with foxglove.open_mcap(MCAP_FILE):
+        foxglove.start_server()
 
-    last_hello = 0.0
+        print(f"Foxglove server started")
+        print(f"Recording to {MCAP_FILE}")
+        print(f"Sending HELLO to {device_ip}:{device_port}")
+        print("Log panel:  subscribe to /rd03d")
+        print(f"3D panel:   subscribe to /rd03d/scene (set Display frame = '{SCENE_FRAME_ID}')")
+        print("Press Ctrl-C to exit")
 
-    try:
-        while True:
-            now = time.time()
+        last_hello = 0.0
 
-            if now - last_hello >= hello_interval:
-                sock.sendto(b"HELLO", (device_ip, device_port))
-                last_hello = now
-                print(f"[TX] HELLO -> {device_ip}:{device_port}")
+        try:
+            while True:
+                now = time.time()
 
-            readable, _, _ = select.select([sock], [], [], 0.1)
+                if now - last_hello >= hello_interval:
+                    sock.sendto(b"HELLO", (device_ip, device_port))
+                    last_hello = now
+                    print(f"[TX] HELLO -> {device_ip}:{device_port}")
 
-            if sock in readable:
-                data, addr = sock.recvfrom(BUFFER_SIZE)
-                print(f"[RX] {len(data)} bytes from {addr}")
+                readable, _, _ = select.select([sock], [], [], 0.1)
 
-                if len(data) != EXPECTED_PACKET_SIZE:
-                    msg = f"unexpected packet length={len(data)} hex={data.hex(' ')}"
-                    print(msg)
-                    foxglove.log(
-                        "/rd03d",
+                if sock in readable:
+                    data, addr = sock.recvfrom(BUFFER_SIZE)
+                    print(f"[RX] {len(data)} bytes from {addr}")
+
+                    if len(data) != EXPECTED_PACKET_SIZE:
+                        msg = f"unexpected packet length={len(data)} hex={data.hex(' ')}"
+                        print(msg)
+                        log_channel.log(
+                            Log(
+                                timestamp=Timestamp.now(),
+                                level=LogLevel.Warning,
+                                message=msg,
+                            ),
+                        )
+                        continue
+
+                    frame = parse_rd03d_frame(data)
+                    message = format_frame_for_log(frame)
+
+                    print(message)
+
+                    log_channel.log(
                         Log(
                             timestamp=Timestamp.now(),
-                            level=LogLevel.Warning,
-                            message=msg,
+                            level=LogLevel.Info,
+                            message=message,
                         ),
                     )
-                    continue
 
-                frame = parse_rd03d_frame(data)
-                message = format_frame_for_log(frame)
+                    # 3D visualisation: draw each active target as a sphere
+                    scene_channel.log(build_scene_update(frame))
 
-                print(message)
+                time.sleep(0.01)
 
-                foxglove.log(
-                    "/rd03d",
-                    Log(
-                        timestamp=Timestamp.now(),
-                        level=LogLevel.Info,
-                        message=message,
-                    ),
-                )
+        except KeyboardInterrupt:
+            print("\nCtrl-C received, exiting...")
 
-            time.sleep(0.01)
-
-    except KeyboardInterrupt:
-        print("\nCtrl-C received, exiting...")
-
-    finally:
-        sock.close()
-        print("Socket closed")
+        finally:
+            sock.close()
+            print("Socket closed")
 
 
 if __name__ == "__main__":
-    import select
-
     main()
 
