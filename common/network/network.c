@@ -30,7 +30,8 @@
 #include "wizchip_conf.h"
 #include "flash_cfg.h"
 
-
+#define _DDP_DEBUG_         // Enable DDP debug messages on USB
+#define _UDP_DEBUG_         // Enable UDP debug messages on USB
 #define _TIME_DEBUG_
 
 // Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
@@ -60,6 +61,7 @@ static uint16_t cli_port = 0;
 static tcp_cli_hooks_t cli_hooks = {0}; // struct for CLI hooks, set during initialization
 
 
+
 // --- DDP Variables ---
 static uint8_t *ddp_buf_frame; // pointer to DDP payload area in the buffer for receiving DDP packets
 static uint16_t ddp_buf_size = 0; // size of the DDP buffer, set during initialization, should not exceed DDP_DATA_BUF_SIZE
@@ -76,15 +78,15 @@ static volatile uint16_t udp_rx_buf_len[UDP_RING_COUNT] = {0,};
 // // Optional: lightweight flag to defer heavy work out of ISR
 // static volatile bool wiznet_rx_pending = false;
 // Optional: lightweight flag to defer heavy work out of ISR
-static volatile bool wiznet_rx_pending = false;
+static volatile bool wiznet_isr_rx_pending = false;
 // network.h
 
-#if _UDP_DEBUG_
+#ifdef _UDP_DEBUG_
 static uint8_t* msg_ip_v4 = (uint8_t*)"IPv4 mode";  // the same: static const uint8_t msg_v4[]   = "IPv4 mode";
 static uint8_t* msg_ip_v6 = (uint8_t*)"IPv6 mode";
 static uint8_t* msg_ip_dual = (uint8_t*)"Dual IP mode";
 #endif
-static uint8_t loopback_mode = AS_IPV4;
+// static uint8_t loopback_mode = AS_IPV4;
 
 // --- WIZnet W6100 interrupt pin ---
 #define WIZNET_INT_PIN   21
@@ -107,6 +109,34 @@ static uint8_t loopback_mode = AS_IPV4;
 
 static void process_ddp_packet(uint8_t *buf, uint16_t recv_len);
 
+uint8_t get_loopback_mode(uint8_t **mode_msg) {
+    uint8_t protocol;
+    uint8_t mode = check_loopback_mode_W6x00();    // as default set to AS_IPV4
+
+    switch(mode) {
+    case AS_IPV4:
+        protocol = Sn_MR_UDP4;
+        #ifdef _UDP_DEBUG_
+        *mode_msg = msg_ip_v4;
+        #endif
+        break;
+    case AS_IPV6:
+        protocol = Sn_MR_UDP6;
+        #ifdef _UDP_DEBUG_
+        *mode_msg = msg_ip_v6;
+        #endif
+        break;
+    case AS_IPDUAL:
+    default:
+        protocol = Sn_MR_UDPD;
+        #ifdef _UDP_DEBUG_
+        *mode_msg = msg_ip_dual;
+        #endif
+        break;
+    }
+
+    return protocol;
+}
 /*
     How it works:
     1. Create one listening socket on port 8000:
@@ -344,12 +374,12 @@ int32_t tcp_cli_service(void) {
 }
 
 
-void udp_interrupts_enable(void) {
-    SOCKET ddp_sock = ddp_sn;
+void set_socket_interrupts_enable(SOCKET sock) {
+    // SOCKET ddp_sock = ddp_sn;
     intr_kind imr = 0, ir;
 
     // You can enable just the sockets you use to avoid extra wakeups. In the global mask (SIMR).
-    imr = (intr_kind)(IK_SOCK_0 << ddp_sock);  // Interrupt mask for UDP DDP sockets
+    imr = (intr_kind)(IK_SOCK_0 << sock);
     // Or enable all socket interrupts:
     // imr |= IK_SOCK_ALL;
     // (Optional) also enable network-level interrupts if you want them:
@@ -526,7 +556,7 @@ void wiznet_gpio_irq_handler(uint gpio, uint32_t events)
     if (time_duration_idx >= TABLE_IRQ_SIZE)
         time_duration_idx = 0;
 #endif
-    wiznet_rx_pending = true;
+    wiznet_isr_rx_pending = true;
 }
 
 
@@ -559,42 +589,42 @@ void wiznet_gpio_irq_init(void) {
 // new: void tcp_cli_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size, int16_t timeout_sec);
 
 void udp_ddp_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size) {
+    uint8_t protocol;
+
+    // set global variables for DDP socket and buffer
     ddp_sn = sn;
     ddp_port = port;
     ddp_buf_frame = buf;
     ddp_buf_size = buf_size;
 
-    // uint16_t port = ddp_port;
-    // SOCKET ddp_sock = ddp_sn;
-    // SOCKET sn;
-    uint8_t protocol;
     #ifdef _UDP_DEBUG_
     uint8_t* mode_msg;
     #endif
 
-    check_loopback_mode_W6x00();    // as default set to AS_IPV4
+    // check_loopback_mode_W6x00();    // as default set to AS_IPV4
 
-    switch(loopback_mode) {
-    case AS_IPV4:
-        protocol = Sn_MR_UDP4;
-        #ifdef _UDP_DEBUG_
-        mode_msg = msg_ip_v4;
-        #endif
-        break;
-    case AS_IPV6:
-        protocol = Sn_MR_UDP6;
-        #ifdef _UDP_DEBUG_
-        mode_msg = msg_ip_v6;
-        #endif
-        break;
-    case AS_IPDUAL:
-    default:
-        protocol = Sn_MR_UDPD;
-        #ifdef _UDP_DEBUG_
-        mode_msg = msg_ip_dual;
-        #endif
-        break;
-    }
+    // switch(loopback_mode) {
+    // case AS_IPV4:
+    //     protocol = Sn_MR_UDP4;
+    //     #ifdef _UDP_DEBUG_
+    //     mode_msg = msg_ip_v4;
+    //     #endif
+    //     break;
+    // case AS_IPV6:
+    //     protocol = Sn_MR_UDP6;
+    //     #ifdef _UDP_DEBUG_
+    //     mode_msg = msg_ip_v6;
+    //     #endif
+    //     break;
+    // case AS_IPDUAL:
+    // default:
+    //     protocol = Sn_MR_UDPD;
+    //     #ifdef _UDP_DEBUG_
+    //     mode_msg = msg_ip_dual;
+    //     #endif
+    //     break;
+    // }
+    protocol = get_loopback_mode(&mode_msg);
 
     intr_kind sock_bit = (IK_SOCK_0 << ddp_sn);
     int8_t rc = socket((uint32_t)ddp_sn, protocol, ddp_port, SOCK_IO_NONBLOCK);
@@ -603,12 +633,12 @@ void udp_ddp_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size) {
 
     if(sn != ddp_sn){    /* reinitialize the socket */
         #ifdef _UDP_DEBUG_
-            printf("%d : Fail to create socket.\r\n", ddp_sn);
+            printf("[DDP] Fail to create socket: %d\r\n", ddp_sn);
         #endif
         return; // SOCKERR_SOCKNUM;
     }
     #ifdef _UDP_DEBUG_
-        printf("%d:Socket UDP opened, port [%d] as %s\r\n", ddp_sn, ddp_port, mode_msg);   // getSn_SR(ddp_sock)
+        printf("[DDP] Socket %d UDP opened, port [%d] as %s\r\n", ddp_sn, ddp_port, mode_msg);   // getSn_SR(ddp_sock)
     #endif
 
     // Per-socket: enable only RECV interrupt
@@ -617,7 +647,8 @@ void udp_ddp_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size) {
     // Clear any pending per-socket interrupts
     ctlwizchip(CW_CLR_INTERRUPT, &sock_bit);  // wizchip_clrinterrupt(sock_bit);  // clear any pending per-socket interrupts  // setSn_IR(ddp_sock, 0xFF);
 
-    udp_interrupts_enable();          // sets up interrupts for UDP socket for DDP reception
+     // sets up interrupts for UDP socket for DDP reception
+    set_socket_interrupts_enable(ddp_sn);
     wiznet_gpio_irq_init();     // sets up GPIO interrupt for WIZnet IRQ pin
 }
 
@@ -654,8 +685,8 @@ void process_udp_ring(void) {
 int32_t ddp_loop(void) {
     // wiznet_service_if_needed();
 
-    if (!wiznet_rx_pending) return 0;
-    wiznet_rx_pending = false;
+    if (!wiznet_isr_rx_pending) return 0;
+    wiznet_isr_rx_pending = false;
 
     time_irq_duration = time_us_32() - time_irq_start;
     time_routine_start = time_us_32();
@@ -746,48 +777,6 @@ static void ddp_copy_payload(const uint8_t *payload, uint32_t offset, uint32_t l
 /**
  * UDP receive and process DDP packets (DDP parser)
  */
-/* 
-void process_ddp_udp(SOCKET s, uint32_t *pkt_counter, uint32_t *last_push_ms)
-{
-    uint8_t buf[MAX_DDP_PAYLOAD + DDP_HEADER_LEN];
-    uint16_t recv_len = 0;
-    uint8_t  srcip[4];
-    uint16_t srcport;
-
-    printf("DDP UDP packet processing...\r\n");
-    if ((recv_len = recvfrom(s, buf, sizeof(buf), srcip, &srcport)) > DDP_HEADER_LEN) {
-        (*pkt_counter)++;
-        printf("DDP Packet #%lu from %d.%d.%d.%d:%d, length %d bytes\r\n",
-               *pkt_counter,
-               srcip[0], srcip[1], srcip[2], srcip[3],
-               srcport,
-               recv_len);
-
-        // --- Parse header ---
-        // Byte layout (big-endian):
-        //  0: flags1
-        //  1: flags2
-        //  2-3: data type (usually 0x00)
-        //  4-7: data offset (uint32)
-        //  8-9: data length (uint16)
-        uint8_t  flags1 = buf[0];
-        uint32_t offset = (buf[4] << 24) | (buf[5] << 16) | (buf[6] << 8) | buf[7];
-        uint16_t length = (buf[8] << 8) | buf[9];
-
-        if (length > recv_len - DDP_HEADER_LEN)
-            length = recv_len - DDP_HEADER_LEN;   // safety
-
-        ddp_copy_payload(&buf[DDP_HEADER_LEN], offset, length);
-
-        // if PUSH bit set → render
-        if (flags1 & DDP_FLAGS1_PUSH) {
-            ws2815_show(ddp_buf_frame);   // push frame to LEDs (pass flat uint8_t pointer)
-            *last_push_ms = to_ms_since_boot(get_absolute_time());
-        }
-    }
-}
- */
-
 static void process_ddp_packet(uint8_t *buf, uint16_t recv_len)
 {
     if (recv_len <= DDP_HEADER_LEN) return;

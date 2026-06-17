@@ -245,14 +245,7 @@ void cmd_config_set_dns(uint8_t *dns) {
         cli_flush(sn, "Sent single-target detection command to RD03D\r\n");
     }
 
-    else if (strcmp(cmd, "draw1") == 0) {
-        rd03d_drv_set_raw_debug(true);
-        cli_flush(sn, "Enabled RD03D raw debug mode\r\n");
-    }
-    else if (strcmp(cmd, "draw0") == 0) {
-        rd03d_drv_set_raw_debug(false);
-        cli_flush(sn, "Disabled RD03D raw debug mode\r\n");
-    }
+
     else if (strcmp(cmd, "dprn1") == 0) {
         rd03d_drv_set_debug(true);
         cli_flush(sn, "Enabled RD03D print debug mode\r\n");
@@ -263,19 +256,7 @@ void cmd_config_set_dns(uint8_t *dns) {
     }
 
 
-    // else if (strcmp(cmd, "flag1") == 0) {
-    //     rd03d_drv_set_flag_debug(true);
-    //     cli_flush(sn, "Enabled RD03D flag debug mode\r\n");
-    // }
-    // else if (strcmp(cmd, "flag0") == 0) {
-    //     rd03d_drv_set_flag_debug(false);
-    //     cli_flush(sn, "Disabled RD03D flag debug mode\r\n");
-    // }
 
-    // else if (strcmp(cmd, "callpoll") == 0) {
-    //     rd03d_api_poll();
-    //     cli_flush(sn, NULL);
-    // }
 
     else if (strncmp(cmd, "debugdrv", 8) == 0) {
         char msg[64];

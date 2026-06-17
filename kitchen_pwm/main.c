@@ -25,6 +25,7 @@
 // for debug: #include "rd03d_drv.h"
 #include "rd03d_drv.h"
 #include "rd03d_cli.h"
+#include "dbg_api.h"
 
 
 static repeating_timer_t timer;
@@ -48,7 +49,7 @@ bool timer_callback() {
 #define DDP_DATA_BUF_SIZE     (NUM_PIXELS*NUM_CHANNELS)  // clamp to your RAM
 uint8_t ddp_buf_frame[DDP_DATA_BUF_SIZE]; // buffer for receiving DDP packets
 // uint8_t rx_fb[NUM_STRIPS*NUM_PIXELS*NUM_CHANNELS]; // flat rx buffer for UDP DDP packets
-
+uint8_t dbg_buf_frame[1000]; // buffer for debug UDP packets
 
 int main() {
     // int32_t ret;
@@ -71,7 +72,10 @@ int main() {
 
     // --- Telnet CLI init ---
     telnet_init();
- 
+
+    // --- Open UDP socket for debug ---
+    dbg_server_init(UDP_DBG_SOCKET, UDP_DBG_PORT, dbg_buf_frame, sizeof(dbg_buf_frame));
+
     // --- Open UDP socket for DDP ---
     udp_ddp_init(UDP_DDP_SOCKET, UDP_DDP_PORT, ddp_buf_frame, DDP_DATA_BUF_SIZE);
 
@@ -118,6 +122,9 @@ int main() {
 
         // Poll the UDP socket
         ddp_loop();
+
+        // Poll the debug UDP socket
+        dbg_server_poll();
 
         // non-blocking, cheap
         pwm_api_poll();

@@ -31,14 +31,6 @@ Does NOT:
 extern "C" {
 #endif
 
-// see: protocol definitions in rd03d_protocol.h
-// typedef struct
-// {
-//     uint8_t  msg_id;
-//     uint8_t  len;
-//     uint8_t  payload[64];
-// } rd03d_frame_t;
-
 typedef struct
 {
     uart_inst_t *instance;
@@ -60,17 +52,6 @@ typedef struct __attribute__((packed))
     uint16_t dist_mm; /* already uint16 in mm */
 } rd03d_object_raw_t;
 
-typedef struct __attribute__((packed))
-{
-    rd03d_object_raw_t obj[RD03D_OBJECT_SLOTS];
-} rd03d_report_raw_t;
-
-typedef struct
-{
-    rd03d_report_raw_t report;
-    uint32_t           rx_time_ms;
-} rd03d_frame_t;
-
 // New proposal
 typedef struct __attribute__((packed))
 {
@@ -83,8 +64,8 @@ typedef struct __attribute__((packed))
 } rd03d_target_raw_t;
 typedef struct
 {
-    rd03d_target_raw_t target[RD03D_OBJECT_SLOTS];
     uint32_t            rx_time_ms;
+    rd03d_target_raw_t  target[RD03D_OBJECT_SLOTS];
     volatile bool       ready; /* set to true by driver when a new frame is ready, cleared by main loop after consuming */
 } rd03d_data_t;
 
@@ -95,15 +76,13 @@ bool rd03d_drv_init(uart_cfg_t *cfg);
 void rd03d_drv_poll(void);
 
 /* Non-blocking frame fetch */
-bool rd03d_drv_get_frame(rd03d_frame_t *out);
+bool rd03d_drv_get_ready(rd03d_data_t *out);
 
 void rd03d_drv_set_debug(bool enable);
-void rd03d_drv_set_raw_debug(bool enable);
+// void rd03d_drv_set_raw_debug(bool enable);
 
 void rd03d_drv_send_multi_target_cmd(void);
 void rd03d_drv_send_single_target_cmd(void);
-void rd03d_drv_debug_print_raw_data(void);
-// void rd03d_drv_set_flag_debug(bool enable);
 
 
 // bool rd03d_drv_write_raw(const uint8_t *data, size_t len);
@@ -112,33 +91,3 @@ void rd03d_drv_debug_print_raw_data(void);
 }
 #endif
 
-
-
-// #pragma once
-
-// #include <stdint.h>
-// #include <stdbool.h>
-
-// #ifdef __cplusplus
-// extern "C" {
-// #endif
-
-// typedef struct
-// {
-//     bool     presence;
-//     uint16_t distance_mm;
-//     uint8_t  confidence;
-// } rd03d_data_t;
-
-// /* Initialize UART + internal state */
-// bool rd03d_init(void);
-
-// /* Poll UART, parse frames, update internal state */
-// void rd03d_poll(void);
-
-// /* Get latest parsed data (thread-safe for main loop usage) */
-// bool rd03d_get_data(rd03d_data_t *out);
-
-// #ifdef __cplusplus
-// }
-// #endif

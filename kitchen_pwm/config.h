@@ -61,6 +61,11 @@
 // #define NETINFO_DHCP    NETINFO_STATIC
 // #endif
 
+// ---- Sockets configuration for WIZnet chips ----
+// Do not cross this value: _WIZCHIP_SOCK_NUM_ = 8
+// Support 8 independent SOCKETs simultaneously with 32KB Memory configured in 16KB Tx and 16KB Rx for each SOCKET. 
+// Each SOCKET can be independently configured as TCP server, TCP client, UDP, IPRAW, MACRAW, or PPPoE.
+// see: libraries/port/ioLibrary_Driver/src/wizchip_spi.c +277
 
 /**
  * Configuration for TCP LOOPBACK
@@ -82,41 +87,36 @@
 // #define ETHERNET_BUF_MAX_SIZE 1024
 
 /**
- * An Over-The-Air (OTA) software update mechanism
+ * Configuration for TCP EFU (External Firmware Update) protocol
  * 
+ * Originaly from: An Over-The-Air (OTA) software update mechanism
  * ~/project/pico2/pico-examples$ vim pico_w/wifi/ota_update/README.md
- * 
  */
 #define TCP_EFU_SOCKET      1
 #define TCP_EFU_PORT        4243    // OTA port=4242
 
 /**
- * Configuration for UDP protocols
+ * Configuration for DDP over UDP protocols
  */
 #define UDP_DDP_SOCKET      5      // with port UDP_DDP_PORT 4048
 #define UDP_DDP_PORT        4048
 
 /**
- * Configuration for future
+ * Configuration for Debug UDP protocols
  */
-// #define TCP_HTTP_SOCKET  1
-// #define TCP_HTTP_PORT    80
-// #define TCP_OTA_SOCKET   2
-// #define TCP_OTA_PORT     4242
-//  Remote logging & variable view (for live debug)
-//  Example: a UDP packet every second with JSON text like
-//  {"t":27.5,"uptime":3221,"fps":60}
-// #define UDP_DEB_SOCKET   3
+#define UDP_DBG_SOCKET      3
+#define UDP_DBG_PORT        3000
 // #define UDP_DESTIP       192.168.14.200
-// #define UDP_DESTPORT     3000
 
+
+/**
+ * LED configuration
+ */
 #define NUM_CHANNELS        4   // 3 for RGB, or 4 for RGBW - used in DDP (network.c)
 #define NUM_PIXELS          1
 
 
 #define _LOOPBACK_DEBUG_    // Enable LOOPBACK debug messages on USB
-#define _DDP_DEBUG_         // Enable DDP debug messages on USB
-#define _UDP_DEBUG_         // Enable UDP debug messages on USB
 #define _TIME_DEBUG_        // Enable timing debug messages on USB
 #define _EFU_DEBUG_         // Enable OTA debug messages on USB
 // #define BOOT_INFO_ON_USB  // Enable boot info print on USB

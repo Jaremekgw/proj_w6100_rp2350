@@ -8,6 +8,7 @@ add_library(${COMMON_LIB} STATIC
     flash/flash_cfg.c
     network/network.c
     network/tcp_cli.c
+    network/dbg_api.c
     diagnostic/diag_pio.c
 )
 

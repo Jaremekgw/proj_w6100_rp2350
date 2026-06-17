@@ -5,6 +5,16 @@
 # 122580/122580 bytes sent
 # Done.
 
+# Config:
+#   $ cmake -S . -B build
+#
+
+# Build:
+#   $ cmake --build build
+#   # or:
+#   $ cmake --build build --target kitchen_pwm
+
+
 # python3 efu_upload.py 192.168.178.225 build/stairs_ws2815/proj_stairs_ws2815.bin
 # python3 efu_upload.py 192.168.14.226 build/tree_ws2815/tree_leds.bin
 python3 efu_upload.py 192.168.14.228 build/kitchen_pwm/kitchen_pwm.bin

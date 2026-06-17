@@ -12,9 +12,10 @@
 
 #include "config.h"
 #include "rd03d_drv.h"
+#include "rd03d_cli.h"
 #include "rd03d_api.h"
 #include "utility.h"
-
+#include "dbg_api.h"
 
 // #ifndef RD03D_UART
 // #error "RD03D_UART not defined"
@@ -47,13 +48,13 @@
  * - MSB=0 => negative, magnitude = raw & 0x7FFF, value = -magnitude
  * See example decode on page 19 :contentReference[oaicite:3]{index=3}
  */
-static inline int16_t rd03d_decode_signmag(uint16_t raw)
-{
-    uint16_t mag = (uint16_t)(raw & 0x7FFF);
-    if (raw & 0x8000)
-        return (int16_t)mag;        /* positive */
-    return (int16_t)(-(int16_t)mag); /* negative */
-}
+// static inline int16_t rd03d_decode_signmag(uint16_t raw)
+// {
+//     uint16_t mag = (uint16_t)(raw & 0x7FFF);
+//     if (raw & 0x8000)
+//         return (int16_t)mag;        /* positive */
+//     return (int16_t)(-(int16_t)mag); /* negative */
+// }
 
 typedef struct
 {
@@ -67,6 +68,9 @@ typedef struct
 static rd03d_filter_cfg_t s_cfg;
 static rd03d_state_t      s_state;
 static bool               s_state_valid;
+
+void rd03d_print_raw_data(rd03d_data_t *data);
+
 
 /* ---------- helpers ---------- */
 static inline uint32_t now_ms(void)
@@ -89,11 +93,6 @@ static uint32_t dist2_mm(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
     int32_t dx = (int32_t)x1 - (int32_t)x2;
     int32_t dy = (int32_t)y1 - (int32_t)y2;
     return sq_u32(dx) + sq_u32(dy);
-}
-
-static bool det_is_zero(const rd03d_object_raw_t *o)
-{
-    return (o->x_raw == 0 && o->y_raw == 0 && o->v_raw == 0 && o->dist_mm == 0);
 }
 
 /* ---------- init ---------- */
@@ -267,34 +266,37 @@ void rd03d_api_poll(void)
 {
     // rd03d_drv_poll(); - call it from main loop, not here, to keep latency low and avoid starving main loop
 
-    rd03d_frame_t f;
-    if (!rd03d_drv_get_frame(&f))
+    rd03d_data_t frame;
+    if (!rd03d_drv_get_ready(&frame))
         return;
 
     // For debugging: print raw data on every received frame
-    rd03d_drv_debug_print_raw_data();
+    // rd03d_drv_debug_print_raw_data();
+    rd03d_print_raw_data(&frame);
+    dbg_send_sensor_data(now_ms(), &frame, sizeof(frame));
 
     det_t det[RD03D_OBJECT_SLOTS] = {0};
 
     for (int i = 0; i < RD03D_OBJECT_SLOTS; i++)
     {
-        const rd03d_object_raw_t *o = &f.report.obj[i];
+        // const rd03d_object_raw_t *o = &f.report.obj[i];
+        const rd03d_target_raw_t *target = &frame.target[i];
 
-        if (det_is_zero(o))
+        if (target->active == false) /* no target in this slot */
         {
             det[i].present = false;
             continue;
         }
 
         det[i].present = true;
-        det[i].x_mm  = rd03d_decode_signmag(o->x_raw);
-        det[i].y_mm  = rd03d_decode_signmag(o->y_raw);
-        det[i].v_cms = rd03d_decode_signmag(o->v_raw);
-        det[i].dist_mm = o->dist_mm;
+        det[i].x_mm  = target->x_raw; // rd03d_decode_signmag(o->x_raw);
+        det[i].y_mm  = target->y_raw; // rd03d_decode_signmag(o->y_raw);
+        det[i].v_cms = target->v_raw; // rd03d_decode_signmag(o->v_raw);
+        det[i].dist_mm = target->dist_mm; // o->dist_mm;
     }
 
-    s_state.rx_time_ms = f.rx_time_ms;
-    update_tracks(det, f.rx_time_ms);
+    s_state.rx_time_ms = frame.rx_time_ms;
+    update_tracks(det, frame.rx_time_ms);
     s_state_valid = true;
 }
 
@@ -377,3 +379,26 @@ int rd03d_api_print_state(char *msg, size_t msg_max_sz)
     return (int)(msg_max_sz - remaining);
 }
 
+void rd03d_print_raw_data(rd03d_data_t *data)
+{
+    if (!data || !data->ready) {
+        printf("[RD03D] no raw data available\n");
+        return;
+    }
+
+    printf("\r\n[RD03D][RAW DATA] t=%08lu ms", (unsigned long)data->rx_time_ms);
+    for (int i = 0; i < RD03D_OBJECT_SLOTS; i++) {
+        const rd03d_target_raw_t *t = &data->target[i];
+        if (t->active) {
+            printf("  t_%d x=%dmm y=%dmm v=%dcm/s d=%umm",
+                i,
+                (int)t->x_raw,
+                (int)t->y_raw,
+                (int)t->v_raw,
+                (unsigned)t->dist_mm);
+        // } else {
+        //     printf("  t_%d <empty>", i);
+        //     // continue;
+        }
+    }
+}

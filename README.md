@@ -55,6 +55,17 @@ target_link_libraries(my_project
 - load new partition table into board
   $ sudo picotool load w6100_part2.uf2
 
+# 4. Configure and build project
+- config:
+  $ rm -rf build/
+  $ cmake --preset pico
+
+- build:
+  $ cmake --build build
+
+- rebuild
+  $ cmake --build build --target clean
+  $ cmake --build build
 
 # 4. Other options for picotool
   $ sudo picotool info -a
@@ -70,3 +81,23 @@ Erased 8192 bytes
   ├── pwm_rgbw_api.h     // high-level color + brightness API
   └── pwm_rgbw_api.c
 
+# 6. Foxglove
+  - example
+   1. documentation
+      Example: https://docs.foxglove.dev/docs/sdk/example?lang=python
+      SDK: https://foxglove-sdk-api-docs.pages.dev/python/
+   2. connect with web browser: https://app.foxglove.dev/
+      Foxglove visualization requires Chrome v119 or greater.
+   3. run app:
+      $ cd ~/project/pico2/proj_w6100_rp2350
+      $ source .venv/bin/activate
+      $ python foxg/quickstart/main.py
+      
+
+  - Connect Foxglove UI
+  Open UI
+  Select connection
+  Foxglove WebSocket     ws://localhost:8765
+
+
+  - Add visualization

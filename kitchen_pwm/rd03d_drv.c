@@ -8,38 +8,28 @@
 #include <string.h>
 
 #include "pico/stdlib.h"
-// #include "hardware/uart.h"
 #include "hardware/gpio.h"
 
 #include "rd03d_drv.h"
-// #include "rd03d_api.h"
-#include "rd03d_cli.h"
-
-void rd03d_cli_print_state(void);
+// #include "rd03d_cli.h"
 
 
-#define _RD03D_DEBUG_
+// #define _RD03D_DEBUG_
+
+#ifdef _RD03D_DEBUG_
 bool debug_flag_rd03d_raw = false; // set to true to enable debug prints in driver
+#endif
 bool debug_flag_rd03d_print = false;
-// bool debug_flag_rd03d_flag = false;
 
 uart_inst_t *rd03d_uart = NULL;
 
-/* RD-03D report format:
- * Header: AA FF 03 00
- * Payload: 3 objects × 8 bytes = 24 bytes
- * Tail: 55 CC
- * Total: 4 + 24 + 2 = 30 bytes
- * See Table 5-1 / 5-2 :contentReference[oaicite:1]{index=1}
+/**
+ *  RX_BUF: 0xAA 0xFF 0x03 0x00                   Header
+ *  0x05 0x01 0x19 0x82 0x00 0x00 0x68 0x01      target1
+ *  0xE3 0x81 0x33 0x88 0x20 0x80 0x68 0x01      target2
+ *  0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      target3
+ *  0x55 0xCC                                    Tail
  */
-
-   /* RX_BUF: 0xAA 0xFF 0x03 0x00                   Header
-    *  0x05 0x01 0x19 0x82 0x00 0x00 0x68 0x01      target1
-    *  0xE3 0x81 0x33 0x88 0x20 0x80 0x68 0x01      target2
-    *  0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00      target3
-    *  0x55 0xCC
-  */
-
 
 /*
 
@@ -136,8 +126,7 @@ uint8_t multi_target_cmd[12] = {
 static uint8_t  s_rx[RD03D_RX_RING_SIZE];
 static uint16_t s_head, s_tail;
 
-static rd03d_frame_t s_last_frame;
-static volatile bool s_frame_ready;
+// static rd03d_frame_t s_last_frame;
 
 rd03d_data_t s_last_data;
 
@@ -152,7 +141,7 @@ static inline uint16_t rb_count(void)
 
 static inline void rb_push(uint8_t b)
 {
-// #ifdef _RD03D_DEBUG_
+#ifdef _RD03D_DEBUG_
     if (debug_flag_rd03d_raw) {
         if (rx_stream_started) {
             printf(", %02X", b); 
@@ -161,7 +150,7 @@ static inline void rb_push(uint8_t b)
             rx_stream_started = true;
         }
     }
-// #endif
+#endif
 
     s_rx[s_head] = b;
     s_head = (uint16_t)((s_head + 1) & (RD03D_RX_RING_SIZE - 1));
@@ -210,7 +199,6 @@ bool rd03d_drv_init(uart_cfg_t *cfg)
        cfg->tx_pin, cfg->rx_pin);
 #endif
     s_head = s_tail = 0;
-    s_frame_ready = false;
 
     sleep_ms(10); /* let UART settle */
     uart_write_blocking(rd03d_uart, multi_target_cmd, sizeof(multi_target_cmd));
@@ -222,40 +210,15 @@ uint16_t temp_global_cnt = 0;
 /* ---------- robust resync parser ---------- */
 static void try_parse_frames(void)
 {
-    // static bool last_flag = false;
-    /* Scan for header within current buffered bytes.
-     * We only commit when we can also validate the tail.
+
+    /**
+     * Work only when we have at least one full frame.
      */
     while (rb_count() >= RD03D_FRAME_BYTES)
     {
-        // static bool found_header = false;
-        /* Find the first candidate header position within the ring.
-         * Limit scan to (count - frame_bytes + 1) positions so a full frame can exist.
-         */
         uint16_t count = rb_count();
-        // uint16_t max_scan = (uint16_t)(count - RD03D_FRAME_BYTES + 1);
-        // if (debug_flag_rd03d_flag) {
-        //     max_scan = count; /* for debug, scan all to see false header hits */
-        //     if (!last_flag) {
-        //         printf("\r\n[RD03D] Starting new scan... count=%u\r\n", count);
-        //         last_flag = true;
-        //     }
-        // } else {
-        //     last_flag = false;
-        // }
-
-
-        if (debug_flag_rd03d_raw) {
-            // if (++temp_global_cnt > 5) {
-            //     temp_global_cnt = 0;
-            //     printf("[RD03D] Scanning for header... count=%u, found_header=%d\r\n", count, found_header);
-            // }
-            printf("\r\n-------------------------------\r\n[RD03D] Scan count=%u \r\n", \
-                    count);
-        }
-
-
         int found_at = -1;
+
         for (uint16_t off = 0; off < (count-3); off++)
         {
             if (rb_peek(off + 0) == RD03D_HDR0 &&
@@ -265,27 +228,17 @@ static void try_parse_frames(void)
             {
                 found_at = (int)off;
                 break;
-            } else {
-                // For debug: print non-header bytes as we scan
-                if (debug_flag_rd03d_raw) {
-                    printf("_ %02X", rb_peek(off));
-                }
             }
         }
 
-        if (debug_flag_rd03d_raw) {
-            printf("\r\n[RD03D] - Found c=%u, f_at=%d\r\n", count, found_at);
-        }
-
+        // if (debug_flag_rd03d_raw) {
+        //     printf("\r\n[RD03D] - Found c=%u, f_at=%d\r\n", count, found_at);
+        // }
 
         if (found_at < 0)
         {
             /* No header found; keep last 3 bytes in case header splits across polls */
             if (count > 3) {
-                uint16_t to_drop = (uint16_t)(count - 3);
-                if (debug_flag_rd03d_raw) {
-                    printf("[RD03D] No header found, dropping %u bytes\r\n", to_drop);
-                }
                 rb_drop((uint16_t)(count - 3));
             }
             return;
@@ -315,23 +268,12 @@ static void try_parse_frames(void)
         /* raw[0..3] is header; payload starts at raw[4] */
         const uint8_t *payload = &raw[4];
 
-        /* Copy into packed structure (byte exact) */
-        rd03d_report_raw_t report = {0};
-        // old proposal
-        for (uint32_t i = 0; i < RD03D_PAYLOAD_BYTES; i++)
-            ((uint8_t *)&report)[i] = payload[i];
-
-        // new propsal
+        // new proposal
         rd03d_target_raw_t *target = s_last_data.target;
 
         for (int i = 0; i < RD03D_OBJECT_SLOTS; i++) {
             uint8_t *buf_rx = (uint8_t *)payload + i * sizeof(rd03d_object_raw_t);
 
-            // if (debug_flag_rd03d_raw) {
-            //     // 8C, 81, D1, 81, 00, 00, 68, 01
-            //     // [0] [1] [2] [3] [4] [5] [6] [7]
-            //     printf("[RD03D] t=%d Frame received.\r\n", i);
-            // }
             if (buf_rx[0] == 0 && buf_rx[2] == 0 && buf_rx[6] == 0) {
                 target[i].x_raw = 0;
                 target[i].y_raw = 0;
@@ -339,9 +281,9 @@ static void try_parse_frames(void)
                 target[i].dist_mm = 0;
                 target[i].active = false;
             } else {
-                int16_t x = (int16_t)((buf_rx[0] | (buf_rx[1] << 8)));            // ?? - 0x200
-                int16_t y = (int16_t)((buf_rx[2] | (buf_rx[3] << 8)) - 0x8000);   // OK
-                int16_t v = (int16_t)((buf_rx[4] | (buf_rx[5] << 8)));            // - 0x10
+                int16_t x = (int16_t)((buf_rx[0] | (buf_rx[1] << 8)));
+                int16_t y = (int16_t)((buf_rx[2] | (buf_rx[3] << 8)) - 0x8000);
+                int16_t v = (int16_t)((buf_rx[4] | (buf_rx[5] << 8)));
                 
                 target[i].x_raw = (x < 0 ? x ^ 0x7FFF : x);
                 target[i].y_raw = (y < 0 ? y ^ 0x7FFF : y);
@@ -352,18 +294,19 @@ static void try_parse_frames(void)
         }
 
 
-        s_last_frame.report = report;
-        s_last_frame.rx_time_ms = (uint32_t)to_ms_since_boot(get_absolute_time());
-        s_last_data.rx_time_ms = s_last_frame.rx_time_ms;
+        // s_last_frame.report = report;
+        // s_last_frame.rx_time_ms = (uint32_t)to_ms_since_boot(get_absolute_time());
+        s_last_data.rx_time_ms = (uint32_t)to_ms_since_boot(get_absolute_time());
         s_last_data.ready = true;
-        s_frame_ready = true;
         #ifdef _RD03D_DEBUG_
         rx_stream_started = false; /* for debug prints */
         #endif
 
+        #ifdef _RD03D_DEBUG_
         if (debug_flag_rd03d_raw) {
             printf("[RD03D] Frame received.\r\n");
         }
+        #endif // _RD03D_DEBUG_
         /* Stop after publishing one frame (keeps latency low and avoids starving main loop) */
         return;
     }
@@ -379,7 +322,7 @@ static void try_parse_frames(void)
  *     ↓
  * try_parse_frames()
  *     ↓
- * s_last_frame
+ * s_last_data
  */
 void rd03d_drv_poll(void)
 {
@@ -389,13 +332,13 @@ void rd03d_drv_poll(void)
     try_parse_frames();
 }
 
-bool rd03d_drv_get_frame(rd03d_frame_t *out)
+bool rd03d_drv_get_ready(rd03d_data_t *out)
 {
-    if (!out || !s_frame_ready)
+    if (!out || !s_last_data.ready)
         return false;
 
-    *out = s_last_frame;
-    // s_frame_ready = false;
+    *out = s_last_data;
+    s_last_data.ready = false;
     return true;
 }
 
@@ -403,10 +346,10 @@ void rd03d_drv_set_debug(bool enable)
 {
     debug_flag_rd03d_print = enable;
 }
-void rd03d_drv_set_raw_debug(bool enable)
-{
-    debug_flag_rd03d_raw = enable;
-}
+// void rd03d_drv_set_raw_debug(bool enable)
+// {
+//     debug_flag_rd03d_raw = enable;
+// }
 
 // void rd03d_drv_set_flag_debug(bool enable)
 // {
@@ -423,28 +366,4 @@ void rd03d_drv_send_single_target_cmd(void)
     uart_write_blocking(rd03d_uart, single_target_cmd, sizeof(single_target_cmd));
 }
 
-void rd03d_drv_debug_print_raw_data(void)
-{
-static bool s_print_flag = false;
 
-    if (debug_flag_rd03d_print != s_print_flag) {
-        s_print_flag = debug_flag_rd03d_print;
-        if (s_print_flag) {
-            printf("[RD03D] Debug print enabled\r\n");
-        } else {
-            printf("[RD03D] Debug print disabled\r\n");
-        }
-    }
-    if (debug_flag_rd03d_print && s_last_data.ready) {
-        rd03d_cli_print_raw_data(&s_last_data);
-        s_last_data.ready = false;
-    }
-}
-// bool rd03d_drv_write_raw(const uint8_t *data, size_t len)
-// {
-//     if (!data || len == 0)
-//         return false;
-
-//     uart_write_blocking(rd03d_uart, data, len);
-//     return true;
-// }

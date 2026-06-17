@@ -40,23 +40,6 @@ static void print_state(const rd03d_state_t *st)
     }
 }
 
-static void dump_raw_frame_if_needed(void)
-{
-    if (!s_dump_raw)
-        return;
-
-    rd03d_frame_t f;
-    if (!rd03d_drv_get_frame(&f))
-        return;
-
-    /* Re-emit the raw report bytes for debugging */
-    const uint8_t *p = (const uint8_t *)&f.report;
-    printf("[RD03D][RAW] AA FF 03 00 ");
-    for (unsigned i = 0; i < sizeof(f.report); i++)
-        printf("%02X ", p[i]);
-    printf("55 CC\n");
-}
-
 static int cmd_rd03d(int argc, char **argv)
 {
     if (argc < 2)
@@ -129,7 +112,7 @@ void rd03d_cli_tick(void)
 
     if (s_dump_raw)
     {
-        dump_raw_frame_if_needed();
+        // dump_raw_frame_if_needed();
         s_dump_raw = false;
         return;
     }
@@ -156,29 +139,5 @@ void rd03d_cli_print_state(void)
         print_state(&st);
     else
         printf("[RD03D] no data yet\n");
-}
-
-void rd03d_cli_print_raw_data(rd03d_data_t *data)
-{
-    if (!data || !data->ready) {
-        printf("[RD03D] no raw data available\n");
-        return;
-    }
-
-    printf("\r\n[RD03D][RAW DATA] t=%08lu ms", (unsigned long)data->rx_time_ms);
-    for (int i = 0; i < RD03D_OBJECT_SLOTS; i++) {
-        const rd03d_target_raw_t *t = &data->target[i];
-        if (t->active) {
-            printf("  t_%d x=%dmm y=%dmm v=%dcm/s d=%umm",
-                i,
-                (int)t->x_raw,
-                (int)t->y_raw,
-                (int)t->v_raw,
-                (unsigned)t->dist_mm);
-        // } else {
-        //     printf("  t_%d <empty>", i);
-        //     // continue;
-        }
-    }
 }
 

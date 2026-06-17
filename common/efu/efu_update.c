@@ -11,7 +11,6 @@
 #include "hardware/flash.h"
 #include "pico/bootrom.h"
 #include "wizchip_conf.h"
-// #include "socket.h"             // <-- need separate set_source_files_properties for this to avoid pulling in socket dependency to other targets that include config_efu.h
 #include "network.h"
 #include "boot/picoboot_constants.h"
 #include "partition.h"
@@ -21,10 +20,6 @@
 // #define _EFU_DEBUG_
 // size of the CHUNK in python app.
 #define EFU_BUF_SIZE        2048
-// temprary, later set dynamcally in init
-#define TCP_EFU_SOCKET      1
-#define TCP_EFU_PORT        4243    // OTA port=4242
-// efu_server_init(TCP_EFU_SOCKET, TCP_EFU_PORT)
 
 // EFU server states
 typedef enum {
@@ -46,8 +41,8 @@ typedef struct {
 
     uint8_t header_buf[8];
     uint8_t header_received;
-    uint8_t socket;
-    uint16_t port;
+    uint8_t socket;             // TCP_EFU_SOCKET
+    uint16_t port;              // TCP_EFU_PORT
 
     uint8_t buf[EFU_BUF_SIZE];
     uint32_t total_written;

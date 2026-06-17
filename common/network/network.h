@@ -159,7 +159,7 @@ void wiznet_drain_udp(void);
 void tcp_cli_init(uint8_t sn, uint16_t port, uint8_t *buf, uint16_t buf_size, int16_t timeout_sec);
 void cli_hook_init(const tcp_cli_hooks_t *hooks);
 int32_t tcp_cli_service(void);
-
+uint8_t get_loopback_mode(uint8_t **mode_msg);
 
 int32_t ddp_loop(); // (uint32_t *pkt_counter, uint32_t *last_push_ms);
 
