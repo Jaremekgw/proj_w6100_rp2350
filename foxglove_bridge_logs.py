@@ -13,9 +13,14 @@ import struct
 import time
 
 import foxglove
-from foxglove.channels import LogChannel, SceneUpdateChannel
+from foxglove.channels import (
+    FrameTransformChannel,
+    LogChannel,
+    SceneUpdateChannel,
+)
 from foxglove.schemas import (
     Color,
+    FrameTransform,
     Log,
     LogLevel,
     Pose,
@@ -35,9 +40,11 @@ EXPECTED_PACKET_SIZE = 32
 MCAP_FILE = "rd03d_logs.mcap"
 
 # 3D scene settings
-SCENE_FRAME_ID = "rd03d"          # set this same frame in the 3D panel's "Display frame"
+WORLD_FRAME_ID = "world"          # root frame; use this as the 3D panel "Display frame"
+SCENE_FRAME_ID = "rd03d"          # frame the radar targets live in
 TARGET_SPHERE_M = 0.15            # sphere diameter in metres
 MM_TO_M = 1.0 / 1000.0           # RD03D reports millimetres; 3D panel uses metres
+TF_INTERVAL = 0.5                 # how often to (re)publish the static transform, seconds
 
 
 def parse_target(data: bytes, offset: int) -> dict:
@@ -85,6 +92,22 @@ def format_frame_for_log(frame: dict) -> str:
             lines.append(f"target[{i}] active=0")
 
     return " | ".join(lines)
+
+
+def build_world_transform() -> FrameTransform:
+    """Static transform locating the radar frame in the world frame.
+
+    Published periodically so the 3D panel always has a coordinate frame to
+    anchor to, regardless of its "Display frame" setting. Identity placement
+    for now; adjust translation/rotation to position the sensor in the room.
+    """
+    return FrameTransform(
+        timestamp=Timestamp.now(),
+        parent_frame_id=WORLD_FRAME_ID,
+        child_frame_id=SCENE_FRAME_ID,
+        translation=Vector3(x=0.0, y=0.0, z=0.0),
+        rotation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0),
+    )
 
 
 def build_scene_update(frame: dict) -> SceneUpdate:
@@ -138,19 +161,21 @@ def main() -> None:
     # SceneUpdateChannel / Channel) and log every message onto it.
     log_channel = LogChannel("/rd03d")
     scene_channel = SceneUpdateChannel("/rd03d/scene")
+    tf_channel = FrameTransformChannel("/tf")
 
     # Record to an MCAP file as well as streaming to the live app.
     with foxglove.open_mcap(MCAP_FILE):
-        foxglove.start_server()
+        foxglove.start_server(host="0.0.0.0", port=8765)
 
         print(f"Foxglove server started")
         print(f"Recording to {MCAP_FILE}")
         print(f"Sending HELLO to {device_ip}:{device_port}")
         print("Log panel:  subscribe to /rd03d")
-        print(f"3D panel:   subscribe to /rd03d/scene (set Display frame = '{SCENE_FRAME_ID}')")
+        print(f"3D panel:   subscribe to /rd03d/scene (set Display frame = '{WORLD_FRAME_ID}')")
         print("Press Ctrl-C to exit")
 
         last_hello = 0.0
+        last_tf = 0.0
 
         try:
             while True:
@@ -160,6 +185,12 @@ def main() -> None:
                     sock.sendto(b"HELLO", (device_ip, device_port))
                     last_hello = now
                     print(f"[TX] HELLO -> {device_ip}:{device_port}")
+
+                # Keep the world -> rd03d transform alive so the 3D panel always
+                # has a frame to anchor to, even before any target arrives.
+                if now - last_tf >= TF_INTERVAL:
+                    tf_channel.log(build_world_transform())
+                    last_tf = now
 
                 readable, _, _ = select.select([sock], [], [], 0.1)
 

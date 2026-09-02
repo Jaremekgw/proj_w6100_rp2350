@@ -6,3 +6,8 @@ dump/
 # clangd cache
 .cache/
 
+__pycache__/
+
+# mcap log files
+*.mcap
+
