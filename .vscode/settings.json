@@ -84,5 +84,6 @@
         "compare": "c",
         "config.h": "c"
     },
-    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc"
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

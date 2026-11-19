@@ -8,6 +8,7 @@ This repository contains several independent firmware projects for the Raspberry
 | --- | --- | --- | --- |
 | `kitchen_pwm/` | `kitchen_pwm` | RGBW PWM lighting with DDP control, VL53L8CX time-of-flight sensing, and RD03D radar sensing | Enabled |
 | `stairs_ws2815/` | `proj_stairs_ws2815` | Parallel PIO/DMA control of WS2815 stair lighting | Enabled |
+| `tarrace_ws2815/` | `proj_tarrace_ws2815` | Parallel PIO/DMA control of WS2815 tarrace lighting | Enabled |
 | `tree_ws2815/` | `tree_leds` | PIO/DMA control of WS2815 tree lighting with VL53L8CX sensing | Enabled |
 | `scd30_meter/` | `proj_scd30_meter` | SCD30 CO2 meter firmware | Disabled in the root `CMakeLists.txt` |
 | `layout_seeder/` | `w6100_part_layout` | Utility firmware for embedding/seeding the flash partition layout | Disabled in the root `CMakeLists.txt` |
@@ -15,6 +16,21 @@ This repository contains several independent firmware projects for the Raspberry
 | `libraries/` | several libraries | Vendored WIZnet ioLibrary, board port, and mbedTLS sources | Used by the workspace |
 
 The `add_subdirectory(...)` entries in the root `CMakeLists.txt` determine which projects are configured. The `all_projects` convenience target currently builds only `kitchen_pwm`.
+
+## IP addresses for project
+
+| Project | IP | Note |
+| --- | --- | --- |
+| `w6100/tarrace_ws2815/` | 192.168.14.229 | Notice |
+| `w6100/kitchen_pwm/` | 192.168.14.228 | Notice |
+| `w6100/tree_ws2815/` | 192.168.14.{226,227} | Notice |
+| `w6100/stairs_ws2815/` | 192.168.14.225 | Notice |
+| `w6100/free4/` | 192.168.14.224 | Notice |
+| `w6100/free3/` | 192.168.14.223 | Notice |
+| `w6100/free2/` | 192.168.14.222 | Notice |
+| `w6100/free1/` | 192.168.14.221 | Notice |
+| `pico2w/wash_roof/` | 192.168.14.141 (DHCP) | Notice |
+
 
 ## Requirements
 
@@ -28,7 +44,60 @@ The `add_subdirectory(...)` entries in the root `CMakeLists.txt` determine which
 
 Do this once on a new board, or whenever its partition table must be replaced. The normal layout in `w6100_partitions.json` contains two linked 1000 KiB application slots (`Main A` and `Main B`) for fail-safe OTA updates and a 32 KiB `Config` data partition.
 
+For `w6100_partitions.json` there are 3 partitions
+
+| Partition | id | Family | Size |
+| --- | --- | --- | --- |
+| `Main A` | 0 | ["rp2350-arm-s", "rp2350-riscv"] | 1 MB |
+| `Main B` | 1 | ["rp2350-arm-s", "rp2350-riscv"] | 1 MB |
+| `Config` | 2 | ["data"] | 32 kB |
+
+For `w6100_partitions4.json` is additional 'data' partition
+
+| Partition | id | Family | Size |
+| --- | --- | --- | --- |
+| `Main A` | 0 | ["rp2350-arm-s", "rp2350-riscv"] | 1 MB |
+| `Main B` | 1 | ["rp2350-arm-s", "rp2350-riscv"] | 1 MB |
+| `Config` | 2 | ["data"] | 8 kB |
+| `Data` | 3 | ["data"] | 32 kB |
+
 1. Connect the board over USB in BOOTSEL mode.
+
+   For WSL we have to pass USB connection over Windows to WSL, in PowerShell
+   check usb, before:
+   ```Powershell
+   PS C:\Users\jarek> usbipd list
+   Connected:
+   BUSID  VID:PID    DEVICE                                  STATE
+   1-5    046d:0843  Logitech Webcam C930e                   Not shared
+   1-13   26ce:01a2  USB Input Device                        Not shared
+   1-14   8087:0033  Intel(R) Wireless Bluetooth(R)          Not shared
+   ```
+   
+   After (press BOOTSEL powering):
+   ```Powershell
+   PS C:\Users\jarek> usbipd list
+   Connected:
+   BUSID  VID:PID    DEVICE                                  STATE
+   1-1    2e8a:000f  USB Mass Storage Device, RP2350 Boot    Not shared
+   1-5    046d:0843  Logitech Webcam C930e                   Not shared
+   1-13   26ce:01a2  USB Input Device                        Not shared
+   1-14   8087:0033  Intel(R) Wireless Bluetooth(R)          Not shared
+   ```
+
+   Use following Commands for usbipd:
+   ```Text
+   Commands:
+     attach   Attach a USB device to a client
+     bind     Bind device
+   ```
+
+   Run PowerShell as Administrator and run two command with appropriate BUSID:
+   ```Powershell
+   PS C:\Users\jarek> usbipd bind --busid 1-1
+   PS C:\Users\jarek> usbipd attach -a -b 1-1 -w Ubuntu-24.04
+   ```
+
 2. From the repository root, convert the partition definition to UF2:
 
    ```bash

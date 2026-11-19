@@ -123,6 +123,7 @@ add_subdirectory(common)
 
 # Add your projects (targets) here
 add_subdirectory(stairs_ws2815)
+add_subdirectory(tarrace_ws2805)
 # add_subdirectory(scd30_meter)
 add_subdirectory(tree_ws2815)
 add_subdirectory(kitchen_pwm)
