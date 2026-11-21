@@ -125,13 +125,23 @@ void output_strips_dma(value_bits_t *bits, uint value_length) {
 const struct {
     pattern pat;
     const char *name;
+    bool one_shot;
 } pattern_table[] = {
-        {pattern_snakes,  "Snakes!"},       // pattern 0
-        {pattern_random,  "Random data"},   // pattern 1
-        {pattern_sparkle, "Sparkles"},      // pattern 2
-        {pattern_drop1,   "Drop_1"},     // pattern 3
-        {pattern_solid,  "Solid!"},     // pattern 4
-        {pattern_jaremek, "Jaremek"},   // pattern 5
+        {pattern_red,     "Red",        true},  // pattern id 1
+        {pattern_green,   "Green",      true},  // pattern id 2
+        {pattern_blue,    "Blue",       true},  // pattern id 3
+#if NUM_CHANNELS >= 4
+        {pattern_warm,    "White Warm", true},  // pattern id 4
+#endif
+#if NUM_CHANNELS >= 5
+        {pattern_cold,    "White Cold", true},  // pattern id 5
+#endif
+        {pattern_snakes,  "Snakes!",    false}, // pattern id 6
+        {pattern_random,  "Random data", false}, // pattern id 7
+        {pattern_sparkle, "Sparkles",   false}, // pattern id 8
+        {pattern_drop1,   "Drop_1",     false}, // pattern id 9
+        {pattern_solid,   "Solid!",     false}, // pattern id 10
+        {pattern_jaremek, "Jaremek",    false}, // pattern id 11
 };
 
 /**
@@ -266,12 +276,19 @@ void ws2815_init(void) {
 }
 
 uint8_t set_pattern_index(uint8_t index) {
-    if (index > count_of(pattern_table))
-        pattern_index = PAT_AUTO;
-    else if (index == 0)
+    if (index == 0) {
         pattern_index = PAT_ZERO;
-    else
+    } else if (index > count_of(pattern_table)) {
+        pattern_index = PAT_AUTO;
+    } else {
         pattern_index = index;
+        if (pattern_table[index - 1].one_shot) {
+            // Manual selection takes over from DDP until another packet arrives.
+            ddp_update_timeout = 0;
+            pattern_table[index - 1].pat(&framebuf[0][0][0], NUM_STRIPS, NUM_PIXELS);
+            patern_update_framebuf = true;
+        }
+    }
     return pattern_index;
 }
 
@@ -298,8 +315,13 @@ void ws2815_pattern_loop(uint32_t period_ms) {
         return;
     }
 
+    // Toggle patterns run once in set_pattern_index(), not every 20 ms.
+    if (pattern_index > 0 && pattern_index <= count_of(pattern_table) &&
+        pattern_table[pattern_index - 1].one_shot)
+        return;
+
     // where is the sanity in case pattern_index == 0 ?
-    if (pattern_index <= count_of(pattern_table)) {
+    if (pattern_index > 0 && pattern_index <= count_of(pattern_table)) {
         pat = pattern_index - 1;
         if (pattern_last_index != pattern_index) {
             pattern_last_index = pattern_index;
@@ -310,12 +332,23 @@ void ws2815_pattern_loop(uint32_t period_ms) {
         }   
     } 
     else if (pattern_index == PAT_AUTO) {
-        // select random pattern
+        // Never run one-shot toggles from the periodic automatic mode.
+        if (pattern_table[pat].one_shot) {
+            for (pat = 0; pat < count_of(pattern_table); ++pat) {
+                if (!pattern_table[pat].one_shot)
+                    break;
+            }
+            loop_count = 0;
+        }
+        // select random animated pattern
         if (++loop_count > 800) {   // 200 * 20ms = 4s
             loop_count = 0;
             // change pattern
 
-            uint tmp = (uint)((unsigned)rand() % count_of(pattern_table));
+            uint tmp;
+            do {
+                tmp = (uint)((unsigned)rand() % count_of(pattern_table));
+            } while (pattern_table[tmp].one_shot);
             pat = (typeof(pat))(tmp);
             // pat = (typeof(pat))(rand() % (count_of(pattern_table)));
 

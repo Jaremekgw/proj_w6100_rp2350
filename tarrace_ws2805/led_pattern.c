@@ -24,15 +24,23 @@ static int dir = 1;
 static uint8_t *current_strip_out;
 // static bool current_strip_4color;
 
-// Writes one pixel (NUM_CHANNELS bytes) into the framebuffer in channel order
-// R,G,B,[C],[T]. Any channels beyond RGB (W / CCT for WS2805) are set to 0 so
-// the stride always matches NUM_CHANNELS.
-static inline void put_pixel(uint32_t pixel_grb) {
-    *current_strip_out++ = (pixel_grb >> 16u) & 0xffu;   // R -> channel 0
-    *current_strip_out++ = (pixel_grb >> 8u) & 0xffu;    // G -> channel 1
-    *current_strip_out++ = pixel_grb & 0xffu;            // B -> channel 2
-    for (uint c = 3; c < NUM_CHANNELS; c++)
-        *current_strip_out++ = 0;                        // W / CCT channels off
+// Write framebuffer channels in R, G, B, warm white, cold white order.
+// The output driver applies CHANNEL_WIRE_ORDER when transmitting.
+static inline void put_pixel(uint8_t r, uint8_t g, uint8_t b,
+                             uint8_t warm, uint8_t cold) {
+    *current_strip_out++ = r;
+    *current_strip_out++ = g;
+    *current_strip_out++ = b;
+#if NUM_CHANNELS >= 4
+    *current_strip_out++ = warm;
+#else
+    (void)warm;
+#endif
+#if NUM_CHANNELS >= 5
+    *current_strip_out++ = cold;
+#else
+    (void)cold;
+#endif
 }
 
 /**
@@ -129,6 +137,43 @@ void init_start_strips(void) {
     }
 }  
 
+// Toggle one channel uniformly across the frame, preserving the other channels.
+// The first pixel determines whether the selected channel is currently on.
+static void toggle_channel(uint8_t *buffer, uint strips, uint pixels, uint channel) {
+    if (strips == 0 || pixels == 0)
+        return;
+
+    uint8_t value = buffer[channel] ? 0 : 0xff;
+    for (uint y = 0; y < strips; ++y) {
+        for (uint x = 0; x < pixels; ++x)
+            buffer[(y * pixels + x) * NUM_CHANNELS + channel] = value;
+    }
+}
+
+void pattern_red(uint8_t *buffer, uint strips, uint pixels) {
+    toggle_channel(buffer, strips, pixels, 0);
+}
+
+void pattern_green(uint8_t *buffer, uint strips, uint pixels) {
+    toggle_channel(buffer, strips, pixels, 1);
+}
+
+void pattern_blue(uint8_t *buffer, uint strips, uint pixels) {
+    toggle_channel(buffer, strips, pixels, 2);
+}
+
+#if NUM_CHANNELS >= 4
+void pattern_warm(uint8_t *buffer, uint strips, uint pixels) {
+    toggle_channel(buffer, strips, pixels, 3);
+}
+#endif
+
+#if NUM_CHANNELS >= 5
+void pattern_cold(uint8_t *buffer, uint strips, uint pixels) {
+    toggle_channel(buffer, strips, pixels, 4);
+}
+#endif
+
 void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
     uint16_t y, x;
     uint pos;
@@ -140,13 +185,13 @@ void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
             uint tmp = (uint)(t >> 1);
             x = (typeof(x))((i + pos + tmp) % 64);
             if (x < 10)
-                put_pixel(urgb_u32(0xff, 0, 0));
+                put_pixel(0xff, 0, 0, 0, 0);
             else if (x >= 15 && x < 25)
-                put_pixel(urgb_u32(0, 0xff, 0));
+                put_pixel(0, 0xff, 0, 0, 0);
             else if (x >= 30 && x < 40)
-                put_pixel(urgb_u32(0, 0, 0xff));
+                put_pixel(0, 0, 0xff, 0, 0);
             else
-                put_pixel(0);
+                put_pixel(0, 0, 0, 0, 0);
         }
     }
     int64_t tmp = (int64_t)t + (int64_t)dir;
@@ -156,8 +201,7 @@ void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
 
 void pattern_random(uint8_t *buffer, uint strips, uint pixels) {
     uint16_t y;
-    uint8_t color, r, g, b, val;
-    // uint32_t px;
+    uint8_t color, r, g, b, warm, cold, val;
 
     // t += dir;
     if (++t % 8)    // 20ms * 8 = 160ms
@@ -166,19 +210,17 @@ void pattern_random(uint8_t *buffer, uint strips, uint pixels) {
      for ( y = 0; y < strips; ++y) {
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         for (uint i = 0; i < pixels; ++i) {
-            color = (typeof(color))(rand() % 7);
+            color = (typeof(color))(rand() % 0x20);
             val = (typeof(val))(rand() % 256);
             r = (color & 0x4) ? val : 0;
             g = (color & 0x2) ? val : 0;
             b = (color & 0x1) ? val : 0;
+            warm = (color & 0x8) ? val : 0;
+            cold = (color & 0x10) ? val : 0;
 
-            //px = urgb_u32(r, g, b);
-            // x = rand() % 256;
-            put_pixel(urgb_u32(r, g, b));
+            put_pixel(r, g, b, warm, cold);
         }
     }
-    //for (uint i = 0; i < pixels; ++i)
-    //    put_pixel(rand());
 }
 
 void pattern_sparkle(uint8_t *buffer, uint strips, uint pixels) {
@@ -191,9 +233,9 @@ void pattern_sparkle(uint8_t *buffer, uint strips, uint pixels) {
         current_strip_out = buffer + y * pixels * NUM_CHANNELS;
         for (uint i = 0; i < pixels; ++i) {
             if (!flip && rand() % 32 == 0) {
-                put_pixel(urgb_u32(0xff, 0xff, 0xff));
+                put_pixel(0xff, 0xff, 0xff, 0xff, 0xff);
             } else {
-                put_pixel(0);
+                put_pixel(0, 0, 0, 0, 0);
             }
         }
     }
@@ -201,8 +243,6 @@ void pattern_sparkle(uint8_t *buffer, uint strips, uint pixels) {
         flip = 3;
     else
         flip--;
-    // for (uint i = 0; i < pixels; ++i)
-    //     put_pixel(rand() % 16 ? 0 : 0xffffffff);
     // t += dir;
 }
 
@@ -237,14 +277,10 @@ void pattern_drop1(uint8_t *buffer, uint strips, uint pixels) {
                 g = c;
             if (sel & 0x01)
                 b = c;
-            put_pixel(urgb_u32(r, g, b));
+            put_pixel(r, g, b, 0, 0);
         }
     }
 
-    // for (uint i = 0; i < pixels; ++i) {
-    //     put_pixel(t * 0x10101);
-    //     if (++t >= max) t = 0;
-    // }
     // t += dir;
     int64_t tmp = (int64_t)t + (int64_t)dir;
     t = (typeof(t))tmp;
@@ -281,7 +317,7 @@ void pattern_solid(uint8_t *buffer, uint strips, uint pixels) {
                 g = c;
             if (select & 0x01)
                 b = c;
-            put_pixel(urgb_u32(r, g, b));
+            put_pixel(r, g, b, 0, 0);
         }
     }
     // t += dir;
@@ -298,7 +334,9 @@ uint32_t jaremektable[] = {
         for (y = 0; y < strips; y++) {
             current_strip_out = buffer + y * pixels * NUM_CHANNELS;
             for(x = 0; x < pixels; x++) {
-                put_pixel(jaremektable[(t + x + (y < 2)) % max]);
+                uint32_t rgb = jaremektable[(t + x + (y < 2)) % max];
+                put_pixel((uint8_t)(rgb >> 16), (uint8_t)(rgb >> 8),
+                          (uint8_t)rgb, 0, 0);
             }
         }
     }
@@ -330,7 +368,7 @@ void pattern_jaremek(uint8_t *buffer, uint strips, uint pixels) {
             if (select & 0x01)
                 b = c;
 
-            put_pixel(urgb_u32(r, g, b));
+            put_pixel(r, g, b, 0, 0);
         }
     }
     // }

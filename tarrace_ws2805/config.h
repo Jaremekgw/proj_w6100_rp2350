@@ -87,9 +87,26 @@
  * Configuration for WS2805 LED strip
  */
 #define NUM_CHANNELS        5   // 3 for RGB, 4 for RGBW, 5 for RGBCCT (WS2805)
-#define NUM_PIXELS          40  // 40  number of pixels per strip, steps: 1-14=55px; 15-16=57px
-#define NUM_STRIPS          16  // number of parallel strips being driven - later cnange to 7
+#define NUM_PIXELS          39  // 40  number of pixels per strip, steps: 1-14=55px; 15-16=57px
+#define NUM_STRIPS          7  // number of parallel strips being driven - later cnange to 7
 #define WS2815_PIN_BASE     0   // first GPIO of 16 used for parallel output
+
+/*
+    Red     - 0,72 A per line
+    Green   - 0,72 A per line
+    Blue    - 0,69 A per line
+    Warm    - 0,71 A per line
+    Cold    - 0,71 A per line
+    W+C     - 1,29 A per line
+    R+G+W   - 1,84 A per line
+    ALL     - 2,80 A per line
+    0 leds  23,97 V
+    1 leds  23,70 V
+    2 leds  23,45 V
+    3 leds  23,20 V
+    4 leds  22,95 V
+    5 leds  22,70 V
+*/
 
 /**
  * Data line polarity.

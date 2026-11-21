@@ -36,6 +36,15 @@ const char *help_msg =
 "  help   \t\t- Show this help menu\r\n"
 "  info   \t\t- Display board and firmware information\r\n"
 "  set [p]\t\t- Set active LED/pattern index to value [p]\r\n"
+"    0: clear; 1: red; 2: green; 3: blue\r\n"
+#if NUM_CHANNELS >= 5
+"    4: warm white; 5: cold white; 6-11: animated patterns\r\n"
+#elif NUM_CHANNELS >= 4
+"    4: warm white; 5-10: animated patterns\r\n"
+#else
+"    4-9: animated patterns\r\n"
+#endif
+"    Colour indices toggle channels; higher values select auto mode\r\n"
 "  get    \t\t- Get current pattern index\r\n"
 "  time   \t\t- Show timing statistics (min/max execution)\r\n"
 "  status \t\t- Show system analog and digital state\r\n"
