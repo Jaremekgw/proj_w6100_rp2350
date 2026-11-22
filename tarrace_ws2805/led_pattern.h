@@ -24,6 +24,17 @@ void pattern_warm(uint8_t *buffer, uint strips, uint pixels);
 void pattern_cold(uint8_t *buffer, uint strips, uint pixels);
 #endif
 
+#if NUM_CHANNELS == 5
+// Ambient animations assume the 20 ms pattern loop and write RGB/warm/cold.
+void pattern_white_crossfade(uint8_t *buffer, uint strips, uint pixels);
+void pattern_colour_tide(uint8_t *buffer, uint strips, uint pixels);
+void pattern_soft_comet(uint8_t *buffer, uint strips, uint pixels);
+void pattern_fireflies(uint8_t *buffer, uint strips, uint pixels);
+void pattern_candlelight(uint8_t *buffer, uint strips, uint pixels);
+void pattern_sunset(uint8_t *buffer, uint strips, uint pixels);
+void pattern_slow_rain(uint8_t *buffer, uint strips, uint pixels);
+#endif
+
 void pattern_snakes(uint8_t *buffer, uint strips, uint pixels);
 void pattern_random(uint8_t *buffer, uint strips, uint pixels);
 void pattern_sparkle(uint8_t *buffer, uint strips, uint pixels);

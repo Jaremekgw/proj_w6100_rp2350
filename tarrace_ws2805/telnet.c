@@ -38,7 +38,9 @@ const char *help_msg =
 "  set [p]\t\t- Set active LED/pattern index to value [p]\r\n"
 "    0: clear; 1: red; 2: green; 3: blue\r\n"
 #if NUM_CHANNELS >= 5
-"    4: warm white; 5: cold white; 6-11: animated patterns\r\n"
+"    4: warm white; 5: cold white; 6-11: existing patterns\r\n"
+"    12: white crossfade; 13: colour tide; 14: soft comet\r\n"
+"    15: fireflies; 16: candlelight; 17: sunset; 18: slow rain\r\n"
 #elif NUM_CHANNELS >= 4
 "    4: warm white; 5-10: animated patterns\r\n"
 #else

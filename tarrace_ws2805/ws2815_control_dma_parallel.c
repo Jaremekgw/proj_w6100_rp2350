@@ -142,6 +142,15 @@ const struct {
         {pattern_drop1,   "Drop_1",     false}, // pattern id 9
         {pattern_solid,   "Solid!",     false}, // pattern id 10
         {pattern_jaremek, "Jaremek",    false}, // pattern id 11
+#if NUM_CHANNELS == 5
+        {pattern_white_crossfade, "White crossfade", false}, // 12
+        {pattern_colour_tide,     "Colour tide",     false}, // 13
+        {pattern_soft_comet,      "Soft comet",      false}, // 14
+        {pattern_fireflies,       "Fireflies",       false}, // 15
+        {pattern_candlelight,     "Candlelight",     false}, // 16
+        {pattern_sunset,          "Sunset",          false}, // 17
+        {pattern_slow_rain,       "Slow rain",       false}, // 18
+#endif
 };
 
 /**

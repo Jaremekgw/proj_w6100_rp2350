@@ -174,6 +174,166 @@ void pattern_cold(uint8_t *buffer, uint strips, uint pixels) {
 }
 #endif
 
+#if NUM_CHANNELS == 5
+// These patterns run every 20 ms. Values are raw 8-bit channel levels, not
+// perceptual brightness. Keep them modest for ambient lighting.
+#define AMBIENT_WHITE_LEVEL 30u
+
+static uint32_t triangle_wave(uint32_t phase, uint32_t period) {
+    phase %= period;
+    uint32_t half = period / 2u;
+    return (phase <= half ? phase : period - phase) * 255u / half;
+}
+
+static uint32_t pattern_hash(uint32_t value) {
+    value ^= value >> 16;
+    value *= 0x7feb352du;
+    value ^= value >> 15;
+    value *= 0x846ca68bu;
+    return value ^ (value >> 16);
+}
+
+// head is in 1/256-pixel units. Fade in over one pixel ahead of the head,
+// then fade out over tail_pixels behind it.
+static uint8_t soft_trail(int32_t head, uint x, uint tail_pixels, uint peak) {
+    int32_t distance = head - (int32_t)(x * 256u);
+    int32_t tail = (int32_t)(tail_pixels * 256u);
+    if (distance < -256 || distance >= tail)
+        return 0;
+    if (distance < 0)
+        return (uint8_t)(peak * (uint32_t)(distance + 256) / 256u);
+    return (uint8_t)(peak * (uint32_t)(tail - distance) / (uint32_t)tail);
+}
+
+// Crossfade warm -> cold -> warm in 24 s, with a 1 s offset per strip.
+// The two channel values always sum to 30, including at both endpoints.
+void pattern_white_crossfade(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    for (uint y = 0; y < strips; ++y) {
+        uint32_t mix = triangle_wave(frame + y * 50u, 1200u);
+        uint8_t cold = (uint8_t)((AMBIENT_WHITE_LEVEL * mix + 127u) / 255u);
+        uint8_t warm = (uint8_t)(AMBIENT_WHITE_LEVEL - cold);
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x)
+            put_pixel(0, 0, 0, warm, cold);
+    }
+    frame = (frame + 1u) % 1200u;
+}
+
+// A broad warm-to-blue/cold wave crosses a strip in 48 s.
+void pattern_colour_tide(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    for (uint y = 0; y < strips; ++y) {
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint32_t phase = frame * 256u / 2400u + x * 256u / pixels + y * 8u;
+            uint32_t wave = triangle_wave(phase, 256u);
+            put_pixel(0, 0, (uint8_t)(wave * 10u / 255u),
+                      (uint8_t)(3u + (255u - wave) * 20u / 255u),
+                      (uint8_t)(wave * 18u / 255u));
+        }
+    }
+    frame = (frame + 1u) % 2400u;
+}
+
+// A soft warm comet per strip, travelling at slightly different speeds.
+void pattern_soft_comet(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    const uint tail = 8;
+    uint32_t span = (pixels + tail + 1u) * 256u;
+    for (uint y = 0; y < strips; ++y) {
+        int32_t head = (int32_t)((frame * (3u + y % 3u) + y * 997u) % span) - 256;
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint8_t value = soft_trail(head, x, tail, 26u);
+            put_pixel((uint8_t)(value / 4u), 0, 0, value, 0);
+        }
+    }
+    frame = (frame + 1u) % span;
+}
+
+// Two slowly fading points per strip. Each chooses a new position only when
+// its envelope reaches zero, so position changes never flash.
+void pattern_fireflies(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    if (pixels == 0)
+        return;
+    for (uint y = 0; y < strips; ++y) {
+        uint pos[2];
+        uint8_t glow[2];
+        for (uint k = 0; k < 2; ++k) {
+            uint32_t time = frame + y * 137u + k * 241u;
+            uint32_t epoch = time / 800u;
+            pos[k] = pattern_hash(epoch ^ (y * 0x9e3779b9u) ^ (k * 0x85ebca6bu)) % pixels;
+            glow[k] = (uint8_t)(triangle_wave(time, 800u) * 24u / 255u);
+        }
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint8_t warm = x == pos[0] ? glow[0] : 0;
+            uint8_t green = x == pos[1] ? (uint8_t)(glow[1] / 2u) : 0;
+            if (x == pos[1] && glow[1] / 2u > warm)
+                warm = (uint8_t)(glow[1] / 2u);
+            put_pixel(0, green, 0, warm, 0);
+        }
+    }
+    ++frame;
+}
+
+// Two slow, spatially offset waves create gentle candle-like variation.
+void pattern_candlelight(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    for (uint y = 0; y < strips; ++y) {
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint32_t a = triangle_wave(frame + y * 71u + x * 5u, 500u);
+            uint32_t b = triangle_wave(frame + y * 113u + x * 9u, 820u);
+            uint8_t warm = (uint8_t)(8u + (a * 10u + b * 6u) / 255u);
+            put_pixel((uint8_t)(warm / 4u), 0, 0, warm, 0);
+        }
+    }
+    ++frame;
+}
+
+// Moving warm sunset gradient, slowly blended with blue/cold over 3 minutes.
+void pattern_sunset(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    uint32_t night = triangle_wave(frame, 9000u);
+    for (uint y = 0; y < strips; ++y) {
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint32_t phase = (frame % 3000u) * 256u / 3000u + x * 256u / pixels + y * 5u;
+            uint32_t gradient = triangle_wave(phase, 256u);
+            uint32_t day = 255u - night;
+            uint8_t red = (uint8_t)((4u + gradient * 16u / 255u) * day / 255u);
+            uint8_t warm = (uint8_t)((6u + (255u - gradient) * 16u / 255u) * day / 255u);
+            uint8_t blue = (uint8_t)((3u + gradient * 9u / 255u) * night / 255u);
+            uint8_t cold = (uint8_t)((4u + (255u - gradient) * 16u / 255u) * night / 255u);
+            put_pixel(red, 0, blue, warm, cold);
+        }
+    }
+    frame = (frame + 1u) % 9000u;
+}
+
+// Two dim blue/cold trails drift along each strip at different speeds.
+void pattern_slow_rain(uint8_t *buffer, uint strips, uint pixels) {
+    static uint32_t frame;
+    const uint tail = 5;
+    uint32_t span = (pixels + tail + 1u) * 256u;
+    for (uint y = 0; y < strips; ++y) {
+        int32_t head1 = (int32_t)((frame * (4u + y % 2u) + y * 733u) % span) - 256;
+        int32_t head2 = (int32_t)((frame * (3u + y % 3u) + y * 1237u + span / 2u) % span) - 256;
+        current_strip_out = buffer + y * pixels * NUM_CHANNELS;
+        for (uint x = 0; x < pixels; ++x) {
+            uint8_t a = soft_trail(head1, x, tail, 20u);
+            uint8_t b = soft_trail(head2, x, tail, 20u);
+            uint8_t value = a > b ? a : b;
+            put_pixel(0, 0, (uint8_t)(value / 2u), 0, value);
+        }
+    }
+    frame = (frame + 1u) % span;
+}
+#endif
+
 void pattern_snakes(uint8_t *buffer, uint strips, uint pixels) {
     uint16_t y, x;
     uint pos;
