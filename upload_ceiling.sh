@@ -1,0 +1,23 @@
+#/bin/bash
+
+# Firmware size: 122580 bytes
+# CRC32: C9D7A4E1
+# 122580/122580 bytes sent
+# Done.
+
+# Config:
+#   $ cmake -S . -B build
+#
+
+# Build:
+#   $ cmake --build build
+#   # or:
+#   $ cmake --build build --target kitchen_pwm
+
+
+# python3 efu_upload.py 192.168.178.225 build/stairs_ws2815/proj_stairs_ws2815.bin
+# python3 efu_upload.py 192.168.14.226 build/tree_ws2815/tree_leds.bin
+python3 efu_upload.py 192.168.14.224 build/ceiling_ms/ceiling_ms.bin
+
+
+

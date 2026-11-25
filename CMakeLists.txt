@@ -127,6 +127,7 @@ add_subdirectory(tarrace_ws2805)
 # add_subdirectory(scd30_meter)
 add_subdirectory(tree_ws2815)
 add_subdirectory(kitchen_pwm)
+add_subdirectory(ceiling_ms)
 
 # Add a top-level “meta-target”
 # Create a meta target that builds both projects

@@ -25,7 +25,7 @@ The `add_subdirectory(...)` entries in the root `CMakeLists.txt` determine which
 | `w6100/kitchen_pwm/` | 192.168.14.228 | Notice |
 | `w6100/tree_ws2815/` | 192.168.14.{226,227} | Notice |
 | `w6100/stairs_ws2815/` | 192.168.14.225 | Notice |
-| `w6100/free4/` | 192.168.14.224 | Notice |
+| `w6100/ceiling_ms/` | 192.168.14.224 | Notice |
 | `w6100/free3/` | 192.168.14.223 | Notice |
 | `w6100/free2/` | 192.168.14.222 | Notice |
 | `w6100/free1/` | 192.168.14.221 | Notice |
