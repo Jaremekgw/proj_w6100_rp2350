@@ -263,6 +263,10 @@ void ws2815_init(void) {
                                                                     true);
     hard_assert(success);
 
+    // Set the nominal drive strength for all LED data outputs before enabling PIO.
+    for (uint i = WS2815_PIN_BASE; i < WS2815_PIN_BASE + NUM_STRIPS; i++)
+        gpio_set_drive_strength(i, GPIO_DRIVE_STRENGTH_8MA);
+
     ws2815_parallel_program_init(pio, sm, offset, WS2815_PIN_BASE, NUM_STRIPS, 800000);
 
 #if DATA_INVERT
