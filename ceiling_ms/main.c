@@ -94,10 +94,10 @@ int main() {
     // --- LED driver init ---
     pwm_mod_init();
 
-    // --- radar sensor MS72SF1 driver init ---
-    // Many radar modules need: 100–500 ms after power-up
-    ms72sf1_filter_cfg_t *cfg = NULL;
-    ms72sf1_api_init(cfg);
+    // Initialize UART; use telnet 'radar binary' then 'radar start'.
+    if (!ms72sf1_api_init()) {
+        printf("[MS72SF1] UART initialization failed\n");
+    }
 
     // Create repeating timer with 1 ms interval
     // if (!add_repeating_timer_ms(1, timer_callback, NULL, &timer)) {
@@ -129,11 +129,9 @@ int main() {
         // non-blocking, cheap
         pwm_api_poll();
 
-        // sensor radar MS72SF1 non-blocking polling
-        // first check if data parsed, then call driver poll to fetch new data, to keep latency low and avoid starving main loop
-        ms72sf1_api_poll();
+        // Drain the radar UART, then publish the latest complete frame.
         ms72sf1_drv_poll();
-        // ms72sf1_cli_tick();
+        ms72sf1_api_poll();
 
         // Manage ws2815 loop control
         // run_periodically_ws2815_tasks();

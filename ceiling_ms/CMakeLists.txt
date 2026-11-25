@@ -12,6 +12,7 @@ target_sources(${TARGET_NAME} PRIVATE
         pwm_api.c
         pwm_drv.c
         ms72sf1_drv.c
+        ms72sf1_parser.c
         ms72sf1_api.c
         ms72sf1_cli.c
 )

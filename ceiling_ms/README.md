@@ -1,69 +1,69 @@
-# ceiling_ms
+# MS72SF1 ceiling radar
 
-The radar code has been renamed from RD-03D, but still uses the RD-03D baud rate,
-commands, and frame format. It is not yet an MS72SF1 driver; do not use it to
-communicate with the sensor until the protocol is implemented.
+This application uses the MinewSemi MS72SF1 datasheet v1.0.0 (sections 4–8).
+The copied lighting/ToF and Ethernet services remain in the project; the ToF
+sensor is disabled by default. The radar implementation has not yet been
+verified against a physical module.
 
-## VL53L8CX (SPI) Wiring – RP2350 + Pololu-style Breakout
-Document:
- - hardware: https://www.st.com/en/imaging-and-photonics-solutions/VL53L8CX.html
- - example: https://github.com/stm32duino/VL53L8CX
- 
+## Wiring and power
 
-This project uses an **ST VL53L8CX Time-of-Flight sensor** connected via **SPI** to an
-**RP2350-based WIZnet Pico2 board**.
+| MS72SF1 | RP2350 / supply |
+| --- | --- |
+| TX | GP15 / UART0 RX (`GPIO_FUNC_UART_AUX`) |
+| RX | GP14 / UART0 TX (`GPIO_FUNC_UART_AUX`) |
+| GND | Common ground |
+| 3.3V | Regulated 3.3 V supply |
 
-This setup is bus-safe because:
+Verify that these pins are exposed and free on the actual board. The datasheet
+specifies a 3.0–3.3 V operating supply and recommends at least 1 A supply
+capacity. Do not assume the board's 3.3 V output can supply the radar; verify
+it or use a suitable external supply with common ground. UART is 115200, 8N1,
+no flow control. USB stdio is enabled and UART stdio is disabled.
 
-Component	    SPI instance	    Pins	            CS
-W6100	        SPI0	            board default	    dedicated
-VL53L8CX	    SPI1	            GP7–GP10	        GP10
+## Start and inspect
 
-
-The sensor module is a **Pololu-style breakout** (also sold on AliExpress) equipped with:
-- Onboard **1.8 V regulators**
-- **WTXS0104E bidirectional level shifter**
-- Required pull-ups / pull-downs for SPI operation
-
-This allows **direct 3.3 V GPIO connection** from RP2350 without external level shifting.
-
----
-
-### Electrical assumptions
-
-- `VIN` accepts **3.3 V**
-- Logic level shifting (3.3 V ↔ 1.8 V) is handled onboard
-- SPI mode is selected via `SPI_I2C_N`
-- `SPI_I2C_N` has an onboard **10 kΩ pull-down**, therefore **must be driven HIGH**
-- `INT` is open-drain, active-low
-- SPI mode: **Mode 0 (CPOL=0, CPHA=0)**
-
----
-
-### Pin mapping
-
-| RP2350 GPIO | VL53L8CX board pin | Signal description |
-|------------|-------------------|--------------------|
-| 3V3       | VIN               | Sensor power input    |
-| GND       | GND               | Ground                |
-| GP8       | SCL / CLK         | SPI clock             |
-| GP9       | SDA / MOSI        | SPI MOSI              |
-| GP7       | MISO              | SPI MISO              |
-| GP10      | NCS               | SPI chip select (active LOW)  |
-| GP6       | INT               | Interrupt output (active LOW) |
-| GP11      | LPn               | Low-power / interface enable  | 
-| 3V3       | SPI_I2C_N         | Interface select (SPI = HIGH) |
-
----
-
-### Special control pins
-
-#### `SPI_I2C_N`
-- **Purpose:** Selects SPI vs I²C
-- **Board behavior:** Pulled down by 10 kΩ
-- **Required action:** Drive **HIGH**
-- **Implementation:** Connected directly to **3V3**
+The firmware does **not** automatically alter the radar's configuration or
+start it. Connect to the telnet CLI (configured IP, port 5000) and send each
+command separately, waiting for a response before the next:
 
 ```text
-SPI_I2C_N = 1 → SPI enabled
-SPI_I2C_N = 0 → I²C enabled
+radar binary       # AT+DEBUG=3: select binary operating mode
+radar status       # check the latest response, typically AT+OK
+radar start        # AT+START
+radar status       # inspect frame number, people and coordinates
+radar stop         # AT+STOP
+radar read         # AT+READ
+radar at AT+TIME=100
+```
+
+`radar at` accepts one printable `AT+...` command and appends LF; it does not
+validate sensor-specific parameters. Configuration commands may be persistent;
+consult the datasheet before changing them. The status shows only the **last
+newline-terminated text line**, not a complete multi-line AT response. Sending
+a command does not confirm that the sensor accepted it. The shared TCP CLI
+currently treats each TCP receive as a command rather than assembling a line;
+use a client that sends each complete command in one write, e.g. `nc`, and wait
+between commands.
+
+## Data handling and limitations
+
+The parser expects the documented 8-byte `01 02 03 04 05 06 07 08` header,
+little-endian whole-frame length and frame number, point TLV 1 with zero
+length, and track TLV 2 with 32 bytes per person. It accepts up to ten people;
+coordinates are in metres and velocity in metres/second. It does not assume
+a checksum, since the datasheet does not specify one. It rejects other frame
+layouts and reports invalid frames; capture actual UART traffic if the module
+uses a different variant or length convention.
+
+UART RX interrupts feed a bounded ring; `radar status` reports dropped bytes.
+Only the latest complete frame is retained. Presence is simply whether that
+frame has any tracks: it is **not** a timeout, safety or occupancy decision.
+The timestamp remains unchanged if the sensor stops reporting. Flash operations
+or long interrupt-disabled periods can still cause hardware UART overruns.
+
+Build with `cmake --build build --target ceiling_ms`. Host parser tests can be
+run with:
+
+```sh
+cc -std=c11 -Wall -Wextra -Werror -Iceiling_ms ceiling_ms/ms72sf1_parser.c ceiling_ms/tests/test_ms72sf1_parser.c -o /tmp/test_ms72sf1 && /tmp/test_ms72sf1
+```

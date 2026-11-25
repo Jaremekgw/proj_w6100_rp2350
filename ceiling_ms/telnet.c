@@ -57,8 +57,9 @@ const char *help_msg =
 "Available commands:\r\n"
 "  help   \t\t\t- Show this help menu\r\n"
 "  info   \t\t\t- Display board and firmware information\r\n"
-"  debugdrv [n]\t\t\t- Change debug ms72sf1 driver settings\r\n"
-"  rdcheck \t\t\t- Call the MS72SF1 check frame routine\r\n"
+"  radar status          \t- Show latest MS72SF1 frame and response\r\n"
+"  radar binary|start|stop|read - Configure binary mode or control sensor\r\n"
+"  radar at AT+...       \t- Send an MS72SF1 AT command\r\n"
 "  setpat [p]\t\t\t- Set active LED/pattern index to value [p]\r\n"
 "  getpat    \t\t\t- Get current pattern index\r\n"
 "  part   \t\t\t- Show partition information\r\n"
@@ -168,6 +169,9 @@ void cmd_config_set_dns(uint8_t *dns) {
  void handle_command(const char *cmd, uint8_t sn) {
     // int sn = TCP_CLI_SOCKET;
 
+    if (ms72sf1_cli_handle(cmd, sn)) {
+        return;
+    }
     if (strcmp(cmd, "help") == 0) {
         cli_flush(sn, help_msg);
     }
@@ -204,10 +208,10 @@ void cmd_config_set_dns(uint8_t *dns) {
         }
 
         snprintf(msg, sizeof(msg),
-            "Project : stairs_ws2815\r\n"
+            "Project : %s\r\n"
             "FW      : %s\r\n"
             "EFU stat: 0x%x (%s)\r\n",
-            FW_VERSION, efu_status, efu_stat_msg);
+            PROJECT_NAME, FW_VERSION, efu_status, efu_stat_msg);
 
         cli_flush(sn, msg);
         // read_boot_info();
@@ -219,70 +223,6 @@ void cmd_config_set_dns(uint8_t *dns) {
         cli_flush(sn, msg);
     }
 
-
-    else if (strcmp(cmd, "rdcheck") == 0) {
-        char msg[1800];
-        int len = ms72sf1_api_print_state(msg, sizeof(msg));
-        printf("Telnet sent %d bytes to console\r\n", len);
-        cli_flush(sn, msg);
-    }
-
-
-    else if (strcmp(cmd, "dumpcont") == 0) {
-        char msg[80];
-        bool dump_continuous = ms72sf1_cli_change_dump_continuous();
-        snprintf(msg, sizeof(msg), "Change dump_continuous mode to: %s\r\n", dump_continuous ? "ON" : "OFF");
-        cli_flush(sn, msg);
-    }
-
-    else if (strcmp(cmd, "multi") == 0) {
-        ms72sf1_drv_send_multi_target_cmd();
-        cli_flush(sn, "Sent multi-target detection command to MS72SF1\r\n");
-    }
-
-    else if (strcmp(cmd, "single") == 0) {
-        ms72sf1_drv_send_single_target_cmd();
-        cli_flush(sn, "Sent single-target detection command to MS72SF1\r\n");
-    }
-
-
-    else if (strcmp(cmd, "dprn1") == 0) {
-        ms72sf1_drv_set_debug(true);
-        cli_flush(sn, "Enabled MS72SF1 print debug mode\r\n");
-    }
-    else if (strcmp(cmd, "dprn0") == 0) {
-        ms72sf1_drv_set_debug(false);
-        cli_flush(sn, "Disabled MS72SF1 print debug mode\r\n");
-    }
-
-
-
-
-    else if (strncmp(cmd, "debugdrv", 8) == 0) {
-        char msg[64];
-        uint16_t w;
-
-        if (sscanf(cmd + 8, "%u", &w) == 1 &&
-            w <= 1) 
-        {
-            if (w == 1) {
-                ms72sf1_drv_set_debug(true);
-            } else {
-                ms72sf1_drv_set_debug(false);
-            }
-
-            snprintf(msg, sizeof(msg),
-                    "[MS72SF1] Set debug to %u\r\n", w);
-            // cli_flush(sn, msg);
-        } 
-        else {
-            char err[64];
-            snprintf(err, sizeof(err),
-                    "Usage: debug <w>\r\nEach value must be 0–1.\r\n");
-            // cli_flush(sn, err);
-        }
-        cli_flush(sn, msg);
-    }
 
     else if (strcmp(cmd, "diag0") == 0) {
         char test_msg[64];

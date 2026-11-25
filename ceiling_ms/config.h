@@ -197,7 +197,7 @@
 // GND                    //                    yellow
 #define MS72SF1_UART_INST    uart0
 #define MS72SF1_UART_FUNC    GPIO_FUNC_UART_AUX
-#define MS72SF1_UART_RX_PIN  15  // GP15 | MS72SF1_TX -> UART0_RX   black
-#define MS72SF1_UART_TX_PIN  14  // GP14 | MS72SF1_RX -> UART0_TX   red
-#define MS72SF1_BAUDRATE 256000  // inherited RD-03D baud rate; MS72SF1 specifies 115200
+#define MS72SF1_UART_RX_PIN  15  // GP15 <- sensor TX; verify board pin availability
+#define MS72SF1_UART_TX_PIN  14  // GP14 -> sensor RX
+#define MS72SF1_BAUDRATE 115200  // datasheet section 8.1: 8N1, no flow control
 
